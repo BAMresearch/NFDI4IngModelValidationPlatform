@@ -1,0 +1,8 @@
+
+rule run_simulation_container:
+    input:
+        ".",
+    output:
+        directory("."),
+    container: "docker://opencfd/openfoam-run:2412"
+    shell: "./Allrun"
