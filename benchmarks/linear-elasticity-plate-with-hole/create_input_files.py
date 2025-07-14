@@ -27,7 +27,7 @@ radius = (
     .to_base_units()
     .magnitude
 )
-# create mesh
+# create mesh with gmsh python api
 """
 4---------3
 |         |
