@@ -1,0 +1,11 @@
+name: plate-with-hole
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.10
+  - fenics-dolfinx
+  - libadios2=2.10.1
+  - petsc4py
+  - python-gmsh
+  - pint
