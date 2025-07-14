@@ -69,274 +69,199 @@ class PlateWithHoleSolution:
 
         return sxx, sxy, sxy, syy
 
-# Parameters
-name = sys.argv[1]
-experiment_file = sys.argv[2]
-parameter_file = sys.argv[3]
 
-# Load parameters
-with open(parameter_file) as f:
-    parameters = json.load(f)
-print(parameters)
+def create_gmsh_mesh(name:str, length: float, radius: float):
+    # create mesh
+    """
+    4---------3
+    |         |
+    5_        |
+    \       |
+    1______2
 
-length = (
-    ureg.Quantity(parameters["length"]["value"], parameters["length"]["unit"])
-    .to_base_units()
-    .magnitude
-)
-radius = (
-    ureg.Quantity(parameters["radius"]["value"], parameters["radius"]["unit"])
-    .to_base_units()
-    .magnitude
-)
-youngs_modulus = (
-    ureg.Quantity(parameters["young-modulus"]["value"], parameters["young-modulus"]["unit"])
-    .to_base_units()
-    .magnitude
-)
-poisson_ratio = (
-    ureg.Quantity(parameters["poisson-ratio"]["value"], parameters["poisson-ratio"]["unit"])
-    .to_base_units()
-    .magnitude
-)
-# create mesh
-"""
-4---------3
-|         |
-5_        |
-  \       |
-   1______2
-
-"""
+    """
 
 
-gmsh.initialize()
-gmsh.model.add(name)
+    gmsh.initialize()
+    gmsh.model.add(name)
 
-element_size = (
-    ureg.Quantity(
-        parameters["element-size"]["value"], parameters["element-size"]["unit"]
+    element_size = (
+        ureg.Quantity(
+            parameters["element-size"]["value"], parameters["element-size"]["unit"]
+        )
+        .to_base_units()
+        .magnitude
     )
-    .to_base_units()
-    .magnitude
-)
-gmsh.option.setNumber("Mesh.CharacteristicLengthMin", element_size)
-gmsh.option.setNumber("Mesh.CharacteristicLengthMax", element_size)
-gmsh.option.setNumber("Mesh.CharacteristicLengthFactor", 1.0)
-gmsh.option.setNumber("Mesh.ElementOrder", parameters["element-order"])
+    gmsh.option.setNumber("Mesh.CharacteristicLengthMin", element_size)
+    gmsh.option.setNumber("Mesh.CharacteristicLengthMax", element_size)
+    gmsh.option.setNumber("Mesh.CharacteristicLengthFactor", 1.0)
+    gmsh.option.setNumber("Mesh.ElementOrder", parameters["element-order"])
 
-z = 0.0
-lc = 1.0
+    z = 0.0
+    lc = 1.0
 
-x0 = 0.0
-x1 = x0 + radius
-x2 = x0 + length
-y0 = 0.0
-y1 = y0 + radius
-y2 = y0 + length
+    x0 = 0.0
+    x1 = x0 + radius
+    x2 = x0 + length
+    y0 = 0.0
+    y1 = y0 + radius
+    y2 = y0 + length
 
-center = gmsh.model.geo.addPoint(x0, y0, z, lc)
-p1 = gmsh.model.geo.addPoint(x1, y0, z, lc)
-p2 = gmsh.model.geo.addPoint(x2, y0, z, lc)
-p3 = gmsh.model.geo.addPoint(x2, y2, z, lc)
-p4 = gmsh.model.geo.addPoint(x0, y2, z, lc)
-p5 = gmsh.model.geo.addPoint(x0, y1, z, lc)
+    center = gmsh.model.geo.addPoint(x0, y0, z, lc)
+    p1 = gmsh.model.geo.addPoint(x1, y0, z, lc)
+    p2 = gmsh.model.geo.addPoint(x2, y0, z, lc)
+    p3 = gmsh.model.geo.addPoint(x2, y2, z, lc)
+    p4 = gmsh.model.geo.addPoint(x0, y2, z, lc)
+    p5 = gmsh.model.geo.addPoint(x0, y1, z, lc)
 
-l1 = gmsh.model.geo.addLine(p1, p2)
-l2 = gmsh.model.geo.addLine(p2, p3)
-l3 = gmsh.model.geo.addLine(p3, p4)
-l4 = gmsh.model.geo.addLine(p4, p5)
-l5 = gmsh.model.geo.addCircleArc(p5, center, p1)
+    l1 = gmsh.model.geo.addLine(p1, p2)
+    l2 = gmsh.model.geo.addLine(p2, p3)
+    l3 = gmsh.model.geo.addLine(p3, p4)
+    l4 = gmsh.model.geo.addLine(p4, p5)
+    l5 = gmsh.model.geo.addCircleArc(p5, center, p1)
 
-curve = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4, l5])
-plane = gmsh.model.geo.addPlaneSurface([curve])
-gmsh.model.geo.synchronize()
-gmsh.model.geo.removeAllDuplicates()
-gmsh.model.addPhysicalGroup(2, [plane], 1, name="surface")
-gmsh.model.addPhysicalGroup(1, [l4], 1, name="boundary_left")
-gmsh.model.addPhysicalGroup(1, [l1], 2, name="boundary_bottom")
-gmsh.model.addPhysicalGroup(1, [l2], 3, name="boundary_right")
-gmsh.model.addPhysicalGroup(1, [l3], 4, name="boundary_top")
+    curve = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4, l5])
+    plane = gmsh.model.geo.addPlaneSurface([curve])
+    gmsh.model.geo.synchronize()
+    gmsh.model.geo.removeAllDuplicates()
+    gmsh.model.addPhysicalGroup(2, [plane], 1, name="surface")
+    gmsh.model.addPhysicalGroup(1, [l4], 1, name="boundary_left")
+    gmsh.model.addPhysicalGroup(1, [l1], 2, name="boundary_bottom")
+    gmsh.model.addPhysicalGroup(1, [l2], 3, name="boundary_right")
+    gmsh.model.addPhysicalGroup(1, [l3], 4, name="boundary_top")
 
-groups = {"surface": (2,1), "boundary_left": (1,1), "boundary_bottom": (1,2), "boundary_right": (1,3), "boundary_top": (1,4)}
+    groups = {"surface": (2,1), "boundary_left": (1,1), "boundary_bottom": (1,2), "boundary_right": (1,3), "boundary_top": (1,4)}
 
-gmsh.model.mesh.generate(2)
-gmsh.write("data/mesh_" + name + ".msh")
-gmsh.finalize()
-
-mesh = meshio.read("data/mesh_" + name + ".msh")
+    gmsh.model.mesh.generate(2)
+    gmsh.write("data/mesh_" + name + ".msh")
+    gmsh.finalize()
 
 
+def msh_to_mdpa(name:str, length: float, radius: float):
+        
+    x0 = 0.0
+    x1 = x0 + radius
+    x2 = x0 + length
+    y0 = 0.0
+    y1 = y0 + radius
+    y2 = y0 + length
+    mesh = meshio.read("data/mesh_" + name + ".msh")
+
+    meshio.write("data/mesh_" + name + ".mdpa", mesh)
+
+    with open("data/mesh_" + name + ".mdpa", "r") as f:
+        # replace all occurences of Triangle with SmallStrainElement
+        text = f.read()
+
+        text = text.replace("Triangle2D3", "SmallDisplacementElement2D3N")
+        text = text.replace("Triangle2D6", "SmallDisplacementElement2D6N")
+
+        text = re.sub(r"Begin\s+Elements\s+Line2D[\n\s\d]*End\s+Elements", "", text)
+        
+        mesh_tags = np.array(re.findall(r"Begin\s+NodalData\s+gmsh:dim_tags[\s\n]*(.*)End\s+NodalData\s+gmsh:dim_tags",text, flags=re.DOTALL)[0].replace("np.int64", "").replace("(","").replace(")","").split(), dtype=np.int32).reshape(-1, 3)
+        
+        text = re.sub(r"Begin\s+NodalData\s+gmsh:dim_tags[\s\n]*(.*)End\s+NodalData\s+gmsh:dim_tags","",text, flags=re.DOTALL)
 
 
-meshio.write("data/mesh_" + name + ".mdpa", mesh)
+    append = "\nBegin SubModelPart boundary_left\n"
+    append += "    Begin SubModelPartNodes\n        "
+    nodes = np.argwhere(np.isclose(mesh.points[:,0], x0)).flatten()+1
+    append += "\n        ".join(map(str, nodes)) + "\n"
+    append += "    End SubModelPartNodes\n"
+    append += "End SubModelPart\n"
+
+    text += append
+
+    append = "\nBegin SubModelPart boundary_bottom\n"
+    append += "    Begin SubModelPartNodes\n        "
+    nodes = np.argwhere(np.isclose(mesh.points[:,1], y0)).flatten() +1
+    append += "\n        ".join(map(str, nodes)) + "\n"
+    append += "    End SubModelPartNodes\n"
+    append += "End SubModelPart\n"
+
+    text += append
+
+    append = "\nBegin SubModelPart boundary_right\n"
+    append += "    Begin SubModelPartNodes\n        "
+    nodes = np.argwhere(np.isclose(mesh.points[:,0], x2)).flatten() + 1 
+    append += "\n        ".join(map(str, nodes)) + "\n"
+    append += "    End SubModelPartNodes\n"
+    append += "End SubModelPart\n"
+
+    text += append
+
+    append = "\nBegin SubModelPart boundary_top\n"
+    append += "    Begin SubModelPartNodes\n        "
+    nodes = np.argwhere(np.isclose(mesh.points[:,1], y2)).flatten() + 1 
+    append += "\n        ".join(map(str, nodes)) + "\n"
+    append += "    End SubModelPartNodes\n"
+    append += "End SubModelPart\n"
+
+    text += append
+    with open("data/mesh_" + name + ".mdpa", "w") as f:
+        f.write(text)
 
 
-with open("data/mesh_" + name + ".mdpa", "r") as f:
-    # replace all occurences of Triangle with SmallStrainElement
-    text = f.read()
+def create_kratos_input(name:str, analytical_solution):
+    bc = analytcial_solution.displacement_str("X", "Y")
+    with open(material_template_file) as f:
+        material_string = f.read()
 
-    text = text.replace("Triangle2D3", "SmallDisplacementElement2D3N")
-    text = text.replace("Triangle2D6", "SmallDisplacementElement2D6N")
+    material_string = material_string.replace(r'"{{YOUNG_MODULUS}}"', str(youngs_modulus))
+    material_string = material_string.replace(r'"{{POISSON_RATIO}}"', str(poisson_ratio))
 
-    text = re.sub(r"Begin\s+Elements\s+Line2D[\n\s\d]*End\s+Elements", "", text)
-    
-    mesh_tags = np.array(re.findall(r"Begin\s+NodalData\s+gmsh:dim_tags[\s\n]*(.*)End\s+NodalData\s+gmsh:dim_tags",text, flags=re.DOTALL)[0].replace("np.int64", "").replace("(","").replace(")","").split(), dtype=np.int32).reshape(-1, 3)
-    
-    text = re.sub(r"Begin\s+NodalData\s+gmsh:dim_tags[\s\n]*(.*)End\s+NodalData\s+gmsh:dim_tags","",text, flags=re.DOTALL)
+    with open("data/StructuralMaterials_"+name+".json", "w") as f:
+        f.write(material_string)
 
 
-append = "\nBegin SubModelPart boundary_left\n"
-append += "    Begin SubModelPartNodes\n        "
-nodes = np.argwhere(np.isclose(mesh.points[:,0], x0)).flatten()+1
-append += "\n        ".join(map(str, nodes)) + "\n"
-append += "    End SubModelPartNodes\n"
-append += "End SubModelPart\n"
+    with open(input_template_file) as f:
+        project_parameters_string = f.read()
+    project_parameters_string = project_parameters_string.replace(r'{{MESH_FILE}}', "data/mesh_" + name)
+    project_parameters_string = project_parameters_string.replace(r'{{MATERIAL_FILE}}', "data/StructuralMaterials_"+name+".json")
+    project_parameters_string = project_parameters_string.replace(r'{{BOUNDARY_RIGHT_DISPLACEMENT_X}}', str(bc[0]))
+    project_parameters_string = project_parameters_string.replace(r'{{BOUNDARY_RIGHT_DISPLACEMENT_Y}}', str(bc[1]))
+    project_parameters_string = project_parameters_string.replace(r'{{BOUNDARY_TOP_DISPLACEMENT_X}}', str(bc[0]))
+    project_parameters_string = project_parameters_string.replace(r'{{BOUNDARY_TOP_DISPLACEMENT_Y}}', str(bc[1]))
+    project_parameters_string = project_parameters_string.replace(r'{{OUTPUT_PATH}}', "data/output_"+name)
 
-text += append
-
-append = "\nBegin SubModelPart boundary_bottom\n"
-append += "    Begin SubModelPartNodes\n        "
-nodes = np.argwhere(np.isclose(mesh.points[:,1], y0)).flatten() +1
-append += "\n        ".join(map(str, nodes)) + "\n"
-append += "    End SubModelPartNodes\n"
-append += "End SubModelPart\n"
-
-text += append
-
-append = "\nBegin SubModelPart boundary_right\n"
-append += "    Begin SubModelPartNodes\n        "
-nodes = np.argwhere(np.isclose(mesh.points[:,0], x2)).flatten() + 1 
-append += "\n        ".join(map(str, nodes)) + "\n"
-append += "    End SubModelPartNodes\n"
-append += "End SubModelPart\n"
-
-text += append
-
-append = "\nBegin SubModelPart boundary_top\n"
-append += "    Begin SubModelPartNodes\n        "
-nodes = np.argwhere(np.isclose(mesh.points[:,1], y2)).flatten() + 1 
-append += "\n        ".join(map(str, nodes)) + "\n"
-append += "    End SubModelPartNodes\n"
-append += "End SubModelPart\n"
-
-text += append
-with open("data/mesh_" + name + ".mdpa", "w") as f:
-    f.write(text)
-
-load = ureg.Quantity(parameters["load"]["value"], parameters["load"]["unit"]).to_base_units().magnitude
-analytcial_solution = PlateWithHoleSolution(youngs_modulus, poisson_ratio, radius, length, load)
-
-bc = analytcial_solution.displacement_str("X", "Y")
+    with open("data/input_"+name+".json", "w") as f:
+        f.write(project_parameters_string)
 
 
-material_parameters = {
-    "properties" : [{
-        "model_part_name" : "Structure",
-        "properties_id"   : 1,
-        "Material"        : {
-            "constitutive_law" : {
-                 "name" : "LinearElasticPlaneStress2DLaw"
-            },
-            "Variables"        : {
-                "YOUNG_MODULUS" : youngs_modulus,
-                "POISSON_RATIO" : poisson_ratio
-            },
-            "Tables"           : {}
-        }
-    }]
-}
+if __name__ == "__main__":
+    # Parameters
+    name = sys.argv[1]
+    experiment_file = sys.argv[2]
+    parameter_file = sys.argv[3]
+    input_template_file = sys.argv[4]
+    material_template_file = sys.argv[5]
 
-project_parameters = {
-    "problem_data"             : {
-        "problem_name"    : "PlateWithHole",
-        "parallel_type"   : "OpenMP",
-        "start_time"      : 0.0,
-        "end_time"        : 1.0,
-        "echo_level"      : 0
-    },
-    "solver_settings"          : {
-        "solver_type"                        : "Static",
-        "model_part_name"                    : "Structure",
-        "echo_level"                         : 1,
-        "domain_size"                        : 2,
-        "analysis_type"                      : "linear",
-        "model_import_settings"              : {
-            "input_type"     : "mdpa",
-            "input_filename" : "data/mesh_" + name
-        },
-        "material_import_settings"           : {
-            "materials_filename" : "data/StructuralMaterials_"+name+".json"
-        },
-        "time_stepping"                      : {
-            "time_step" : 1.0
-        }
-    },
-    "processes" : {
-        "constraints_process_list" : [{
-            "python_module" : "assign_vector_variable_process",
-            "kratos_module" : "KratosMultiphysics",
-            "Parameters"    : {
-                "model_part_name" : "Structure.boundary_left",
-                "variable_name"   : "DISPLACEMENT",
-                "constrained"     : [True, False, True],
-                "value"           : [0.0, 0.0, 0.0],
-                "interval"        : [0.0,"End"]
-            }
-        },{
-            "python_module" : "assign_vector_variable_process",
-            "kratos_module" : "KratosMultiphysics",
-            "Parameters"    : {
-                "model_part_name" : "Structure.boundary_bottom",
-                "variable_name"   : "DISPLACEMENT",
-                "constrained"     : [False, True, True],
-                "value"           : [0.0, 0.0, 0.0],
-                "interval"        : [0.0,"End"]
-            }
-        },{
-            "python_module" : "assign_vector_variable_process",
-            "kratos_module" : "KratosMultiphysics",
-            "Parameters"    : {
-                "model_part_name" : "Structure.boundary_right",
-                "variable_name"   : "DISPLACEMENT",
-                "constrained"     : [True, True, True],
-                "value"           : [bc[0], bc[1], 0.0],
-                "interval"        : [0.0,"End"]
-            }
-        },{
-            "python_module" : "assign_vector_variable_process",
-            "kratos_module" : "KratosMultiphysics",
-            "Parameters"    : {
-                "model_part_name" : "Structure.boundary_top",
-                "variable_name"   : "DISPLACEMENT",
-                "constrained"     : [True, True, True],
-                "value"           : [bc[0], bc[1], 0.0],
-                "interval"        : [0.0,"End"]
-            }
-        }],
-        "loads_process_list"       : [],
-        "list_other_processes"     : []
-    },
-    
-    "output_processes" : {
-        "vtk_output" : [{
-            "python_module" : "vtk_output_process",
-            "kratos_module" : "KratosMultiphysics",
-            "Parameters"    : {
-                "model_part_name"                    : "Structure",
-                "file_format"                        : "binary",
-                "output_path"                        : "data/output_"+name,
-                "output_sub_model_parts"             : False,
-                "output_interval"                    : 1,
-                "nodal_solution_step_data_variables" : ["DISPLACEMENT"],
-                "gauss_point_variables_extrapolated_to_nodes" : ["CAUCHY_STRESS_VECTOR", "VON_MISES_STRESS"],
-            }
-        }]
-    }
-}
+    # Load parameters
+    with open(parameter_file) as f:
+        parameters = json.load(f)
 
-with open("data/StructuralMaterials_"+name+".json", "w") as f:
-    json.dump(material_parameters, f, indent=4)
-
-with open("data/input_"+name+".json", "w") as f:
-    json.dump(project_parameters, f, indent=4)
+    length = (
+        ureg.Quantity(parameters["length"]["value"], parameters["length"]["unit"])
+        .to_base_units()
+        .magnitude
+    )
+    radius = (
+        ureg.Quantity(parameters["radius"]["value"], parameters["radius"]["unit"])
+        .to_base_units()
+        .magnitude
+    )
+    youngs_modulus = (
+        ureg.Quantity(parameters["young-modulus"]["value"], parameters["young-modulus"]["unit"])
+        .to_base_units()
+        .magnitude
+    )
+    poisson_ratio = (
+        ureg.Quantity(parameters["poisson-ratio"]["value"], parameters["poisson-ratio"]["unit"])
+        .to_base_units()
+        .magnitude
+    )
+    load = ureg.Quantity(parameters["load"]["value"], parameters["load"]["unit"]).to_base_units().magnitude
+    analytcial_solution = PlateWithHoleSolution(youngs_modulus, poisson_ratio, radius, length, load)
+    create_gmsh_mesh(name, length, radius)
+    msh_to_mdpa(name, length, radius)
+    create_kratos_input(name, analytcial_solution)

@@ -12,6 +12,8 @@ rule generate_input_files:
     input:
         "experiment.json",
         "parameters_{name}.json",
+        "input_template.json",
+        "StructuralMaterials_template.json",
     output:
         "data/input_{name}.json",
         "data/mesh_{name}.msh",
