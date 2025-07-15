@@ -5,6 +5,7 @@ import dolfinx as df
 import numpy as np
 import ufl
 from dolfinx.fem.petsc import LinearProblem
+from petsc4py.PETSc import ScalarType
 from mpi4py import MPI
 from pint import UnitRegistry
 
@@ -180,8 +181,8 @@ v_ = ufl.TrialFunction(V)
 a = df.fem.form(ufl.inner(sigma(u_), eps(v_)) * dx)
 
 
-f = df.fem.form(ufl.inner(ufl.dot(stress_function, ufl.FacetNormal(mesh)), u_) * ufl.ds)
-#f = df.fem.form(ufl.inner(ufl.Constant(mesh, ((0.0),(0.0))), u_) * ufl.ds)
+# set rhs to zero
+f = df.fem.form(ufl.inner(df.fem.Constant(mesh, np.array([0.0,0.0])), u_) * ufl.ds)
 
 bc_right = df.fem.dirichletbc(u_prescribed, dofs_right)
 bc_top = df.fem.dirichletbc(u_prescribed, dofs_top)
