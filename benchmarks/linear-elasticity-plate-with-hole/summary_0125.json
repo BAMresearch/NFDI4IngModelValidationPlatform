@@ -4,5 +4,5 @@
     "input": "data/input_0125.json",
     "mesh": "data/mesh_0125.msh",
     "output": "data/output_0125.vtk",
-    "max_mises_stress": 300129622.7217106
+    "max_mises_stress": 300129622.7217104
 }

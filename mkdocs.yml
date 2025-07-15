@@ -34,12 +34,12 @@ markdown_extensions:
 
 nav:
   - index.md
-  - conventions.md
-  - data.md
-  - interface.md
+  #- conventions.md
+  #- data.md
+  #- interface.md
   - Benchmarks:
      - Introduction: "benchmarks/index.md"
      - Linear Elasticity: "benchmarks/linear elasticity"
-     - Plasticity: benchmarks/plasticity
+     #- Plasticity: benchmarks/plasticity
   - "zz_bibliography.md"
 
