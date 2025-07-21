@@ -1,8 +1,17 @@
 
 rule run_simulation_container:
     input:
-        ".",
-    output:
-        directory("."),
+        mesh="system/blockMeshDict",
+        config="system/controlDict",
+        initial_conditions="0/",
+        scripts="Allrun"
+    output: 
+        directory("1000"),
     container: "docker://opencfd/openfoam-run:2412"
-    shell: "./Allrun"
+    shell:
+        """
+        set -euo pipefail
+        echo "Starting simulation."
+        ./Allrun
+        ls -la
+        """

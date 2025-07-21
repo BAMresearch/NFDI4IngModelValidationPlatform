@@ -5,6 +5,8 @@ cd "${0%/*}" || exit                                # Run from this directory
 
 runApplication blockMesh
 runApplication $(getApplication)
-./plot
+
+echo "Simulation completed. You could now post-process (e.g. visualize) the results."
+# ./plot # disabled for benchmark/snakemake-setup
 
 #------------------------------------------------------------------------------

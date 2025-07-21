@@ -19,6 +19,8 @@ env:
 jobs:
   tests:
     runs-on: ubuntu-latest
+    container:
+      image: opencfd/openfoam-run:2412
 
     steps:
       - name: checkout repo content
@@ -35,11 +37,18 @@ jobs:
         run: mamba env update -n model-validation -f environment_benchmarks.yml
         if: steps.cache.outputs.cache-hit != 'true'
 
+      - name: Ensure log directory exists
+        run: mkdir -p benchmarks/rotating-cylinder-OpenFOAM/.snakemake/log
+
       - name: run-OpenFOAM-benchmarks
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/rotating-cylinder-OpenFOAM/
-          snakemake --force --cores 'all'
+          mkdir -p ./.snakemake/log || true # bc. snakemake is not able to create this directory itself
+          chmod +x Allrun
+          echo "Starting snakemake"
+          snakemake --cores 1
+          echo "Finished job."
 
       - name: run-fenics-benchmarks
         shell: bash -l {0}
@@ -100,7 +109,7 @@ jobs:
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/rotating-cylinder-OpenFOAM/
-          sudo apt-get update && sudo apt-get install -y gnuplot
+          # sudo apt-get update && sudo apt-get install -y gnuplot
           chmod +x ./plot
           bash ./Allrun
           echo "Finished job"
