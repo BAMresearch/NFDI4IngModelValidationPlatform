@@ -1,0 +1,12 @@
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+#------------------------------------------------------------------------------
+
+runApplication blockMesh
+runApplication $(getApplication)
+
+echo "Simulation completed. You could now post-process (e.g. visualize) the results."
+# ./plot # disabled for benchmark/snakemake-setup
+
+#------------------------------------------------------------------------------

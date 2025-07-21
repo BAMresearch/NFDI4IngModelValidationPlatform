@@ -1,0 +1,17 @@
+
+rule run_simulation_container:
+    input:
+        mesh="system/blockMeshDict",
+        config="system/controlDict",
+        initial_conditions="0/",
+        scripts="Allrun"
+    output: 
+        directory("1000"),
+    container: "docker://opencfd/openfoam-run:2412"
+    shell:
+        """
+        set -euo pipefail
+        echo "Starting simulation."
+        ./Allrun
+        ls -la
+        """

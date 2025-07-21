@@ -19,8 +19,8 @@ env:
 jobs:
   tests:
     runs-on: ubuntu-latest
-
-
+    container:
+      image: opencfd/openfoam-run:2412
 
     steps:
       - name: checkout repo content
@@ -30,19 +30,32 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
             miniforge-version: latest
-            activate-environment: model-validation 
+            activate-environment: model-validation
             use-mamba: true
 
       - name: Update environment
         run: mamba env update -n model-validation -f environment_benchmarks.yml
         if: steps.cache.outputs.cache-hit != 'true'
 
+      - name: Ensure log directory exists
+        run: mkdir -p benchmarks/rotating-cylinder-OpenFOAM/.snakemake/log
+
+      - name: run-OpenFOAM-benchmarks
+        shell: bash -l {0}
+        run: |
+          cd $GITHUB_WORKSPACE/benchmarks/rotating-cylinder-OpenFOAM/
+          mkdir -p ./.snakemake/log || true # bc. snakemake is not able to create this directory itself
+          chmod +x Allrun
+          echo "Starting snakemake"
+          snakemake --cores 1
+          echo "Finished job."
+
       - name: run-fenics-benchmarks
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elasticity-plate-with-hole/
           snakemake --use-conda --force --cores 'all'
-      
+
       - name: run-Kratos-benchmarks
         shell: bash -l {0}
         run: |
@@ -67,11 +80,36 @@ jobs:
             name: fenics-output
             path: |
               benchmarks/linear-elasticity-plate-with-hole/data
-      
+
       - name: Archive kratos data
         uses: actions/upload-artifact@v4
         with:
             name: kratos-output
             path: |
               benchmarks/linear-elasticity-plate-with-hole-Kratos/data
-              
+
+
+  test_rotCyl_OF:
+    runs-on: ubuntu-latest
+    container:
+      image: opencfd/openfoam-run:2412
+
+    steps:
+      - name: Print debug information
+        run: |
+          echo "Running on OpenFOAM image"
+          echo "Current directory: $PWD"
+          echo "Available files:"
+          ls -la
+
+      - name: checkout repo content
+        uses: actions/checkout@v2
+
+      - name: run-OpenFOAM-benchmarks
+        shell: bash -l {0}
+        run: |
+          cd $GITHUB_WORKSPACE/benchmarks/rotating-cylinder-OpenFOAM/
+          # sudo apt-get update && sudo apt-get install -y gnuplot
+          chmod +x ./plot
+          bash ./Allrun
+          echo "Finished job"
