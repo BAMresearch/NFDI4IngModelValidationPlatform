@@ -26,28 +26,32 @@ jobs:
       - name: checkout repo content
         uses: actions/checkout@v2
 
-      - name: Setup Mambaforge
+      - name: setup-conda-environment
         uses: conda-incubator/setup-miniconda@v3
         with:
-            miniforge-version: latest
-            activate-environment: model-validation 
-            use-mamba: true
+          python-version: "3.12"          
+          auto-update-conda: true
+          conda-remove-defaults: true
 
-      - name: Update environment
-        run: mamba env update -n model-validation -f environment_benchmarks.yml
-        if: steps.cache.outputs.cache-hit != 'true'
-
-      - name: run-fenics-benchmarks
+      - name: run-fenics-snakemake-benchmarks
         shell: bash -l {0}
         run: |
+          conda install --override-channels -c conda-forge -c bioconda snakemake
           cd $GITHUB_WORKSPACE/benchmarks/linear-elasticity-plate-with-hole/
           snakemake --use-conda --force --cores 'all'
       
-      - name: run-Kratos-benchmarks
+      - name: run-Kratos-snakemake-benchmarks
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elasticity-plate-with-hole-Kratos/
           snakemake --use-conda --force --cores 'all'
+
+      - name: run-fenics-nextflow-benchmark
+        shell: bash -l {0}
+        run: |
+          conda install --override-channels -c bioconda -c conda-forge nextflow=25.04.6
+          cd $GITHUB_WORKSPACE/benchmarks/linear-elasticity-plate-with-hole-nextflow/
+          nextflow run main.nf
 
       #- name: run-optimization-workflow
       #  shell: bash -l {0}
@@ -73,5 +77,4 @@ jobs:
         with:
             name: kratos-output
             path: |
-              benchmarks/linear-elasticity-plate-with-hole-Kratos/data
-              
+              benchmarks/linear-elasticity-plate-with-hole-Kratos/data           
