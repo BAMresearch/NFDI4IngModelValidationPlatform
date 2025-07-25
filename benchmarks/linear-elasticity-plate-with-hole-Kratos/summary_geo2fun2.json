@@ -1,8 +1,0 @@
-{
-    "name": "geo2fun2",
-    "parameters": "parameters_geo2fun2.json",
-    "input": "data/input_geo2fun2.json",
-    "mesh": "data/mesh_geo2fun2.mdpa",
-    "output": "data/output_geo2fun2",
-    "max_mises_stress": 197391808.0
-}

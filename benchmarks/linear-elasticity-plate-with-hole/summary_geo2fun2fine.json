@@ -1,8 +1,0 @@
-{
-    "name": "geo2fun2fine",
-    "parameters": "parameters_geo2fun2fine.json",
-    "input": "data/input_geo2fun2fine.json",
-    "mesh": "data/mesh_geo2fun2fine.msh",
-    "output": "data/output_geo2fun2fine.vtk",
-    "max_mises_stress": 303461918.9716124
-}

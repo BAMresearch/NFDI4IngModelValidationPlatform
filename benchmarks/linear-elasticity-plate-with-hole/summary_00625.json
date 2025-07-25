@@ -1,8 +1,0 @@
-{
-    "name": "00625",
-    "parameters": "parameters_00625.json",
-    "input": "data/input_00625.json",
-    "mesh": "data/mesh_00625.msh",
-    "output": "data/output_00625.vtk",
-    "max_mises_stress": 299475432.9327697
-}

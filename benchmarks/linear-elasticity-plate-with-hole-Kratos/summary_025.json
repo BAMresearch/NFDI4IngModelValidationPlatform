@@ -1,8 +1,0 @@
-{
-    "name": "025",
-    "parameters": "parameters_025.json",
-    "input": "data/input_025.json",
-    "mesh": "data/mesh_025.mdpa",
-    "output": "data/output_025",
-    "max_mises_stress": 283087904.0
-}
