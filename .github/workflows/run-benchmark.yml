@@ -52,7 +52,7 @@ jobs:
       - name: run-fenics-nextflow-benchmark
         shell: bash -l {0}
         run: |
-          cd $GITHUB_WORKSPACE/benchmarks/linear-elasticity-plate-with-hole-nextflow/
+          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/
           nextflow run main.nf
 
       #- name: run-optimization-workflow
