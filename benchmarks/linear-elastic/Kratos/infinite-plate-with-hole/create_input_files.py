@@ -71,8 +71,9 @@ class PlateWithHoleSolution:
 
 
 def create_gmsh_mesh(name:str, length: float, radius: float):
-    # create mesh
     """
+    Creates a GMSH mesh for an infinite plate with a hole.
+    The mesh is created in the xy-plane with the following geometry:
     4---------3
     |         |
     5_        |
@@ -138,7 +139,19 @@ def create_gmsh_mesh(name:str, length: float, radius: float):
 
 
 def msh_to_mdpa(name:str, length: float, radius: float):
-        
+    """
+    This function converts the GMSH mesh to a Kratos MDPA file format.
+    Due to limitations in the meshio conversion, several modifications are made to
+    the mdpa file:
+    - The element types are replaced with SmallDisplacementElement2D3N and SmallDisplacementElement2D6N
+       since meshio only converts to Triangle2D3 and Triangle2D6 which only describe the geometry but 
+       not the finite elements.
+    - The Line2D elements are removed since they are not used in Kratos.
+    - The gmsh:dim_tags are removed since they are not used in Kratos.
+    - SubModelParts for the boundary conditions are created.
+
+    At this point, we don't see a better way to do this conversion, so we use a lot of string manipulation.
+    """ 
     x0 = 0.0
     x1 = x0 + radius
     x2 = x0 + length
@@ -203,6 +216,10 @@ def msh_to_mdpa(name:str, length: float, radius: float):
 
 
 def create_kratos_input(name:str, analytical_solution):
+    """
+    This function reads the input template file and the material template 
+    file and replaces the placeholders with the actual values.
+    """
     bc = analytcial_solution.displacement_str("X", "Y")
     with open(material_template_file) as f:
         material_string = f.read()
