@@ -37,17 +37,23 @@ jobs:
         run: mamba env update -n model-validation -f environment_benchmarks.yml
         if: steps.cache.outputs.cache-hit != 'true'
 
-      - name: run-fenics-benchmarks
+      - name: run-fenics-snakemake-benchmarks
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elasticity-plate-with-hole/
           snakemake --use-conda --force --cores 'all'
       
-      - name: run-Kratos-benchmarks
+      - name: run-Kratos-snakemake-benchmarks
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elasticity-plate-with-hole-Kratos/
           snakemake --use-conda --force --cores 'all'
+
+      - name: run-fenics-nextflow-benchmark
+        shell: bash -l {0}
+        run: |
+          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/
+          nextflow run main.nf
 
       #- name: run-optimization-workflow
       #  shell: bash -l {0}
@@ -74,4 +80,3 @@ jobs:
             name: kratos-output
             path: |
               benchmarks/linear-elasticity-plate-with-hole-Kratos/data
-              

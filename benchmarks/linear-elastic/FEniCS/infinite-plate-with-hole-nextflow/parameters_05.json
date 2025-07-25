@@ -1,0 +1,30 @@
+{
+    "radius": {
+        "value": 0.33,
+        "unit": "m"
+    },
+    "length": {
+        "value": 1.0,
+        "unit": "m"
+    },
+    "load": {
+        "value": 100.0,
+        "unit": "MPa"
+    },
+    "element-size": {
+        "value": 0.05,
+        "unit": "m"
+    },
+    "element-order": 1,
+    "element-degree": 1,
+    "quadrature-rule": "gauss",
+    "quadrature-degree": 1,
+    "young-modulus": {
+        "value": 210e9,
+        "unit": "Pa"
+    },
+    "poisson-ratio": {
+        "value": 0.3,
+        "unit": ""
+    }
+}

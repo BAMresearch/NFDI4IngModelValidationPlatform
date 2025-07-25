@@ -1,0 +1,152 @@
+Jul-25 14:34:34.855 [main] DEBUG nextflow.cli.Launcher - $> nextflow run main.nf
+Jul-25 14:34:34.925 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 25.04.6
+Jul-25 14:34:35.007 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/dtyagi/.nextflow/plugins; core-plugins: nf-amazon@2.15.0,nf-azure@1.16.0,nf-cloudcache@0.4.3,nf-codecommit@0.2.3,nf-console@1.2.1,nf-google@1.21.1,nf-k8s@1.0.0,nf-tower@1.11.4,nf-wave@1.12.1
+Jul-25 14:34:35.044 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Jul-25 14:34:35.045 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Jul-25 14:34:35.047 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Jul-25 14:34:35.058 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Jul-25 14:34:35.079 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/nextflow.config
+Jul-25 14:34:35.082 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/nextflow.config
+Jul-25 14:34:35.116 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/dtyagi/.nextflow/secrets/store.json
+Jul-25 14:34:35.119 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@198ef2ce] - activable => nextflow.secret.LocalSecretsProvider@198ef2ce
+Jul-25 14:34:35.125 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Jul-25 14:34:35.554 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 by global default
+Jul-25 14:34:35.573 [main] DEBUG nextflow.cli.CmdRun - Launching `main.nf` [shrivelled_mestorf] DSL2 - revision: fda77e6b36
+Jul-25 14:34:35.575 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Jul-25 14:34:35.576 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
+Jul-25 14:34:35.652 [main] DEBUG nextflow.Session - Session UUID: 361c7a5b-d9e3-46a4-943c-66e01ef2c43b
+Jul-25 14:34:35.652 [main] DEBUG nextflow.Session - Run name: shrivelled_mestorf
+Jul-25 14:34:35.653 [main] DEBUG nextflow.Session - Executor pool size: 4
+Jul-25 14:34:35.674 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Jul-25 14:34:35.687 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=12; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Jul-25 14:34:35.755 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 25.04.6 build 5954
+  Created: 01-07-2025 11:27 UTC (13:27 CEST)
+  System: Linux 6.8.0-64-generic
+  Runtime: Groovy 4.0.26 on OpenJDK 64-Bit Server VM 23.0.2-internal-adhoc.conda.src
+  Encoding: UTF-8 (UTF-8)
+  Process: 176123@VDI0030.zit.bam.de [127.0.1.1]
+  CPUs: 4 - Mem: 7.8 GB (188.6 MB) - Swap: 2 GB (24 KB)
+Jul-25 14:34:35.785 [main] DEBUG nextflow.Session - Work-dir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work [ext2/ext3]
+Jul-25 14:34:35.786 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/bin
+Jul-25 14:34:35.799 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Jul-25 14:34:35.808 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Jul-25 14:34:35.812 [main] DEBUG nextflow.Session - Observer factory (v2): LinObserverFactory
+Jul-25 14:34:35.839 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Jul-25 14:34:35.855 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 5; maxThreads: 1000
+Jul-25 14:34:35.937 [main] DEBUG nextflow.Session - Session start
+Jul-25 14:34:36.290 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Jul-25 14:34:36.430 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Jul-25 14:34:36.430 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jul-25 14:34:36.435 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Jul-25 14:34:36.442 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=4; memory=7.8 GB; capacity=4; pollInterval=100ms; dumpInterval=5m
+Jul-25 14:34:36.445 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
+Jul-25 14:34:36.464 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'generate_input_files': maxForks=0; fair=false; array=0
+Jul-25 14:34:36.524 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Jul-25 14:34:36.524 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jul-25 14:34:36.525 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'run_simulation': maxForks=0; fair=false; array=0
+Jul-25 14:34:36.531 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Jul-25 14:34:36.531 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jul-25 14:34:36.531 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'summary': maxForks=0; fair=false; array=0
+Jul-25 14:34:36.534 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: summary, run_simulation, generate_input_files
+Jul-25 14:34:36.536 [main] DEBUG nextflow.Session - Igniting dataflow network (7)
+Jul-25 14:34:36.540 [PathVisitor-1] DEBUG nextflow.file.PathVisitor - files for syntax: glob; folder: ./; pattern: parameters_*.json; options: [checkIfExists:true]
+Jul-25 14:34:36.542 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > generate_input_files
+Jul-25 14:34:36.542 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > run_simulation
+Jul-25 14:34:36.544 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > summary
+Jul-25 14:34:36.544 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  Script_9144316ebf29db9f: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/main.nf
+Jul-25 14:34:36.545 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+Jul-25 14:34:36.545 [main] DEBUG nextflow.Session - Session await
+Jul-25 14:34:36.649 [Actor Thread 4] INFO  nextflow.conda.CondaCache - Creating env using conda: environment.yml [cache /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/conda/env-c4a2b4730dbb3ba4-5bfd6af320689d00f065b94ede055342]
+Jul-25 14:36:05.071 [Actor Thread 4] DEBUG nextflow.conda.CondaCache - 'conda' create complete env=environment.yml path=/home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/conda/env-c4a2b4730dbb3ba4-5bfd6af320689d00f065b94ede055342
+Jul-25 14:36:05.463 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:05.479 [Task submitter] INFO  nextflow.Session - [7b/a4c354] Submitted process > generate_input_files (3)
+Jul-25 14:36:05.511 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:05.516 [Task submitter] INFO  nextflow.Session - [42/ace577] Submitted process > generate_input_files (4)
+Jul-25 14:36:05.544 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:05.554 [Task submitter] INFO  nextflow.Session - [48/75acf7] Submitted process > generate_input_files (1)
+Jul-25 14:36:05.572 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:05.575 [Task submitter] INFO  nextflow.Session - [6b/f2a095] Submitted process > generate_input_files (2)
+Jul-25 14:36:11.771 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 3; name: generate_input_files (3); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/7b/a4c354c52a8ae0ed5446f32aa1d8ea]
+Jul-25 14:36:11.772 [Task monitor] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'TaskFinalizer' minSize=10; maxSize=12; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Jul-25 14:36:11.791 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:11.792 [Task submitter] INFO  nextflow.Session - [a5/fd98db] Submitted process > generate_input_files (5)
+Jul-25 14:36:11.835 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 4; name: generate_input_files (4); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/42/ace577359d3398805108f6136daf61]
+Jul-25 14:36:11.857 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:11.861 [Task submitter] INFO  nextflow.Session - [96/052d1f] Submitted process > generate_input_files (7)
+Jul-25 14:36:14.026 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: generate_input_files (2); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/6b/f2a095c6f6d081f9f544cd48d4c711]
+Jul-25 14:36:14.052 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:14.054 [Task submitter] INFO  nextflow.Session - [71/0faa0c] Submitted process > generate_input_files (8)
+Jul-25 14:36:15.452 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 7; name: generate_input_files (7); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/96/052d1f327407b336ae2d2bf05909db]
+Jul-25 14:36:15.475 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:15.475 [Task submitter] INFO  nextflow.Session - [d8/929499] Submitted process > generate_input_files (6)
+Jul-25 14:36:15.483 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 5; name: generate_input_files (5); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/a5/fd98dbc052a057f79bc298fc49bab1]
+Jul-25 14:36:15.495 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:15.496 [Task submitter] INFO  nextflow.Session - [1d/ad1bfd] Submitted process > generate_input_files (9)
+Jul-25 14:36:17.525 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 8; name: generate_input_files (8); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/71/0faa0c6348d16dfb6507ffd8e52d25]
+Jul-25 14:36:17.547 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:17.550 [Task submitter] INFO  nextflow.Session - [e4/afa7a8] Submitted process > run_simulation (1)
+Jul-25 14:36:18.756 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 6; name: generate_input_files (6); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/d8/929499d5e7da3c99650aca774c088a]
+Jul-25 14:36:18.769 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:18.773 [Task submitter] INFO  nextflow.Session - [a5/2b6aa9] Submitted process > run_simulation (2)
+Jul-25 14:36:18.787 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 9; name: generate_input_files (9); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/1d/ad1bfd4407d081b33f3df5814458c6]
+Jul-25 14:36:18.804 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:18.806 [Task submitter] INFO  nextflow.Session - [e1/9d9786] Submitted process > run_simulation (3)
+Jul-25 14:36:21.742 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: generate_input_files (1); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/48/75acf75f3cfc16b3203b2ab90dcfff]
+Jul-25 14:36:21.778 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:21.778 [Task submitter] INFO  nextflow.Session - [3b/12de0d] Submitted process > run_simulation (4)
+Jul-25 14:36:31.206 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 10; name: run_simulation (1); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/e4/afa7a84612c96576773c5a0dfcbea8]
+Jul-25 14:36:31.221 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:31.222 [Task submitter] INFO  nextflow.Session - [e3/8ced4e] Submitted process > run_simulation (5)
+Jul-25 14:36:31.236 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 11; name: run_simulation (2); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/a5/2b6aa987f953d43ce78c0535374e5c]
+Jul-25 14:36:31.245 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:31.245 [Task submitter] INFO  nextflow.Session - [51/d3ba92] Submitted process > run_simulation (6)
+Jul-25 14:36:31.460 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 13; name: run_simulation (4); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/3b/12de0d93a1ce97912a104709d39aff]
+Jul-25 14:36:31.483 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:31.491 [Task submitter] INFO  nextflow.Session - [cb/1a0cf6] Submitted process > run_simulation (7)
+Jul-25 14:36:32.610 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 12; name: run_simulation (3); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/e1/9d9786ef3bb1d90787f2e8c1f0f37f]
+Jul-25 14:36:32.617 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:32.617 [Task submitter] INFO  nextflow.Session - [61/c5f80a] Submitted process > run_simulation (8)
+Jul-25 14:36:36.542 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 16; name: run_simulation (7); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/cb/1a0cf66d2b7f1cc15b8634cb234b3b]
+Jul-25 14:36:36.549 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:36.550 [Task submitter] INFO  nextflow.Session - [03/371c8f] Submitted process > run_simulation (9)
+Jul-25 14:36:36.971 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 14; name: run_simulation (5); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/e3/8ced4ed85c9d47d847a424bf497ea7]
+Jul-25 14:36:36.993 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:36.999 [Task submitter] INFO  nextflow.Session - [34/cf91a2] Submitted process > summary (1)
+Jul-25 14:36:37.425 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 17; name: run_simulation (8); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/61/c5f80a31069b0bf211caef2f82731c]
+Jul-25 14:36:37.460 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:37.468 [Task submitter] INFO  nextflow.Session - [e1/8e3e6a] Submitted process > summary (2)
+Jul-25 14:36:40.226 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 15; name: run_simulation (6); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/51/d3ba9293e5cabfe0c0742d3d457ca7]
+Jul-25 14:36:40.244 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:40.246 [Task submitter] INFO  nextflow.Session - [fc/d5dea0] Submitted process > summary (3)
+Jul-25 14:36:41.353 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 19; name: summary (1); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/34/cf91a291a2a80368fca132f640160f]
+Jul-25 14:36:41.359 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 21; name: summary (3); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/fc/d5dea0cc838c46be89a06d6093423b]
+Jul-25 14:36:41.361 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:41.362 [Task submitter] INFO  nextflow.Session - [54/8cdfbf] Submitted process > summary (4)
+Jul-25 14:36:41.371 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:41.371 [Task submitter] INFO  nextflow.Session - [2c/cd9020] Submitted process > summary (5)
+Jul-25 14:36:41.471 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 20; name: summary (2); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/e1/8e3e6a42870619ad5853087c85b7c2]
+Jul-25 14:36:41.478 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:41.478 [Task submitter] INFO  nextflow.Session - [f0/c89aa1] Submitted process > summary (6)
+Jul-25 14:36:42.340 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 24; name: summary (6); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/f0/c89aa118a81906bea6f0d4af555773]
+Jul-25 14:36:42.358 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 23; name: summary (5); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/2c/cd9020a4d4e362a9a66eef5f7ebfd1]
+Jul-25 14:36:42.363 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:42.364 [Task submitter] INFO  nextflow.Session - [24/ae15ea] Submitted process > summary (7)
+Jul-25 14:36:42.374 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:42.375 [Task submitter] INFO  nextflow.Session - [c4/b60f84] Submitted process > summary (8)
+Jul-25 14:36:43.192 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 22; name: summary (4); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/54/8cdfbf8dbbc3e995fdfa16fdb6e5f4]
+Jul-25 14:36:43.224 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 25; name: summary (7); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/24/ae15ea8db5e4a503432437642c7ca1]
+Jul-25 14:36:43.241 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 26; name: summary (8); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/c4/b60f846acd426e33e26ed4d2fc97eb]
+Jul-25 14:36:57.114 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 18; name: run_simulation (9); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/03/371c8f3ed099c5edc359f62e4efa0c]
+Jul-25 14:36:57.132 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jul-25 14:36:57.133 [Task submitter] INFO  nextflow.Session - [f0/1bd42c] Submitted process > summary (9)
+Jul-25 14:36:59.407 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 27; name: summary (9); status: COMPLETED; exit: 0; error: -; workDir: /home/dtyagi/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/work/f0/1bd42cd79a80661547d863ac4b1246]
+Jul-25 14:36:59.413 [main] DEBUG nextflow.Session - Session await > all processes finished
+Jul-25 14:36:59.511 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
+Jul-25 14:36:59.512 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Jul-25 14:36:59.543 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'TaskFinalizer' shutdown completed (hard=false)
+Jul-25 14:36:59.570 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=27; failedCount=0; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=2m 44s; failedDuration=0ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=6; peakCpus=6; peakMemory=0; ]
+Jul-25 14:36:59.755 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+Jul-25 14:36:59.841 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'FileTransfer' shutdown completed (hard=false)
+Jul-25 14:36:59.842 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye
