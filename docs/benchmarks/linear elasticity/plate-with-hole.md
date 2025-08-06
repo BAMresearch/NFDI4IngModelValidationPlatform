@@ -15,10 +15,16 @@ $$
     \end{aligned}
 $$
 
+* What is $p$
+* What are $E,\nu$
+* Cartesian coordiantes
+* Neumann BCs
+* write Dirichlet with set
+
 In order to transform this into a practical benchmark, we consider a rectangular subdomain
 of the infinite plate around the hole. The boundary conditions of the subdomain are determined
 from the analytical solution. The example is further reduced by only simulating one quarter
-of the rectangular domain and assuming symmetry conditions at the edges. Let $\Omega =[0,l]^2 \setminus\{(x,y) | \sqrt{x^2+y^2}<a \}$ be the domain of the benchmark example, then the PDE is given by
+of the rectangular domain and assuming symmetry conditions at the edges. Let $\Omega =[0,l]^2 \setminus \left \lbrace (x,y) \mid \sqrt{x^2+y^2}<a \right \rbrace$ be the domain of the benchmark example, then the PDE is given by
 
 $$
     \begin{aligned}
