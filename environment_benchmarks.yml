@@ -9,3 +9,6 @@ dependencies:
   - meshio
   - conda-lock
   - conda
+  - pip
+  - pip:
+    - git+https://github.com/izus-fokus/snakemake-report-plugin-metadata4ing

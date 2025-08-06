@@ -73,11 +73,32 @@ jobs:
             name: fenics-output
             path: |
               benchmarks/linear-elastic-plate-with-hole/FEniCS/data
-      
+
+      - name: Archive fenics snakemake provenance
+        uses: actions/upload-artifact@v4
+        with:
+            name: fenics-snakemake-provenance
+            path: |
+              benchmarks/linear-elastic-plate-with-hole/FEniCS/*.zip
+
       - name: Archive kratos data
         uses: actions/upload-artifact@v4
         with:
             name: kratos-output
             path: |
               benchmarks/linear-elastic-plate-with-hole/Kratos/data
-              
+
+      - name: Archive fenics nextflow data
+        uses: actions/upload-artifact@v4
+        with:
+            name: fenics-nextflow-output
+            path: |
+              benchmarks/linear-elastic-plate-with-hole/FEniCS_nextflow/work/**
+              !benchmarks/linear-elastic-plate-with-hole/FEniCS_nextflow/work/conda/**
+
+      - name: Archive fenics nextflow provenance
+        uses: actions/upload-artifact@v4
+        with:
+            name: fenics-nextflow-provenance
+            path: |
+              benchmarks/linear-elastic-plate-with-hole/FEniCS_nextflow/provenance.json
