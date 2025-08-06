@@ -40,7 +40,7 @@ jobs:
       - name: run-fenics-snakemake-benchmarks
         shell: bash -l {0}
         run: |
-          cd $GITHUB_WORKSPACE/benchmarks/linear-elasticity-plate-with-hole/
+          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
           snakemake --use-conda --force --cores 'all'
       
       - name: run-Kratos-snakemake-benchmarks
@@ -52,7 +52,7 @@ jobs:
       - name: run-fenics-nextflow-benchmark
         shell: bash -l {0}
         run: |
-          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic/FEniCS/infinite-plate-with-hole-nextflow/
+          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/FEniCS_nextflow/
           nextflow run main.nf
 
       #- name: run-optimization-workflow
@@ -72,7 +72,7 @@ jobs:
         with:
             name: fenics-output
             path: |
-              benchmarks/linear-elasticity-plate-with-hole/data
+              benchmarks/linear-elastic-plate-with-hole/data
       
       - name: Archive kratos data
         uses: actions/upload-artifact@v4
