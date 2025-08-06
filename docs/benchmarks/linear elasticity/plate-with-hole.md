@@ -14,10 +14,11 @@ $$
         \sigma_{r\theta} &= -\frac{p}{2}\left(1-\frac{a^2}{r^2}\right)\left(1+\frac{3a^2}{r^2}\right)\sin(2\theta)
     \end{aligned}
 $$
+
 In order to transform this into a practical benchmark, we consider a rectangular subdomain
 of the infinite plate around the hole. The boundary conditions of the subdomain are determined
 from the analytical solution. The example is further reduced by only simulating one quarter
-of the rectangular domain and assuming symmetry conditions at the edges. Let $\Omega =[0,l]^2 \setminus\left\{(x,y) \mid \sqrt{x^2+y^2}<a \right\}$ be the domain of the benchmark example, then the PDE is given by
+of the rectangular domain and assuming symmetry conditions at the edges. Let $\Omega =[0,l]^2 \setminus\{(x,y) | \sqrt{x^2+y^2}<a \}$ be the domain of the benchmark example, then the PDE is given by
 
 $$
     \begin{aligned}
@@ -26,6 +27,5 @@ $$
 \boldsymbol{\sigma}(\boldsymbol{\varepsilon}) &= \frac{E}{1-\nu^2}\left((1-\nu)\boldsymbol{\varepsilon} + \nu \mathrm{tr}\boldsymbol{\varepsilon}\boldsymbol I_2\right) && \text{Plane stress law}\\
 \boldsymbol u_y &=0 & y=0& \text{Dirichlet BC}\\
 \boldsymbol u_x &=0 & x=0& \text{Dirichlet BC}\\
-boldsymbol{n}
 \end{aligned}
 $$
