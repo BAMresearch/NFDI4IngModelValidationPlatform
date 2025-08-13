@@ -39,16 +39,32 @@ $$
 In order to transform this into a practical benchmark, we consider a rectangular subdomain
 of the infinite plate around the hole. The boundary conditions of the subdomain are determined
 from the analytical solution. The example is further reduced by only simulating one quarter
-of the rectangular domain and assuming symmetry conditions at the edges. Let $\Omega =[0,l]^2 \setminus \left \lbrace (x,y) \mid \sqrt{x^2+y^2}<a \right \rbrace$ be the domain of the benchmark example, then the PDE is given by
+of the rectangular domain and assuming symmetry conditions at the edges. Let 
+
+$$
+\Omega =[0,l]^2 \setminus \lbrace (x,y) \mid \sqrt{x^2+y^2}<a \rbrace
+$$ 
+
+be the domain of the benchmark example and
+
+$$
+\begin{aligned}
+\Gamma_\mathrm{D_1} &= \lbrace (x,y)\in \partial\Omega | y=0\rbrace \\
+\Gamma_\mathrm{D_2} &= \lbrace (x,y)\in \partial\Omega | x=0\rbrace \\
+\Gamma_\mathrm{N} &= \lbrace (x,y)\in \partial\Omega | x=l \lor y=l \rbrace
+\end{aligned}
+$$
+
+then the PDE is given by
 
 $$
 \begin{aligned}
 \mathrm{div}\boldsymbol{\sigma}(\boldsymbol{\varepsilon}(\boldsymbol{u})) &= 0 &\quad \text{ on } \Omega & \\
 \boldsymbol{\varepsilon}(\boldsymbol u) &= \frac{1}{2}\left(\nabla \boldsymbol u + (\nabla\boldsymbol u)^\top\right) &&\text{Infinitesimal strain}\\
 \boldsymbol{\sigma}(\boldsymbol{\varepsilon}) &= \frac{E}{1-\nu^2}\left((1-\nu)\boldsymbol{\varepsilon} + \nu \mathrm{tr}\boldsymbol{\varepsilon}\boldsymbol I_2\right) && \text{Plane stress law}\\
-\boldsymbol u_y &=0 & \text{ on } \lbrace (x,y)\in \partial\Omega | y=0\rbrace& \text{ Dirichlet BC}\\
-\boldsymbol u_x &=0 & \text{ on } \lbrace (x,y)\in \partial\Omega | x=0\rbrace& \text{ Dirichlet BC}\\
-\boldsymbol t &= \boldsymbol{\sigma}_\mathrm{analytical} \cdot \boldsymbol n&\text{ on }\Gamma_{\mathrm{N}}=\lbrace (x,y)\in \partial\Omega | x=l \lor y=l \rbrace& \text{ Neumann BC}
+\boldsymbol u_y &=0 & \text{ on } \Gamma_\mathrm{D_1}& \text{ Dirichlet BC}\\
+\boldsymbol u_x &=0 & \text{ on } \Gamma_\mathrm{D_2}& \text{ Dirichlet BC}\\
+\boldsymbol t &= \boldsymbol{\sigma}_\mathrm{analytical} \cdot \boldsymbol n & \text{ on } \Gamma_\mathrm{N} & \text{ Neumann BC}\\
 \end{aligned}
 $$
 
