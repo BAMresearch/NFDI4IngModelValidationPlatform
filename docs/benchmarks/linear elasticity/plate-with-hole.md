@@ -48,7 +48,7 @@ $$
 \boldsymbol{\sigma}(\boldsymbol{\varepsilon}) &= \frac{E}{1-\nu^2}\left((1-\nu)\boldsymbol{\varepsilon} + \nu \mathrm{tr}\boldsymbol{\varepsilon}\boldsymbol I_2\right) && \text{Plane stress law}\\
 \boldsymbol u_y &=0 & \text{ on } \lbrace (x,y)\in \partial\Omega | y=0\rbrace& \text{ Dirichlet BC}\\
 \boldsymbol u_x &=0 & \text{ on } \lbrace (x,y)\in \partial\Omega | x=0\rbrace& \text{ Dirichlet BC}\\
-\boldsymbol t &= \boldsymbol{\sigma}_\mathrm{analytical} \cdot \boldsymbol n&\text{ on }\Gamma_\mathrm{N}=\lbrace (x,y)\in \partial\Omega | x=l \lor y=l \rbrace& \text{ Neumann BC}
+\boldsymbol t &= \boldsymbol{\sigma}_\mathrm{analytical} \cdot \boldsymbol n&\text{ on }\Gamma_{\mathrm{N}}=\lbrace (x,y)\in \partial\Omega | x=l \lor y=l \rbrace& \text{ Neumann BC}
 \end{aligned}
 $$
 
