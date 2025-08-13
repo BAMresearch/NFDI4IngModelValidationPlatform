@@ -4,8 +4,7 @@ We consider the case of an infinite plate with a circular hole in the center. Th
 <!-- include an svg picture here-->
 ![Infinite linear elastic plate with hole](plate-with-hole.svg)
 
-The solution is given in polar coordinates. Assume that the infinite plate is loaded in $x$-direction with load $p$, then at
-a point  with polar coordinates $(r,\theta)\in\mathbb R_+ \times \mathbb R$, the polar stress components are given by
+The solution is given in polar stress components at a point with polar coordinates $(r,\theta)\in\mathbb R_+ \times \mathbb R$. Assume that the infinite plate is loaded in $x$-direction with load $p$, then the polar stress components are given by
 
 $$
     \begin{aligned}
@@ -28,13 +27,13 @@ $$
 with the full stress tensor solution given by
 
 $$
-\boldsymbol\sigma_\mathrm{analytical} (r,\theta)= \begin{bmatrix} \sigma_{xx} & \sigma_{xy}\\ \sigma_{xy} & \sigma_{yy} \end{bmatrix}.
+\boldsymbol\sigma_\mathrm{analytical} (r,\theta)= \begin{bmatrix} \sigma_{xx} & \sigma_{xy}\\\ \sigma_{xy} & \sigma_{yy} \end{bmatrix}.
 $$
 
-or for a cartesion point $(x,y)$:
+or for a cartesion point $(x,y)\in \mathbb R_+^2$:
 
 $$
-\boldsymbol\sigma_\mathrm{analytical} (x,y)=\boldsymbol\sigma_\mathrm{analytical} \left(\sqrt{x^2 + y^2},\arccos\frac{x}{\sqrt{x^2+y^2}}\right) 
+\boldsymbol\sigma_\mathrm{analytical} (x,y)=\boldsymbol\sigma_\mathrm{analytical} \left(\sqrt{x^2 + y^2},\arccos\frac{x}{\sqrt{x^2+y^2}}\right). 
 $$
 
 In order to transform this into a practical benchmark, we consider a rectangular subdomain
@@ -49,15 +48,21 @@ $$
 \boldsymbol{\sigma}(\boldsymbol{\varepsilon}) &= \frac{E}{1-\nu^2}\left((1-\nu)\boldsymbol{\varepsilon} + \nu \mathrm{tr}\boldsymbol{\varepsilon}\boldsymbol I_2\right) && \text{Plane stress law}\\
 \boldsymbol u_y &=0 & \text{ on } \lbrace (x,y)\in \partial\Omega | y=0\rbrace& \text{ Dirichlet BC}\\
 \boldsymbol u_x &=0 & \text{ on } \lbrace (x,y)\in \partial\Omega | x=0\rbrace& \text{ Dirichlet BC}\\
-\boldsymbol t &= \boldsymbol{\sigma}_\mathrm{analytical} \cdot \boldsymbol n&\text{ on }\lbrace (x,y)\in \partial\Omega | x=l \lor y=l \rbrace& \text{ Neumann BC}
+\boldsymbol t &= \boldsymbol{\sigma}_\mathrm{analytical} \cdot \boldsymbol n&\text{ on }\Gamma_\mathrm{N}=\lbrace (x,y)\in \partial\Omega | x=l \lor y=l \rbrace& \text{ Neumann BC}
 \end{aligned}
 $$
 
-The weak form is
+In the weak formulation of the problem, we want to find $\boldsymbol u$ such that
 
 $$
-\int_{\Omega} \boldsymbol\varepsilon(\delta\boldsymbol{u}) : \boldsymbol{\sigma} \mathrm{d}{\boldsymbol{x}} =
-    \int_{\Gamma_{\mathrm{N}}} {\boldsymbol{t}}\cdot\delta\boldsymbol{u}\mathrm{d}{\boldsymbol{s}}
+B(\boldsymbol u,\delta\boldsymbol u) = f(\delta\boldsymbol u) \quad \forall \boldsymbol \delta u
 $$
 
-with a test function $\delta \boldsymbol u$ 
+with a test function $\delta \boldsymbol u$ and 
+
+$$
+\begin{aligned}
+B(\boldsymbol u,\delta\boldsymbol u) &= \int_{\Omega} \boldsymbol\varepsilon(\delta\boldsymbol{u}) : \boldsymbol{\sigma}(\boldsymbol{\varepsilon}(\boldsymbol{u})) \mathrm{d}{\boldsymbol{x}} \\
+    f(\delta\boldsymbol u)&=\int_{\Gamma_{\mathrm{N}}} {\boldsymbol{t}}\cdot\delta\boldsymbol{u}\mathrm{d}{\boldsymbol{s}}.
+\end{aligned}
+$$
