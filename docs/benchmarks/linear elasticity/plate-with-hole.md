@@ -42,7 +42,7 @@ from the analytical solution. The example is further reduced by only simulating 
 of the rectangular domain and assuming symmetry conditions at the edges. Let $\Omega =[0,l]^2 \setminus \left \lbrace (x,y) \mid \sqrt{x^2+y^2}<a \right \rbrace$ be the domain of the benchmark example, then the PDE is given by
 
 $$
-    \begin{aligned}
+\begin{aligned}
 \mathrm{div}\boldsymbol{\sigma}(\boldsymbol{\varepsilon}(\boldsymbol{u})) &= 0 &\quad \text{ on } \Omega & \\
 \boldsymbol{\varepsilon}(\boldsymbol u) &= \frac{1}{2}\left(\nabla \boldsymbol u + (\nabla\boldsymbol u)^\top\right) &&\text{Infinitesimal strain}\\
 \boldsymbol{\sigma}(\boldsymbol{\varepsilon}) &= \frac{E}{1-\nu^2}\left((1-\nu)\boldsymbol{\varepsilon} + \nu \mathrm{tr}\boldsymbol{\varepsilon}\boldsymbol I_2\right) && \text{Plane stress law}\\
