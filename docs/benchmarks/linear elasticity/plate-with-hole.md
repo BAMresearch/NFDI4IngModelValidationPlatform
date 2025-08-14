@@ -1,6 +1,6 @@
 # Infinite linear elastic plate with hole
 
-We consider the case of an infinite plate with a circular hole in the center. The plate is subjected to uniform tensile load $p$ at infinity. The analytical solution for the stress field has been derived by Kirsch in 1898 [@Kirsch1898].
+We consider the case of an infinite plate with a circular hole with radius $a$ in the center. The plate is subjected to uniform tensile load $p$ at infinity. The analytical solution for the stress field has been derived by Kirsch in 1898 [@Kirsch1898].
 <!-- include an svg picture here-->
 ![Infinite linear elastic plate with hole](plate-with-hole.svg)
 
@@ -39,7 +39,7 @@ $$
 In order to transform this into a practical benchmark, we consider a rectangular subdomain
 of the infinite plate around the hole. The boundary conditions of the subdomain are determined
 from the analytical solution. The example is further reduced by only simulating one quarter
-of the rectangular domain and assuming symmetry conditions at the edges. Let 
+of the rectangular domain with length $l$ and assuming symmetry conditions at the edges. Let 
 
 $$
 \Omega =[0,l]^2 \setminus \lbrace (x,y) \mid \sqrt{x^2+y^2}<a \rbrace
@@ -68,6 +68,7 @@ $$
 \end{aligned}
 $$
 
+with the material parameters $E,\nu$ -- the Youngs modulus and Poisson ratio.
 In the weak formulation of the problem, we want to find $\boldsymbol u$ such that
 
 $$
