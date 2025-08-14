@@ -83,3 +83,14 @@ B(\boldsymbol u,\delta\boldsymbol u) &= \int_{\Omega} \boldsymbol\varepsilon(\de
     f(\delta\boldsymbol u)&=\int_{\Gamma_{\mathrm{N}}} {\boldsymbol{t}}\cdot\delta\boldsymbol{u}\mathrm{d}{\boldsymbol{s}}.
 \end{aligned}
 $$
+
+## Table of parameters
+
+| Parameter    | Description                     |
+| ------------ | ------------------------------  |
+| $a$ in $m$   | Radius of the hole.             |
+| $l$ in $m$   | Length of the benchmark domain. |
+| $E$ in $Pa$  | Youngs modulus.                 |
+| $\nu$ in --  | Poisson ratio.                  |
+| $p$ in $Pa$  | Load at infinity.               |
+
