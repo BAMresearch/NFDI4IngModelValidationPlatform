@@ -1,67 +1,101 @@
 from pathlib import Path
 
 files = list(Path(".").rglob("parameters_*.json"))
-names = [f.stem.split("_")[1] for f in files]
+
+# extract the configuration from the parameter files
+# by reading in the json files and extracting the "configuration" value
+# configuration stores the appendix in the output files)"
+# in theory, you could make that identical so parameters_1.json with configuration "1" 
+# would produce summary_1.json
+import json
+def get_configuration(file):
+    with open(file, 'r') as f:
+        data = json.load(f)
+    # Check if "configuration" key exists, otherwise use the file name
+    if "configuration" in data:
+        return data["configuration"]
+    # Fallback to using the file name if "configuration" is not present
+    # Assuming the file name is in the format "parameters_<configuration>.json"
+    if file.stem.startswith("parameters_"):
+        return file.stem.split("_")[1]
+    # If no configuration is found, raise an error
+    raise ValueError(f"Configuration key not found for file: {file}")
+
+# Create a dictionary of configurations (key is the name of the parameter file)
+# configurations: {Path("parameters_1.json"): "1", ...}
+# Reverse mapping for easy lookup by configuration name
+configurations = {file: get_configuration(file) for file in files if file.is_file()}
+configuration_to_parameter_file = {v: str(k) for k, v in configurations.items()}
 
 rule all:
     input:
-        expand("summary_{name}.json", name=names),
-        #expand("output_{name}.h5", name=names)
+        "data/summary.json",
+        "data/summary.h5",
 
-rule generate_input_files:
+rule create_mesh:    
     input:
-        "experiment.json",
-        "parameters_{name}.json",
+        script = "create_mesh.py",
+        parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
     output:
-        "data/input_{name}.json",
-        "data/mesh_{name}.msh",
-    conda: "environment.yml"
-    shell: "python3 create_input_files.py {wildcards.name} {input}"
+        mesh = "data/mesh_{configuration}.msh",
+    conda: "environment_mesh.yml"
+    shell:
+        """
+        python3 {input.script} --input_parameter_file {input.parameters} --output_mesh_file {output.mesh}
+        """
 
 rule run_simulation:
     input: 
-        "data/input_{name}.json",
-        "data/mesh_{name}.msh",
+        script = "run_simulation.py",
+        parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
+        mesh = "data/mesh_{configuration}.msh",
     output:
-        "data/output_{name}.vtk",
+        hdf5 = "data/solution_field_data_{configuration}.h5",
+        metrics ="data/solution_metrics_{configuration}.json",
     conda:
-        "environment.yml",
-    shell: "python3 run_simulation.py {wildcards.name} {input}"
+        "environment_simulation.yml",
+    shell:
+        """
+        python3 {input.script} --input_parameter_file {input.parameters} --input_mesh_file {input.mesh} --output_solution_file_hdf5 {output.hdf5} --output_metrics_file {output.metrics}
+        """
 
 rule summary:
     input:
-        "data/output_{name}.vtk",
-        "data/input_{name}.json",
-        "data/mesh_{name}.msh",
-        "parameters_{name}.json",
+        parameters = expand("{param}", param=[configuration_to_parameter_file[c] for c in configurations.values()]),
+        mesh = expand("data/mesh_{configuration}.msh", configuration=configurations.values()),
+        metrics = expand("data/solution_metrics_{configuration}.json", configuration=configurations.values()),
+        solution_field_data = expand("data/solution_field_data_{configuration}.h5", configuration=configurations.values()),
     output:
-        "summary_{name}.json",
+        summary_json = "data/summary.json",
+        summary_h5 = "data/summary.h5",
+    conda: "environment_postprocessing.yml",
     run:
         import json
-        import pyvista
-        summary = {}
-        summary["name"] = wildcards.name
-        summary["parameters"] = input[3]
-        summary["input"] = input[1]
-        summary["mesh"] = input[2]
-        summary["output"] = input[0]
-        # Load the mesh and output data
-        max_mises_stress = 42.0
-        from xml.etree import ElementTree as ET
-        tree = ET.parse(input[0])
-        root = tree.getroot()
-        pvtu_filenames = []
-        path = Path(input[0]).parent
-        for dataset in root.findall(".//DataSet"):
-            pvtu_filenames.append(path / dataset.get("file"))
-        meshes = [pyvista.read(pvtu_filename) for pvtu_filename in pvtu_filenames]
-        print(pvtu_filenames)
-        for mesh in meshes:
-            # Assuming the mesh has a 'von_mises_stress' array
-            try:
-                max_mises_stress = float(mesh["von_mises_stress"].max())
-            except KeyError:
-                print("von_mises_stress not found in mesh.")
-        summary["max_mises_stress"] = max_mises_stress # Replace with actual computation
-        with open(output[0], "w") as f:
-            json.dump(summary, f, indent=4)
+        import h5py
+        from pathlib import Path
+
+        all_summaries = []
+
+        with h5py.File(output.summary_h5, "w") as h5f:
+            for idx, config in enumerate(configurations.values()):
+                mesh_path = input.mesh[idx]
+                mesh_dataset_name = Path(mesh_path).name
+                with open(mesh_path, "rb") as mesh_file:
+                    mesh_data = mesh_file.read()
+                    h5f.create_dataset(f"{config}/mesh", data=mesh_data)
+                with h5py.File(input.solution_field_data[idx], "r") as src_h5f:
+                    for name, dataset in src_h5f.items():
+                        h5f.create_dataset(f"{config}/{name}", data=dataset[()])
+        for idx, config in enumerate(configurations.values()):
+            summary = {}
+            summary["benchmark"] = "linear-elastic-plate-with-hole"
+            with open(input.parameters[idx], "r") as param_file:
+                summary["parameters"] = json.load(param_file)
+            summary["mesh"] = f"{config}/mesh"
+            with open(input.metrics[idx], "r") as metrics_file:
+                summary["metrics"] = json.load(metrics_file)
+            summary["configuration"] = config
+            all_summaries.append(summary)
+
+        with open(output.summary_json, "w") as f:
+            json.dump(all_summaries, f, indent=4)

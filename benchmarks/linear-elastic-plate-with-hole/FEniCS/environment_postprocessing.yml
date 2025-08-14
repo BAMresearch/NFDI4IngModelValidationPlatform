@@ -1,10 +1,10 @@
-name: model-validation
+name: postprocessing
 channels:
   - conda-forge
 
 channel_priority: strict
 
 dependencies:
-  - python>=3.12
-  - snakemake
-  - h5py
+  - python=3.12
+  - pint
+  - pyvista

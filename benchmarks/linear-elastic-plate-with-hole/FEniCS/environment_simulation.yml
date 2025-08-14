@@ -1,0 +1,14 @@
+name: simulation
+channels:
+  - conda-forge
+
+channel_priority: strict
+
+dependencies:
+  - python=3.12
+  - fenics-dolfinx=0.9.*
+  - h5py
+  - libadios2=2.10.1
+  - petsc4py
+  - pint
+  - python-gmsh

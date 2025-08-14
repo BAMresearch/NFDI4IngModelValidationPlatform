@@ -1,4 +1,5 @@
 {
+    "configuration": "geo1fun2",
     "radius": {
         "value": 0.33,
         "unit": "m"
