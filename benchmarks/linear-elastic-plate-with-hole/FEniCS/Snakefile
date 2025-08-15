@@ -23,16 +23,16 @@ def get_configuration(file):
 
 # Create a dictionary of configurations (key is the name of the parameter file)
 # configurations: {Path("parameters_1.json"): "1", ...}
-# Reverse mapping for easy lookup by configuration name
 configurations = {file: get_configuration(file) for file in files if file.is_file()}
-# for testing only use the first two entries
-# configurations = dict(list(configurations.items())[:2])
+# Reverse mapping for easy lookup by configuration name
 configuration_to_parameter_file = {v: str(k) for k, v in configurations.items()}
+
+tools = ["fenics"]
 
 rule all:
     input:
-        "data/summary.json",
-        "data/summary.h5",
+        expand("data/summary_{tool}.json", tool=tools),
+        expand("data/summary_{tool}.h5", tool=tools),
 
 rule create_mesh:    
     input:
@@ -48,12 +48,12 @@ rule create_mesh:
 
 rule run_simulation:
     input: 
-        script = "run_simulation.py",
+        script = "run_simulation_{tool}.py",
         parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
         mesh = "data/mesh_{configuration}.msh",
     output:
-        hdf5 = "data/solution_field_data_{configuration}.h5",
-        metrics ="data/solution_metrics_{configuration}.json",
+        hdf5 = "data/solution_field_data_{tool}_{configuration}.h5",
+        metrics ="data/solution_metrics_{tool}_{configuration}.json",
     conda:
         "environment_simulation.yml",
     shell:
@@ -65,11 +65,11 @@ rule summary:
     input:
         parameters = expand("{param}", param=[configuration_to_parameter_file[c] for c in configurations.values()]),
         mesh = expand("data/mesh_{configuration}.msh", configuration=configurations.values()),
-        metrics = expand("data/solution_metrics_{configuration}.json", configuration=configurations.values()),
-        solution_field_data = expand("data/solution_field_data_{configuration}.h5", configuration=configurations.values()),
+        metrics = lambda wildcards: expand("data/solution_metrics_{tool}_{configuration}.json", tool=[wildcards.tool], configuration=configurations.values()),
+        solution_field_data = lambda wildcards: expand("data/solution_field_data_{tool}_{configuration}.h5", tool=[wildcards.tool], configuration=configurations.values()),
     output:
-        summary_json = "data/summary.json",
-        summary_h5 = "data/summary.h5",
+        summary_json = "data/summary_{tool}.json",
+        summary_h5 = "data/summary_{tool}.h5",
     conda: "environment_postprocessing.yml",
     run:
         import json
