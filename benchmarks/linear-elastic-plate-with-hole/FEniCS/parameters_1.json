@@ -1,4 +1,5 @@
 {
+    "configuration": "1",    
     "radius": {
         "value": 0.33,
         "unit": "m"
