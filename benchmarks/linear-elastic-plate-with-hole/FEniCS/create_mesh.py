@@ -14,8 +14,8 @@ def create_mesh(parameter_file, mesh_file):
         parameters = json.load(f)
     print(parameters)
 
-    # Read configuratino from parameters instead of the filename
-    configuratino = parameters["configuration"]
+    # Read configuration from parameters instead of the filename
+    configuration = parameters["configuration"]
 
     length = (
         ureg.Quantity(parameters["length"]["value"], parameters["length"]["unit"])
@@ -38,7 +38,7 @@ def create_mesh(parameter_file, mesh_file):
     """
 
     gmsh.initialize()
-    gmsh.model.add(configuratino)
+    gmsh.model.add(configuration)
 
     element_size = (
         ureg.Quantity(
