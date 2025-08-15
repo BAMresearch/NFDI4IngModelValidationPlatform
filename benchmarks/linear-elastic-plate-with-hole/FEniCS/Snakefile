@@ -29,17 +29,20 @@ configuration_to_parameter_file = {v: str(k) for k, v in configurations.items()}
 
 tools = ["fenics"]
 
+result_dir = "snakemake_results/linear-elastic-plate-with-hole"
+
 rule all:
     input:
-        expand("data/summary_{tool}.json", tool=tools),
-        expand("data/summary_{tool}.h5", tool=tools),
+        expand(f"{result_dir}/{{tool}}/summary.json", tool=tools),
 
 rule create_mesh:    
     input:
         script = "create_mesh.py",
+        # the parameters file for the current configuration, this has to be a lambda function since
+        # it the wildcard (configuration) has to be evaluated
         parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
     output:
-        mesh = "data/mesh_{configuration}.msh",
+        mesh = f"{result_dir}/mesh/mesh_{{configuration}}.msh",
     conda: "environment_mesh.yml"
     shell:
         """
@@ -48,53 +51,39 @@ rule create_mesh:
 
 rule run_simulation:
     input: 
-        script = "run_simulation_{tool}.py",
+        script = "{tool}/run_simulation.py",
         parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
-        mesh = "data/mesh_{configuration}.msh",
+        mesh = f"{result_dir}/mesh/mesh_{{configuration}}.msh",
     output:
-        hdf5 = "data/solution_field_data_{tool}_{configuration}.h5",
-        metrics ="data/solution_metrics_{tool}_{configuration}.json",
+        zip = f"{result_dir}/{{tool}}/solution_field_data_{{configuration}}.zip",
+        metrics = f"{result_dir}/{{tool}}/solution_metrics_{{configuration}}.json",
     conda:
         "environment_simulation.yml",
     shell:
         """
-        python3 {input.script} --input_parameter_file {input.parameters} --input_mesh_file {input.mesh} --output_solution_file_hdf5 {output.hdf5} --output_metrics_file {output.metrics}
+        python3 {input.script} --input_parameter_file {input.parameters} --input_mesh_file {input.mesh} --output_solution_file_zip {output.zip} --output_metrics_file {output.metrics}
         """
 
 rule summary:
     input:
         parameters = expand("{param}", param=[configuration_to_parameter_file[c] for c in configurations.values()]),
-        mesh = expand("data/mesh_{configuration}.msh", configuration=configurations.values()),
-        metrics = lambda wildcards: expand("data/solution_metrics_{tool}_{configuration}.json", tool=[wildcards.tool], configuration=configurations.values()),
-        solution_field_data = lambda wildcards: expand("data/solution_field_data_{tool}_{configuration}.h5", tool=[wildcards.tool], configuration=configurations.values()),
+        mesh = expand(f"{result_dir}/mesh/mesh_{{configuration}}.msh", configuration=configurations.values()),
+        metrics = lambda wildcards: expand(
+            f"{result_dir}/{{tool}}/solution_metrics_{{configuration}}.json",
+            tool=[wildcards.tool], configuration=configurations.values()
+        ),
+        solution_field_data = lambda wildcards: expand(
+            f"{result_dir}/{{tool}}/solution_field_data_{{configuration}}.zip",
+            tool=[wildcards.tool], configuration=configurations.values()
+        ),    
     output:
-        summary_json = "data/summary_{tool}.json",
-        summary_h5 = "data/summary_{tool}.h5",
+        summary_json = f"{result_dir}/{{tool}}/summary.json",
     conda: "environment_postprocessing.yml",
     run:
         import json
-        import h5py
         from pathlib import Path
 
         all_summaries = []
-        print("configurations:", configurations.values())
-        with h5py.File(output.summary_h5, "w") as h5f:
-            for idx, config in enumerate(configurations.values()):
-                print(f"loop over config: {config}")
-                mesh_path = input.mesh[idx]
-                mesh_dataset_name = Path(mesh_path).name
-                with open(mesh_path, "rb") as mesh_file:
-                    mesh_data = mesh_file.read()
-                    mesh_ds_name = f"{config}/mesh"
-                    if mesh_ds_name in h5f:
-                        raise RuntimeError(f"Dataset already exists: {mesh_ds_name}")
-                    h5f.create_dataset(mesh_ds_name, data=mesh_data)
-                with h5py.File(input.solution_field_data[idx], "r") as src_h5f:
-                    for name, dataset in src_h5f.items():
-                        ds_name = f"{config}/{name}"
-                        if ds_name in h5f:
-                            raise RuntimeError(f"Dataset already exists: {ds_name}")
-                        h5f.create_dataset(ds_name, data=dataset[()])
         for idx, config in enumerate(configurations.values()):
             summary = {}
             summary["benchmark"] = "linear-elastic-plate-with-hole"

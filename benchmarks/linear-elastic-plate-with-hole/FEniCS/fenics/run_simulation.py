@@ -12,9 +12,14 @@ from petsc4py.PETSc import ScalarType
 from mpi4py import MPI
 from pint import UnitRegistry
 
+# Add parent directory to sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from plateWithHoleSolution import PlateWithHoleSolution
 
-def run_simulation(parameter_file: str, mesh_file: str, solution_file_hdf5, metrics_file: str) -> None:
+
+def run_simulation(
+    parameter_file: str, mesh_file: str, solution_file_zip, metrics_file: str
+) -> None:
     ureg = UnitRegistry()
     with open(parameter_file) as f:
         parameters = json.load(f)
@@ -40,7 +45,6 @@ def run_simulation(parameter_file: str, mesh_file: str, solution_file_hdf5, metr
 
     bc_left = df.fem.dirichletbc(0.0, dofs_left, V.sub(0))
     bc_bottom = df.fem.dirichletbc(0.0, dofs_bottom, V.sub(1))
-
 
     E = (
         ureg.Quantity(
@@ -80,10 +84,8 @@ def run_simulation(parameter_file: str, mesh_file: str, solution_file_hdf5, metr
         load=load,
     )
 
-
     def eps(v):
         return ufl.sym(ufl.grad(v))
-
 
     def sigma(v):
         # plane stress
@@ -94,10 +96,8 @@ def run_simulation(parameter_file: str, mesh_file: str, solution_file_hdf5, metr
             * ((1.0 - nu) * epsilon + nu * ufl.tr(epsilon) * ufl.Identity(2))
         )
 
-
     def as_tensor(v):
         return ufl.as_matrix([[v[0], v[2]], [v[2], v[1]]])
-
 
     dx = ufl.Measure(
         "dx",
@@ -111,7 +111,9 @@ def run_simulation(parameter_file: str, mesh_file: str, solution_file_hdf5, metr
         domain=mesh,
         subdomain_data=facet_tags,
     )
-    stress_space = df.fem.functionspace(mesh, ("CG", parameters["element-degree"], (2, 2)))
+    stress_space = df.fem.functionspace(
+        mesh, ("CG", parameters["element-degree"], (2, 2))
+    )
     stress_function = df.fem.Function(stress_space)
 
     u = df.fem.Function(V, name="u")
@@ -119,11 +121,9 @@ def run_simulation(parameter_file: str, mesh_file: str, solution_file_hdf5, metr
     u_prescribed.interpolate(lambda x: solution.displacement(x))
     u_prescribed.x.scatter_forward()
 
-
     u_ = ufl.TestFunction(V)
     v_ = ufl.TrialFunction(V)
     a = df.fem.form(ufl.inner(sigma(u_), eps(v_)) * dx)
-
 
     # set rhs to zero
     f = df.fem.form(ufl.inner(df.fem.Constant(mesh, np.array([0.0, 0.0])), u_) * ufl.ds)
@@ -142,7 +142,6 @@ def run_simulation(parameter_file: str, mesh_file: str, solution_file_hdf5, metr
         },
     )
     solver.solve()
-
 
     def project(
         v: df.fem.Function | ufl.core.expr.Expr,
@@ -171,8 +170,12 @@ def run_simulation(parameter_file: str, mesh_file: str, solution_file_hdf5, metr
         uh = solver.solve()
         return uh
 
-    plot_space_stress = df.fem.functionspace(mesh, ("DG", parameters["element-degree"] - 1, (2, 2)))
-    plot_space_mises = df.fem.functionspace(mesh, ("DG", parameters["element-degree"] - 1, (1,)))
+    plot_space_stress = df.fem.functionspace(
+        mesh, ("DG", parameters["element-degree"] - 1, (2, 2))
+    )
+    plot_space_mises = df.fem.functionspace(
+        mesh, ("DG", parameters["element-degree"] - 1, (1,))
+    )
     stress_nodes_red = project(sigma(u), plot_space_stress, dx)
     stress_nodes_red.name = "stress"
 
@@ -186,11 +189,24 @@ def run_simulation(parameter_file: str, mesh_file: str, solution_file_hdf5, metr
     mises_stress_nodes.name = "von_mises_stress"
 
     # Write each function to its own VTK file on all ranks
-    with df.io.VTKFile(MPI.COMM_WORLD, f"data/solution_field_data_displacements_{parameters['configuration']}.vtk", "w") as vtk:
+    output_dir = Path(solution_file_zip).parent
+    with df.io.VTKFile(
+        MPI.COMM_WORLD,
+        str(output_dir / f"solution_field_data_displacements_{parameters['configuration']}.vtk"),
+        "w",
+    ) as vtk:
         vtk.write_function(u, 0.0)
-    with df.io.VTKFile(MPI.COMM_WORLD, f"data/solution_field_data_stress_{parameters['configuration']}.vtk", "w") as vtk:
+    with df.io.VTKFile(
+        MPI.COMM_WORLD,
+        str(output_dir / f"solution_field_data_stress_{parameters['configuration']}.vtk"),
+        "w",
+    ) as vtk:
         vtk.write_function(stress_nodes_red, 0.0)
-    with df.io.VTKFile(MPI.COMM_WORLD, f"data/solution_field_data_mises_stress_{parameters['configuration']}.vtk", "w") as vtk:
+    with df.io.VTKFile(
+        MPI.COMM_WORLD,
+        str(output_dir / f"solution_field_data_mises_stress_{parameters['configuration']}.vtk"),
+        "w",
+    ) as vtk:
         vtk.write_function(mises_stress_nodes, 0.0)
 
     # extract maximum von Mises stress
@@ -207,42 +223,63 @@ def run_simulation(parameter_file: str, mesh_file: str, solution_file_hdf5, metr
     mises_qp = df.fem.Function(Q_mises, name="von_mises_stress_qp")
     expr_qp = df.fem.Expression(mises_stress(u), Q_mises.element.interpolation_points())
     mises_qp.interpolate(expr_qp)
-    max_mises_stress_gauss_points = MPI.COMM_WORLD.allreduce(np.max(mises_qp.x.array), op=MPI.MAX)
+    max_mises_stress_gauss_points = MPI.COMM_WORLD.allreduce(
+        np.max(mises_qp.x.array), op=MPI.MAX
+    )
     # Save metrics
     metrics = {
         "max_von_mises_stress_nodes": max_mises_stress_nodes,
-        "max_von_mises_stress_gauss_points": max_mises_stress_gauss_points}
+        "max_von_mises_stress_gauss_points": max_mises_stress_gauss_points,
+    }
 
     if MPI.COMM_WORLD.rank == 0:
         with open(metrics_file, "w") as f:
             json.dump(metrics, f, indent=4)
-        # store all .pvd, .vtu, and .vtk files for this configuration in the HDF5 container
-        import h5py
-        config = parameters['configuration']
+        # store all .pvd, .vtu, and .vtk files for this configuration in the zip file
+        import zipfile
+
+        config = parameters["configuration"]
         file_patterns = [
-            f"data/solution_field_data_displacements_{config}*.pvd",
-            f"data/solution_field_data_stress_{config}*.vtu",
-            f"data/solution_field_data_mises_stress_{config}*.vtk"
+            str(output_dir / f"solution_field_data_displacements_{config}*.pvd"),
+            str(output_dir / f"solution_field_data_stress_{config}*.vtu"),
+            str(output_dir / f"solution_field_data_mises_stress_{config}*.vtk"),
         ]
         files_to_store = []
         for pattern in file_patterns:
             files_to_store.extend(Path().glob(pattern))
-        with h5py.File(solution_file_hdf5, "w") as h5f:
+        with zipfile.ZipFile(solution_file_zip, "w") as zipf:
             for filepath in files_to_store:
-                with open(filepath, "rb") as f:
-                    data = f.read()
-                # Use only the filename (no subdirectories) for the dataset name
-                h5f.create_dataset(filepath.name, data=np.void(data))
+                zipf.write(filepath, arcname=filepath.name)
+
 
 if __name__ == "__main__":
     parser = ArgumentParser(
         description="Run FEniCS simulation for a plate with a hole.\n"
-                    "Inputs: --input_parameter_file, --input_mesh_file\n"
-                    "Outputs: --output_solution_file_hdf5, --output_metrics_file"
+        "Inputs: --input_parameter_file, --input_mesh_file\n"
+        "Outputs: --output_solution_file_hdf5, --output_metrics_file"
     )
-    parser.add_argument("--input_parameter_file", required=True, help="JSON file containing simulation parameters (input)")
-    parser.add_argument("--input_mesh_file", required=True, help="Path to the mesh file (input)")
-    parser.add_argument("--output_solution_file_hdf5", required=True, help="Path to the output HDF5 solution file (output)")
-    parser.add_argument("--output_metrics_file", required=True, help="Path to the output metrics JSON file (output)")
+    parser.add_argument(
+        "--input_parameter_file",
+        required=True,
+        help="JSON file containing simulation parameters (input)",
+    )
+    parser.add_argument(
+        "--input_mesh_file", required=True, help="Path to the mesh file (input)"
+    )
+    parser.add_argument(
+        "--output_solution_file_zip",
+        required=True,
+        help="Path to the zipped solution files (output)",
+    )
+    parser.add_argument(
+        "--output_metrics_file",
+        required=True,
+        help="Path to the output metrics JSON file (output)",
+    )
     args, _ = parser.parse_known_args()
-    run_simulation(args.input_parameter_file, args.input_mesh_file, args.output_solution_file_hdf5, args.output_metrics_file)
+    run_simulation(
+        args.input_parameter_file,
+        args.input_mesh_file,
+        args.output_solution_file_zip,
+        args.output_metrics_file,
+    )
