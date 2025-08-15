@@ -1,6 +1,6 @@
 from pathlib import Path
 
-files = list(Path(".").rglob("parameters_*.json"))
+files = list(Path(".").glob("parameters_*.json"))
 
 # extract the configuration from the parameter files
 # by reading in the json files and extracting the "configuration" value
@@ -25,6 +25,8 @@ def get_configuration(file):
 # configurations: {Path("parameters_1.json"): "1", ...}
 # Reverse mapping for easy lookup by configuration name
 configurations = {file: get_configuration(file) for file in files if file.is_file()}
+# for testing only use the first two entries
+# configurations = dict(list(configurations.items())[:2])
 configuration_to_parameter_file = {v: str(k) for k, v in configurations.items()}
 
 rule all:
@@ -75,17 +77,24 @@ rule summary:
         from pathlib import Path
 
         all_summaries = []
-
+        print("configurations:", configurations.values())
         with h5py.File(output.summary_h5, "w") as h5f:
             for idx, config in enumerate(configurations.values()):
+                print(f"loop over config: {config}")
                 mesh_path = input.mesh[idx]
                 mesh_dataset_name = Path(mesh_path).name
                 with open(mesh_path, "rb") as mesh_file:
                     mesh_data = mesh_file.read()
-                    h5f.create_dataset(f"{config}/mesh", data=mesh_data)
+                    mesh_ds_name = f"{config}/mesh"
+                    if mesh_ds_name in h5f:
+                        raise RuntimeError(f"Dataset already exists: {mesh_ds_name}")
+                    h5f.create_dataset(mesh_ds_name, data=mesh_data)
                 with h5py.File(input.solution_field_data[idx], "r") as src_h5f:
                     for name, dataset in src_h5f.items():
-                        h5f.create_dataset(f"{config}/{name}", data=dataset[()])
+                        ds_name = f"{config}/{name}"
+                        if ds_name in h5f:
+                            raise RuntimeError(f"Dataset already exists: {ds_name}")
+                        h5f.create_dataset(ds_name, data=dataset[()])
         for idx, config in enumerate(configurations.values()):
             summary = {}
             summary["benchmark"] = "linear-elastic-plate-with-hole"
