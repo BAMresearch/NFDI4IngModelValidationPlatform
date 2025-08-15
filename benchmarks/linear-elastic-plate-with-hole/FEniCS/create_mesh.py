@@ -47,6 +47,7 @@ def create_mesh(parameter_file, mesh_file):
         .to_base_units()
         .magnitude
     )
+    
     gmsh.option.setNumber("Mesh.CharacteristicLengthMin", element_size)
     gmsh.option.setNumber("Mesh.CharacteristicLengthMax", element_size)
     gmsh.option.setNumber("Mesh.CharacteristicLengthFactor", 1.0)
@@ -91,15 +92,8 @@ def create_mesh(parameter_file, mesh_file):
 
 
 if __name__ == "__main__":
-    PARSER = ArgumentParser(
-        description="Create input files and mesh for FEniCS simulation"
-    )
-    PARSER.add_argument(
-        "--input_parameter_file", required=True, help="JSON file containing simulation parameters"
-    )
-    PARSER.add_argument(
-        "--output_mesh_file", required=True, help="Output path for the generated mesh (.msh)"
-    )
+    PARSER = ArgumentParser(description="Create input files and mesh for FEniCS simulation")
+    PARSER.add_argument("--input_parameter_file", required=True, help="JSON file containing simulation parameters")
+    PARSER.add_argument("--output_mesh_file", required=True, help="Output path for the generated mesh (.msh)")
     ARGS = vars(PARSER.parse_args())
-
     create_mesh(ARGS["input_parameter_file"], ARGS["output_mesh_file"])

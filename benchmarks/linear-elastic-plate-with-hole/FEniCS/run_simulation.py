@@ -211,8 +211,7 @@ def run_simulation(parameter_file: str, mesh_file: str, solution_file_hdf5, metr
     # Save metrics
     metrics = {
         "max_von_mises_stress_nodes": max_mises_stress_nodes,
-        "max_von_mises_stress_gauss_points": max_mises_stress_gauss_points
-    }
+        "max_von_mises_stress_gauss_points": max_mises_stress_gauss_points}
 
     if MPI.COMM_WORLD.rank == 0:
         with open(metrics_file, "w") as f:
