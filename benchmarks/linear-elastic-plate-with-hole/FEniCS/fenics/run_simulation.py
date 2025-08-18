@@ -18,7 +18,7 @@ from plateWithHoleSolution import PlateWithHoleSolution
 
 
 def run_simulation(
-    parameter_file: str, mesh_file: str, solution_file_zip, metrics_file: str
+    parameter_file: str, mesh_file: str, solution_file_zip: str, metrics_file: str
 ) -> None:
     ureg = UnitRegistry()
     with open(parameter_file) as f:
@@ -147,7 +147,7 @@ def run_simulation(
         v: df.fem.Function | ufl.core.expr.Expr,
         V: df.fem.FunctionSpace,
         dx: ufl.Measure = ufl.dx,
-    ) -> None | df.fem.Function:
+    ) -> df.fem.Function:
         """
         Calculates an approximation of `v` on the space `V`
 

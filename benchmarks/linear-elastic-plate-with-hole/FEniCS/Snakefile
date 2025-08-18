@@ -1,4 +1,5 @@
 from pathlib import Path
+from os.path import join
 
 files = list(Path(".").glob("parameters_*.json"))
 
@@ -25,7 +26,7 @@ def get_configuration(file):
 # configurations: {Path("parameters_1.json"): "1", ...}
 configurations = {file: get_configuration(file) for file in files if file.is_file()}
 
-# Check for duplicate configuration values
+# Check for duplicate configuration values (the configurations should be unique)
 config_values = list(configurations.values())
 duplicates = set([x for x in config_values if config_values.count(x) > 1])
 if duplicates:
@@ -35,21 +36,20 @@ if duplicates:
 configuration_to_parameter_file = {v: str(k) for k, v in configurations.items()}
 
 tools = ["fenics"]
-
-result_dir = "snakemake_results/linear-elastic-plate-with-hole"
+benchmark = "linear-elastic-plate-with-hole"
+# results are stored in snakemake_results/linear-elastic-plate-with-hole/fenics
+result_dir = join("snakemake_results", benchmark)
 
 rule all:
     input:
         expand(f"{result_dir}/{{tool}}/summary.json", tool=tools),
 
-
-
-
 rule create_mesh:    
     input:
         script = "create_mesh.py",
         # the parameters file for the current configuration, this has to be a lambda function since
-        # it the wildcard (configuration) has to be evaluated
+        # the wildcard (configuration) has to be evaluated (the dictionary)
+        # otherwise, you could just write configuration_to_parameter_file(configuration)
         parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
     output:
         mesh = f"{result_dir}/mesh/mesh_{{configuration}}.msh",
@@ -76,6 +76,8 @@ rule run_simulation:
 
 rule summary:
     input:
+        # the summary is performed for all configurations saved into a single file 
+        # (snakemake_results/linear-elastic-plate-with-hole/fenics/summary.json)
         parameters = expand("{param}", param=[configuration_to_parameter_file[c] for c in configurations.values()]),
         mesh = expand(f"{result_dir}/mesh/mesh_{{configuration}}.msh", configuration=configurations.values()),
         metrics = lambda wildcards: expand(
@@ -96,7 +98,7 @@ rule summary:
         all_summaries = []
         for idx, config in enumerate(configurations.values()):
             summary = {}
-            summary["benchmark"] = "linear-elastic-plate-with-hole"
+            summary["benchmark"] = benchmark
             with open(input.parameters[idx], "r") as param_file:
                 summary["parameters"] = json.load(param_file)
             summary["mesh"] = f"{config}/mesh"
