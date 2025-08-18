@@ -58,7 +58,7 @@ rule run_simulation:
         zip = f"{result_dir}/{{tool}}/solution_field_data_{{configuration}}.zip",
         metrics = f"{result_dir}/{{tool}}/solution_metrics_{{configuration}}.json",
     conda:
-        "environment_simulation.yml",
+        "{tool}/environment_simulation.yml",
     shell:
         """
         python3 {input.script} --input_parameter_file {input.parameters} --input_mesh_file {input.mesh} --output_solution_file_zip {output.zip} --output_metrics_file {output.metrics}
