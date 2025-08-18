@@ -24,6 +24,13 @@ def get_configuration(file):
 # Create a dictionary of configurations (key is the name of the parameter file)
 # configurations: {Path("parameters_1.json"): "1", ...}
 configurations = {file: get_configuration(file) for file in files if file.is_file()}
+
+# Check for duplicate configuration values
+config_values = list(configurations.values())
+duplicates = set([x for x in config_values if config_values.count(x) > 1])
+if duplicates:
+    raise ValueError(f"Duplicate configuration values found in parameter files: {', '.join(duplicates)}")
+
 # Reverse mapping for easy lookup by configuration name
 configuration_to_parameter_file = {v: str(k) for k, v in configurations.items()}
 
@@ -34,6 +41,9 @@ result_dir = "snakemake_results/linear-elastic-plate-with-hole"
 rule all:
     input:
         expand(f"{result_dir}/{{tool}}/summary.json", tool=tools),
+
+
+
 
 rule create_mesh:    
     input:
