@@ -40,7 +40,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/FEniCS/
           snakemake --use-conda --force --cores 'all'
-          snakemake --use-conda --force --cores 'all' --reporter metadat4ing
+          snakemake --use-conda --force --cores 'all' --reporter metadata4ing
 
       - name: run-fenics-nextflow-benchmark
         shell: bash -l {0}
