@@ -13,7 +13,7 @@ class PlateWithHoleSolution:
         theta = np.atan2(x[1], x[0])
         return r, theta
 
-    def displacement(self, x):
+    def displacement(self, x: np.ndarray) -> np.ndarray:
         r, theta = self.polar(x)
         a = self.radius
 
