@@ -1,7 +1,7 @@
 import numpy as np
 
 class PlateWithHoleSolution:
-    def __init__(self, E, nu, radius, L, load):
+    def __init__(self, E: float, nu: float, radius: float, L:float, load:float) -> None:
         self.radius = radius
         self.L = L
         self.load = load
