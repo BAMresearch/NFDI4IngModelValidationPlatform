@@ -38,7 +38,7 @@ class PlateWithHoleSolution:
 
         return ux, uy
 
-    def stress(self, x):
+    def stress(self, x: np.ndarray) -> np.ndarray:
         r, theta = self.polar(x)
         T = self.load
         a = self.radius
