@@ -59,7 +59,7 @@ jobs:
         with:
             name: fenics-output
             path: |
-              benchmarks/linear-elastic-plate-with-hole/FEniCS/data
+              benchmarks/linear-elastic-plate-with-hole/fenics/snakemake_results/
 
       - name: Archive fenics snakemake provenance
         uses: actions/upload-artifact@v4
