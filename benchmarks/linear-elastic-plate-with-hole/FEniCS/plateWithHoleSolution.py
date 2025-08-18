@@ -8,7 +8,7 @@ class PlateWithHoleSolution:
         self.E = E
         self.nu = nu
 
-    def polar(self, x):
+    def polar(self, x: np.ndarray) -> np.ndarray:
         r = np.hypot(x[0], x[1])
         theta = np.atan2(x[1], x[0])
         return r, theta
