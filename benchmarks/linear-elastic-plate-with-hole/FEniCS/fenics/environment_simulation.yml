@@ -1,4 +1,4 @@
-name: simulation
+name: fenics_simulation
 channels:
   - conda-forge
 

@@ -1,4 +1,4 @@
-name: model-validation
+name: kratos_simulation
 channels:
   - conda-forge
 dependencies:
