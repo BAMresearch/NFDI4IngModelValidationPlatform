@@ -133,7 +133,7 @@ def msh_to_mdpa(parameter_file: str, mesh_file: str, mdpa_file: str):
 
 def create_kratos_input(
     parameter_file: str,
-    mesh_file: str,
+    mdpa_file: str,
     kratos_input_template_file: str,
     kratos_material_template_file: str,
     kratos_input_file: str,
@@ -199,8 +199,9 @@ def create_kratos_input(
 
     with open(kratos_input_template_file) as f:
         project_parameters_string = f.read()
+    #remove the file extension .mdpa
     project_parameters_string = project_parameters_string.replace(
-        r"{{MESH_FILE}}", mesh_file
+        r"{{MESH_FILE}}", os.path.splitext(mdpa_file)[0]
     )
     project_parameters_string = project_parameters_string.replace(
         r"{{MATERIAL_FILE}}", kratos_material_file
@@ -282,9 +283,9 @@ if __name__ == "__main__":
 
     create_kratos_input(
         parameter_file=args.input_parameter_file,
-        mesh_file=args.input_mesh_file,
-        input_template_file=args.input_kratos_input_template,
-        material_template_file=args.input_kratos_material_template,
+        mdpa_file=args.output_mdpa_file,
+        kratos_input_template_file=args.input_kratos_input_template,  # <-- fixed argument name
+        kratos_material_template_file=args.input_material_template,
         kratos_input_file=args.output_kratos_inputfile,
         kratos_material_file=args.output_kratos_materialfile,
     )
@@ -306,7 +307,7 @@ if __name__ == "__main__":
         parameters = json.load(f)
     config = parameters["configuration"]
     output_dir = Path(os.path.dirname(os.path.abspath(args.output_kratos_inputfile))) / str(config)
-    mesh = pyvista.read("Structure_0_1.vtk")
+    mesh = pyvista.read(str(output_dir / "Structure_0_1.vtk"))
     max_von_mises_stress = float(mesh["VON_MISES_STRESS"].max())
     print("Max Von Mises Stress:", max_von_mises_stress)
     metrics = {
@@ -315,15 +316,9 @@ if __name__ == "__main__":
     with open(args.output_metrics_file, "w") as f:
         json.dump(metrics, f, indent=4)
         
-    file_patterns = [
-        str(output_dir / "Structure_0_1.vtk"),
-    ]
+    files_to_store = [str(output_dir / "Structure_0_1.vtk")]
 
-    files_to_store = []
-    for pattern in file_patterns:
-        files_to_store.extend(Path().glob(pattern))
-    
     import zipfile
     with zipfile.ZipFile(args.output_solution_file_zip, "w") as zipf:
         for filepath in files_to_store:
-            zipf.write(filepath, arcname=f"result_{config}.vtk") 
+            zipf.write(filepath, arcname=f"result_{config}.vtk")

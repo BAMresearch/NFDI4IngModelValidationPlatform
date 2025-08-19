@@ -119,13 +119,14 @@ class PlateWithHoleSolution:
         ux, uy = self.displacement_symbolic()
         # Define symbols
         x, y = sp.symbols('x y')
-        # Substitute variable names
-        subs = {x: sp.Symbol(X_str), y: sp.Symbol(Y_str)}
-        ux_sub = ux.subs(subs)
-        uy_sub = uy.subs(subs)
-        # Convert to string
-        ux_str = str(ux_sub)
-        uy_str = str(uy_sub)
+        E, nu, a, T = sp.symbols('E nu a T')
+        subs_vars = {x: sp.Symbol(X_str), y: sp.Symbol(Y_str)}
+        subs_params = {E: self.E, nu: self.nu, a: self.radius, T: self.load}
+        ux_sub = ux.subs(subs_vars).subs(subs_params)
+        uy_sub = uy.subs(subs_vars).subs(subs_params)
+        # Convert to string using sympy.sstr for single-line output with **
+        ux_str = sp.sstr(ux_sub)
+        uy_str = sp.sstr(uy_sub)
         return ux_str, uy_str
     
     def stress(self, x: np.ndarray) -> np.ndarray:
@@ -141,5 +142,3 @@ class PlateWithHoleSolution:
         sxy = self.sxy_func(arr[0], arr[1])
         syy = self.syy_func(arr[0], arr[1])
         return sxx, sxy, syy
-
-

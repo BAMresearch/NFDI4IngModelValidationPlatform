@@ -3,9 +3,11 @@ channels:
   - conda-forge
 dependencies:
   - python=3.10
+  - meshio
   - python-gmsh
   - pint
-  - meshio
+  - pyvista
   - pip
   - pip:
     - KratosMultiphysics-all
+  - sympy

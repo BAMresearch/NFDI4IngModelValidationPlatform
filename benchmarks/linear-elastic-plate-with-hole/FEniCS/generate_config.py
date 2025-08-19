@@ -46,7 +46,7 @@ workflow_config = {
     "result_dir": result_dir,
     "configuration_to_parameter_file": configuration_to_parameter_file,
     "configurations": list(configurations.values()),
-    "tools": ["fenics"],
+    "tools": ["fenics", "kratos"],
     "benchmark": "linear-elastic-plate-with-hole"
 }
 with open("workflow_config.json", "w") as f:

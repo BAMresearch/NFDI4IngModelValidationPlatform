@@ -1,0 +1,38 @@
+import json
+
+result_dir = config["result_dir"]
+configuration_to_parameter_file = config["configuration_to_parameter_file"]
+configurations = config["configurations"]
+tool = "kratos"
+
+kratos_input_template = "{tool}/input_template.json"
+kratos_material_template = "{tool}/StructuralMaterials_template.json"
+
+rule run_simulation:
+    input: 
+        script = "{tool}/run_simulation.py",
+        parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
+        mesh = f"{result_dir}/mesh/mesh_{{configuration}}.msh",
+        kratos_input_template = kratos_input_template,
+        kratos_material_template = kratos_material_template,
+    output:
+        mdpa = f"{result_dir}/{{tool}}/mesh_{{configuration}}.mdpa",
+        kratos_inputfile = f"{result_dir}/{{tool}}/ProjectParameters_{{configuration}}.json",
+        kratos_materialfile = f"{result_dir}/{{tool}}/MaterialParameters_{{configuration}}.json",
+        zip = f"{result_dir}/{{tool}}/solution_field_data_{{configuration}}.zip",
+        metrics = f"{result_dir}/{{tool}}/solution_metrics_{{configuration}}.json",
+    conda:
+        "environment_simulation.yml",
+    shell:
+        """
+        python3 {input.script} \
+            --input_parameter_file {input.parameters} \
+            --input_mesh_file {input.mesh} \
+            --input_kratos_input_template {input.kratos_input_template} \
+            --input_material_template {input.kratos_material_template} \
+            --output_mdpa_file {output.mdpa} \
+            --output_kratos_inputfile {output.kratos_inputfile} \
+            --output_kratos_materialfile {output.kratos_materialfile} \
+            --output_solution_file_zip {output.zip} \
+            --output_metrics_file {output.metrics}
+        """
