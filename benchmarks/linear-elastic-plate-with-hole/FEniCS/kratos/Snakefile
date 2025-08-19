@@ -5,22 +5,16 @@ configuration_to_parameter_file = config["configuration_to_parameter_file"]
 configurations = config["configurations"]
 tool = "kratos"
 
-kratos_input_template = "{tool}/input_template.json"
-kratos_material_template = "{tool}/StructuralMaterials_template.json"
+kratos_input_template = f"{tool}/input_template.json"
+kratos_material_template = f"{tool}/StructuralMaterials_template.json"
 
-rule run_simulation:
-    input: 
-        script = "{tool}/run_simulation.py",
+rule mesh_to_mdpa:
+    input:
         parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
         mesh = f"{result_dir}/mesh/mesh_{{configuration}}.msh",
-        kratos_input_template = kratos_input_template,
-        kratos_material_template = kratos_material_template,
+        script = f"{tool}/msh_to_mdpa.py",
     output:
-        mdpa = f"{result_dir}/{{tool}}/mesh_{{configuration}}.mdpa",
-        kratos_inputfile = f"{result_dir}/{{tool}}/ProjectParameters_{{configuration}}.json",
-        kratos_materialfile = f"{result_dir}/{{tool}}/MaterialParameters_{{configuration}}.json",
-        zip = f"{result_dir}/{{tool}}/solution_field_data_{{configuration}}.zip",
-        metrics = f"{result_dir}/{{tool}}/solution_metrics_{{configuration}}.json",
+        mdpa = f"{result_dir}/{tool}/mesh_{{configuration}}.mdpa",
     conda:
         "environment_simulation.yml",
     shell:
@@ -28,11 +22,66 @@ rule run_simulation:
         python3 {input.script} \
             --input_parameter_file {input.parameters} \
             --input_mesh_file {input.mesh} \
+            --output_mdpa_file {output.mdpa}
+        """
+
+rule create_kratos_input:
+    input:
+        parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
+        mdpa = f"{result_dir}/{tool}/mesh_{{configuration}}.mdpa",
+        kratos_input_template = kratos_input_template,
+        kratos_material_template = kratos_material_template,
+        script = f"{tool}/create_kratos_input.py",
+    output:
+        kratos_inputfile = f"{result_dir}/{tool}/ProjectParameters_{{configuration}}.json",
+        kratos_materialfile = f"{result_dir}/{tool}/MaterialParameters_{{configuration}}.json",
+    conda:
+        "environment_simulation.yml",
+    shell:
+        """
+        python3 {input.script} \
+            --input_parameter_file {input.parameters} \
+            --input_mdpa_file {input.mdpa} \
             --input_kratos_input_template {input.kratos_input_template} \
             --input_material_template {input.kratos_material_template} \
-            --output_mdpa_file {output.mdpa} \
             --output_kratos_inputfile {output.kratos_inputfile} \
-            --output_kratos_materialfile {output.kratos_materialfile} \
+            --output_kratos_materialfile {output.kratos_materialfile}
+        """
+
+rule run_simulation:
+    input: 
+        script = f"{tool}/run_simulation.py",
+        parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
+        kratos_inputfile = f"{result_dir}/{tool}/ProjectParameters_{{configuration}}.json",
+        kratos_materialfile = f"{result_dir}/{tool}/MaterialParameters_{{configuration}}.json",
+    output:
+        result_vtk = f"{result_dir}/{tool}/{{configuration}}/Structure_0_1.vtk",
+    conda:
+        "environment_simulation.yml",
+    shell:
+        """
+        python3 {input.script} \
+            --input_parameter_file {input.parameters} \
+            --input_kratos_inputfile {input.kratos_inputfile} \
+            --input_kratos_materialfile {input.kratos_materialfile}
+        """
+
+rule postprocess_results:
+    input:
+        parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
+        result_vtk = f"{result_dir}/{tool}/{{configuration}}/Structure_0_1.vtk",
+        script = f"{tool}/postprocess_results.py",
+    output:
+        zip = f"{result_dir}/{tool}/solution_field_data_{{configuration}}.zip",
+        metrics = f"{result_dir}/{tool}/solution_metrics_{{configuration}}.json",
+    conda:
+        "environment_simulation.yml",
+    shell:
+        """
+        python3 {input.script} \
+            --input_parameter_file {input.parameters} \
+            --input_result_vtk {input.result_vtk} \
             --output_solution_file_zip {output.zip} \
             --output_metrics_file {output.metrics}
         """
+
