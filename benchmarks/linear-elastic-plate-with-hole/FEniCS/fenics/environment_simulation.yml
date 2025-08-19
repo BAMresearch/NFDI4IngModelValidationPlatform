@@ -12,3 +12,4 @@ dependencies:
   - petsc4py
   - pint
   - python-gmsh
+  - sympy

@@ -1,44 +1,12 @@
-from pathlib import Path
-from os.path import join
-
-files = list(Path(".").glob("parameters_*.json"))
-
-# extract the configuration from the parameter files
-# by reading in the json files and extracting the "configuration" value
-# configuration stores the appendix in the output files)"
-# in theory, you could make that identical so parameters_1.json with configuration "1" 
-# would produce summary_1.json
 import json
-def get_configuration(file):
-    with open(file, 'r') as f:
-        data = json.load(f)
-    # Check if "configuration" key exists, otherwise use the file name
-    if "configuration" in data:
-        return data["configuration"]
-    # Fallback to using the file name if "configuration" is not present
-    # Assuming the file name is in the format "parameters_<configuration>.json"
-    if file.stem.startswith("parameters_"):
-        return file.stem.split("_")[1]
-    # If no configuration is found, raise an error
-    raise ValueError(f"Configuration key not found for file: {file}")
+configfile: "workflow_config.json"
 
-# Create a dictionary of configurations (key is the name of the parameter file)
-# configurations: {Path("parameters_1.json"): "1", ...}
-configurations = {file: get_configuration(file) for file in files if file.is_file()}
+result_dir = config["result_dir"]
+configuration_to_parameter_file = config["configuration_to_parameter_file"]
+configurations = config["configurations"]
+tools = config["tools"]
+benchmark = config["benchmark"]
 
-# Check for duplicate configuration values (the configurations should be unique)
-config_values = list(configurations.values())
-duplicates = set([x for x in config_values if config_values.count(x) > 1])
-if duplicates:
-    raise ValueError(f"Duplicate configuration values found in parameter files: {', '.join(duplicates)}")
-
-# Reverse mapping for easy lookup by configuration name
-configuration_to_parameter_file = {v: str(k) for k, v in configurations.items()}
-
-tools = ["fenics"]
-benchmark = "linear-elastic-plate-with-hole"
-# results are stored in snakemake_results/linear-elastic-plate-with-hole/fenics
-result_dir = join("snakemake_results", benchmark)
 
 rule all:
     input:
@@ -59,35 +27,30 @@ rule create_mesh:
         python3 {input.script} --input_parameter_file {input.parameters} --output_mesh_file {output.mesh}
         """
 
-rule run_simulation:
-    input: 
-        script = "{tool}/run_simulation.py",
-        parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
-        mesh = f"{result_dir}/mesh/mesh_{{configuration}}.msh",
-    output:
-        zip = f"{result_dir}/{{tool}}/solution_field_data_{{configuration}}.zip",
-        metrics = f"{result_dir}/{{tool}}/solution_metrics_{{configuration}}.json",
-    conda:
-        "{tool}/environment_simulation.yml",
-    shell:
-        """
-        python3 {input.script} --input_parameter_file {input.parameters} --input_mesh_file {input.mesh} --output_solution_file_zip {output.zip} --output_metrics_file {output.metrics}
-        """
+# Include tool-specific rules
+# The should have at least the mesh file and the parameters as input
+# and output for each configuration a 
+# solution_metrics_{configuration}.json and 
+# and solution_field_data_{configuration}.zip whee all the visualization files are stored
+# (e.g. vtk)
+for tool in tools:
+    include: f"{tool}/Snakefile"
+
 
 rule summary:
     input:
         # the summary is performed for all configurations saved into a single file 
         # (snakemake_results/linear-elastic-plate-with-hole/fenics/summary.json)
-        parameters = expand("{param}", param=[configuration_to_parameter_file[c] for c in configurations.values()]),
-        mesh = expand(f"{result_dir}/mesh/mesh_{{configuration}}.msh", configuration=configurations.values()),
+        parameters = expand("{param}", param=[configuration_to_parameter_file[c] for c in configurations]),
+        mesh = expand(f"{result_dir}/mesh/mesh_{{configuration}}.msh", configuration=configurations),
         metrics = lambda wildcards: expand(
             f"{result_dir}/{{tool}}/solution_metrics_{{configuration}}.json",
-            tool=[wildcards.tool], configuration=configurations.values()
+            tool=[wildcards.tool], configuration=configurations
         ),
         solution_field_data = lambda wildcards: expand(
             f"{result_dir}/{{tool}}/solution_field_data_{{configuration}}.zip",
-            tool=[wildcards.tool], configuration=configurations.values()
-        ),    
+            tool=[wildcards.tool], configuration=configurations
+        ),
     output:
         summary_json = f"{result_dir}/{{tool}}/summary.json",
     conda: "environment_postprocessing.yml",
@@ -96,7 +59,7 @@ rule summary:
         from pathlib import Path
 
         all_summaries = []
-        for idx, config in enumerate(configurations.values()):
+        for idx, config in enumerate(configurations):
             summary = {}
             summary["benchmark"] = benchmark
             with open(input.parameters[idx], "r") as param_file:

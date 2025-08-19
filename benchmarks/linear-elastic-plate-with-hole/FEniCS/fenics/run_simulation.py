@@ -76,7 +76,7 @@ def run_simulation(
         .magnitude
     )
 
-    solution = PlateWithHoleSolution(
+    analytical_solution = PlateWithHoleSolution(
         E=E,
         nu=nu,
         radius=radius,
@@ -118,7 +118,7 @@ def run_simulation(
 
     u = df.fem.Function(V, name="u")
     u_prescribed = df.fem.Function(V, name="u_prescribed")
-    u_prescribed.interpolate(lambda x: solution.displacement(x))
+    u_prescribed.interpolate(lambda x: analytical_solution.displacement(x))
     u_prescribed.x.scatter_forward()
 
     u_ = ufl.TestFunction(V)

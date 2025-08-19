@@ -1,0 +1,11 @@
+name: model-validation
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - python-gmsh
+  - pint
+  - meshio
+  - pip
+  - pip:
+    - KratosMultiphysics-all

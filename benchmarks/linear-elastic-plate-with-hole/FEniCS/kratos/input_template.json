@@ -1,0 +1,142 @@
+{
+    "problem_data": {
+        "problem_name": "PlateWithHole",
+        "parallel_type": "OpenMP",
+        "start_time": 0.0,
+        "end_time": 1.0,
+        "echo_level": 0
+    },
+    "solver_settings": {
+        "solver_type": "Static",
+        "model_part_name": "Structure",
+        "echo_level": 1,
+        "domain_size": 2,
+        "analysis_type": "linear",
+        "model_import_settings": {
+            "input_type": "mdpa",
+            "input_filename": "{{MESH_FILE}}"
+        },
+        "material_import_settings": {
+            "materials_filename": "{{MATERIAL_FILE}}"
+        },
+        "time_stepping": {
+            "time_step": 1.0
+        }
+    },
+    "processes": {
+        "constraints_process_list": [
+            {
+                "python_module": "assign_vector_variable_process",
+                "kratos_module": "KratosMultiphysics",
+                "Parameters": {
+                    "model_part_name": "Structure.boundary_left",
+                    "variable_name": "DISPLACEMENT",
+                    "constrained": [
+                        true,
+                        false,
+                        true
+                    ],
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "interval": [
+                        0.0,
+                        "End"
+                    ]
+                }
+            },
+            {
+                "python_module": "assign_vector_variable_process",
+                "kratos_module": "KratosMultiphysics",
+                "Parameters": {
+                    "model_part_name": "Structure.boundary_bottom",
+                    "variable_name": "DISPLACEMENT",
+                    "constrained": [
+                        false,
+                        true,
+                        true
+                    ],
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "interval": [
+                        0.0,
+                        "End"
+                    ]
+                }
+            },
+            {
+                "python_module": "assign_vector_variable_process",
+                "kratos_module": "KratosMultiphysics",
+                "Parameters": {
+                    "model_part_name": "Structure.boundary_right",
+                    "variable_name": "DISPLACEMENT",
+                    "constrained": [
+                        true,
+                        true,
+                        true
+                    ],
+                    "value": [
+                        "{{BOUNDARY_RIGHT_DISPLACEMENT_X}}",
+                        "{{BOUNDARY_RIGHT_DISPLACEMENT_Y}}",
+                        0.0
+                    ],
+                    "interval": [
+                        0.0,
+                        "End"
+                    ]
+                }
+            },
+            {
+                "python_module": "assign_vector_variable_process",
+                "kratos_module": "KratosMultiphysics",
+                "Parameters": {
+                    "model_part_name": "Structure.boundary_top",
+                    "variable_name": "DISPLACEMENT",
+                    "constrained": [
+                        true,
+                        true,
+                        true
+                    ],
+                    "value": [
+                        "{{BOUNDARY_TOP_DISPLACEMENT_X}}",
+                        "{{BOUNDARY_TOP_DISPLACEMENT_Y}}",
+                        0.0
+                    ],
+                    "interval": [
+                        0.0,
+                        "End"
+                    ]
+                }
+            }
+        ],
+        "loads_process_list": [],
+        "list_other_processes": []
+    },
+    "output_processes": {
+        "vtk_output": [
+            {
+                "python_module": "vtk_output_process",
+                "kratos_module": "KratosMultiphysics",
+                "Parameters": {
+                    "model_part_name": "Structure",
+                    "file_format": "binary",
+                    "output_path": "{{OUTPUT_PATH}}",
+                    "output_sub_model_parts": false,
+                    "output_interval": 1,
+                    "nodal_solution_step_data_variables": [
+                        "DISPLACEMENT"
+                    ],
+                    "gauss_point_variables_extrapolated_to_nodes": [
+                        "CAUCHY_STRESS_VECTOR",
+                        "VON_MISES_STRESS"
+                    ]
+                }
+            }
+        ]
+    }
+}
