@@ -1,4 +1,4 @@
-name: model-validation
+name: mesh-generation
 channels:
   - conda-forge
 
