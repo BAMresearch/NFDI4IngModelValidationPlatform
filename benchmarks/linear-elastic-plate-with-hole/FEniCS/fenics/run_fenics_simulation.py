@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from plateWithHoleSolution import PlateWithHoleSolution
 
 
-def run_simulation(
+def run_fenics_simulation(
     parameter_file: str, mesh_file: str, solution_file_zip: str, metrics_file: str
 ) -> None:
     ureg = UnitRegistry()
@@ -277,7 +277,7 @@ if __name__ == "__main__":
         help="Path to the output metrics JSON file (output)",
     )
     args, _ = parser.parse_known_args()
-    run_simulation(
+    run_fenics_simulation(
         args.input_parameter_file,
         args.input_mesh_file,
         args.output_solution_file_zip,

@@ -1,9 +1,10 @@
 import json
+import os
 
+tool = "kratos"
 result_dir = config["result_dir"]
 configuration_to_parameter_file = config["configuration_to_parameter_file"]
 configurations = config["configurations"]
-tool = "kratos"
 
 kratos_input_template = f"{tool}/input_template.json"
 kratos_material_template = f"{tool}/StructuralMaterials_template.json"
@@ -48,9 +49,9 @@ rule create_kratos_input:
             --output_kratos_materialfile {output.kratos_materialfile}
         """
 
-rule run_simulation:
+rule run_kratos_simulation:
     input: 
-        script = f"{tool}/run_simulation.py",
+        script = f"{tool}/run_kratos_simulation.py",
         parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
         kratos_inputfile = f"{result_dir}/{tool}/ProjectParameters_{{configuration}}.json",
         kratos_materialfile = f"{result_dir}/{tool}/MaterialParameters_{{configuration}}.json",
@@ -66,7 +67,7 @@ rule run_simulation:
             --input_kratos_materialfile {input.kratos_materialfile}
         """
 
-rule postprocess_results:
+rule postprocess_kratos_results:
     input:
         parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
         result_vtk = f"{result_dir}/{tool}/{{configuration}}/Structure_0_1.vtk",

@@ -1,14 +1,15 @@
 import json
+import os
 
+tool = "fenics"
 result_dir = config["result_dir"]
 configuration_to_parameter_file = config["configuration_to_parameter_file"]
 configurations = config["configurations"]
-tool = "fenics"
 
 
-rule run_simulation:
+rule run_fenics_simulation:
     input: 
-        script = "{tool}/run_simulation.py",
+        script = "{tool}/run_fenics_simulation.py",
         parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
         mesh = f"{result_dir}/mesh/mesh_{{configuration}}.msh",
     output:
