@@ -192,19 +192,27 @@ def run_fenics_simulation(
     output_dir = Path(solution_file_zip).parent
     with df.io.VTKFile(
         MPI.COMM_WORLD,
-        str(output_dir / f"solution_field_data_displacements_{parameters['configuration']}.vtk"),
+        str(
+            output_dir
+            / f"solution_field_data_displacements_{parameters['configuration']}.vtk"
+        ),
         "w",
     ) as vtk:
         vtk.write_function(u, 0.0)
     with df.io.VTKFile(
         MPI.COMM_WORLD,
-        str(output_dir / f"solution_field_data_stress_{parameters['configuration']}.vtk"),
+        str(
+            output_dir / f"solution_field_data_stress_{parameters['configuration']}.vtk"
+        ),
         "w",
     ) as vtk:
         vtk.write_function(stress_nodes_red, 0.0)
     with df.io.VTKFile(
         MPI.COMM_WORLD,
-        str(output_dir / f"solution_field_data_mises_stress_{parameters['configuration']}.vtk"),
+        str(
+            output_dir
+            / f"solution_field_data_mises_stress_{parameters['configuration']}.vtk"
+        ),
         "w",
     ) as vtk:
         vtk.write_function(mises_stress_nodes, 0.0)
@@ -235,18 +243,28 @@ def run_fenics_simulation(
     if MPI.COMM_WORLD.rank == 0:
         with open(metrics_file, "w") as f:
             json.dump(metrics, f, indent=4)
-        # store all .pvd, .vtu, and .vtk files for this configuration in the zip file
+        # store all .vtu, .pvtu and .vtk files for this configuration in the zip file
         import zipfile
 
         config = parameters["configuration"]
         file_patterns = [
-            str(output_dir / f"solution_field_data_displacements_{config}*.pvd"),
-            str(output_dir / f"solution_field_data_stress_{config}*.vtu"),
-            str(output_dir / f"solution_field_data_mises_stress_{config}*.vtk"),
+            str(output_dir / f"solution_field_data_displacements_{config}*"),
+            str(output_dir / f"solution_field_data_stress_{config}*"),
+            str(output_dir / f"solution_field_data_mises_stress_{config}*"),
         ]
+        print(file_patterns)
+
+        # assert False
         files_to_store = []
         for pattern in file_patterns:
-            files_to_store.extend(Path().glob(pattern))
+            files_to_store.extend(
+                filter(
+                    # filter for all file endings because this is not possible with glob
+                    lambda path: path.suffix in [".vtk", ".vtu", ".pvtu"],
+                    Path().glob(pattern),
+                )
+            )
+            # files_to_store.extend(Path().glob(pattern))
         with zipfile.ZipFile(solution_file_zip, "w") as zipf:
             for filepath in files_to_store:
                 zipf.write(filepath, arcname=filepath.name)
