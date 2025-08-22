@@ -252,9 +252,7 @@ def run_fenics_simulation(
             str(output_dir / f"solution_field_data_stress_{config}*"),
             str(output_dir / f"solution_field_data_mises_stress_{config}*"),
         ]
-        print(file_patterns)
 
-        # assert False
         files_to_store = []
         for pattern in file_patterns:
             files_to_store.extend(
