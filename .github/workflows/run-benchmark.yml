@@ -32,6 +32,9 @@ jobs:
             activate-environment: model-validation 
             use-mamba: true
 
+      - name: Set strict channel priority
+        run: conda config --set channel_priority strict
+        
       - name: Update environment
         run: mamba env update -n model-validation -f environment_benchmarks.yml
 
