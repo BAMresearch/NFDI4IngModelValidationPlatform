@@ -35,10 +35,10 @@ jobs:
       - name: Update environment
         run: mamba env update -n model-validation -f environment_benchmarks.yml
 
-      - name: run-fenics-benchmarks
+      - name: run-linear-elastic-plate-with-hole-benchmarks
         shell: bash -l {0}
         run: |
-          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/FEniCS/
+          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
           python generate_config.py
           snakemake --use-conda --force --cores 'all'
           snakemake --use-conda --force --cores 'all' --reporter metadata4ing
@@ -49,32 +49,20 @@ jobs:
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/FEniCS_nextflow/
           nextflow run main.nf -plugins nf-prov@1.4.0
       
-      - name: run-Kratos-benchmarks
-        shell: bash -l {0}
-        run: |
-          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/Kratos/
-          snakemake --use-conda --force --cores 'all'
-
-      - name: Archive fenics data
+      - name: Archive Linear Elastic plate with a hole benchmark data from snakemake
         uses: actions/upload-artifact@v4
         with:
-            name: fenics-output
+            name: linear-elastic-plate-with-hole_snakemake
             path: |
-              benchmarks/linear-elastic-plate-with-hole/fenics/snakemake_results/
+              benchmarks/linear-elastic-plate-with-hole/snakemake_results/
 
-      - name: Archive fenics snakemake provenance
+      - name: Archive Linear Elastic plate with a hole benchmark data from snakemake provenance
         uses: actions/upload-artifact@v4
         with:
-            name: fenics-snakemake-provenance
+            name: linear-elastic-plate-with-hole_snakemake_provenance
             path: |
-              benchmarks/linear-elastic-plate-with-hole/FEniCS/*.zip
+              benchmarks/linear-elastic-plate-with-hole/*.zip
 
-      - name: Archive kratos data
-        uses: actions/upload-artifact@v4
-        with:
-            name: kratos-output
-            path: |
-              benchmarks/linear-elastic-plate-with-hole/Kratos/data
 
       - name: Archive fenics nextflow data
         uses: actions/upload-artifact@v4
