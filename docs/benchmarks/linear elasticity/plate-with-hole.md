@@ -1,5 +1,7 @@
 # Infinite linear elastic plate with hole
 
+## Problem description
+
 We consider the case of an infinite plate with a circular hole with radius $a$ in the center. The plate is subjected to uniform tensile load $p$ at infinity. The analytical solution for the stress field has been derived by Kirsch in 1898 [@Kirsch1898].
 <!-- include an svg picture here-->
 ![Infinite linear elastic plate with hole](plate-with-hole.svg)
@@ -64,11 +66,18 @@ $$
 \boldsymbol{\sigma}(\boldsymbol{\varepsilon}) &= \frac{E}{1-\nu^2}\left((1-\nu)\boldsymbol{\varepsilon} + \nu \mathrm{tr}\boldsymbol{\varepsilon}\boldsymbol I_2\right) && \text{Plane stress law}\\
 \boldsymbol u_y &=0 & \text{ on } \Gamma_\mathrm{D_1}& \text{ Dirichlet BC}\\
 \boldsymbol u_x &=0 & \text{ on } \Gamma_\mathrm{D_2}& \text{ Dirichlet BC}\\
-\boldsymbol t &= \boldsymbol{\sigma}_\mathrm{analytical} \cdot \boldsymbol n & \text{ on } \Gamma_\mathrm{N} & \text{ Neumann BC}\\
+\boldsymbol t &= \tilde{\boldsymbol{t}} & \text{ on } \Gamma_\mathrm{N} & \text{ Neumann BC}\\
 \end{aligned}
 $$
 
-with the material parameters $E,\nu$ -- the Youngs modulus and Poisson ratio.
+with the material parameters $E,\nu$ -- the Youngs modulus and Poisson ratio. The traction $\boldsymbol t$ is the Cauchy stress tensor multiplied by the normal vector on the boundary $\boldsymbol \sigma \cdot \boldsymbol n$. Prescribing a value $\tilde{\boldsymbol t}$ is referred to as a Neumann boundary condition in computational mechanics. In this specific example, 
+
+$$
+\tilde{\boldsymbol t} =\boldsymbol\sigma_\mathrm{analytical} \cdot \boldsymbol{n}.
+$$
+
+## Weak formulation and numerical solution
+
 In the weak formulation of the problem, we want to find $\boldsymbol u$ such that
 
 $$
@@ -83,6 +92,25 @@ B(\boldsymbol u,\delta\boldsymbol u) &= \int_{\Omega} \boldsymbol\varepsilon(\de
     f(\delta\boldsymbol u)&=\int_{\Gamma_{\mathrm{N}}} {\boldsymbol{t}}\cdot\delta\boldsymbol{u}\mathrm{d}{\boldsymbol{s}}.
 \end{aligned}
 $$
+
+
+In order to solve the weak formulation, the finite-element method (FEM) can be used. This method discretized the domain $\Omega$ into so called finite elements that can for example be triangles or quadrilaterals in 2D. On these elements, ansatz functions are defined such that they are continous between elements. These functions form a basis for the solution space for an approximate solution $\boldsymbol{u}_h$ of the problem.
+
+## Comparison of approximate solution with analytical solution
+
+The approxiamte solution and the analytical solution can be compared with the $L_2$ norm which is defined as
+
+$$
+\Vert \boldsymbol{u}\Vert_{L_2} = \sqrt{\int_\Omega \Vert\boldsymbol{u}(\boldsymbol{x})\Vert_2^2 \mathrm d \boldsymbol x}
+$$
+
+and the error in the $L_2$ norm
+
+$$
+e_{L_2} = \Vert \boldsymbol{u}-\boldsymbol{u}_h\Vert_{L_2}.
+$$
+
+With that metric, we can perform a convergence analysis for different approximations $\boldsymbol{u}_h$ which differ in the element size $h$. Plotting the error over the used element-size in a log-log plot lets us determine the convergence order of the approximation.
 
 ## Table of parameters
 
