@@ -6,7 +6,7 @@ We consider the case of an infinite plate with a circular hole with radius $a$ i
 <!-- include an svg picture here-->
 ![Infinite linear elastic plate with hole](plate-with-hole.svg)
 
-The solution is given in polar stress components at a point with polar coordinates $(r,\theta)\in\mathbb R_+ \times \mathbb R$. Assume that the infinite plate is loaded in $x$-direction with load $p$, then the polar stress components are given by
+The solution is given in polar stress components of the Cauchy stress tensor $\boldsymbol \sigma$ at a point with polar coordinates $(r,\theta)\in\mathbb R_+ \times \mathbb R$. Assume that the infinite plate is loaded in $x$-direction with load $p$, then the polar stress components are given by
 
 $$
     \begin{aligned}
@@ -29,7 +29,7 @@ $$
 with the full stress tensor solution given by
 
 $$
-\boldsymbol\sigma_\mathrm{analytical} (r,\theta)= \begin{bmatrix} \sigma_{xx} & \sigma_{xy}\\\ \sigma_{xy} & \sigma_{yy} \end{bmatrix}.
+\boldsymbol\sigma_\mathrm{analytical} (r,\theta)= \begin{bmatrix} \sigma_{xx}(r,\theta) & \sigma_{xy}(r,\theta)\\\ \sigma_{xy}(r,\theta) & \sigma_{yy}(r,\theta) \end{bmatrix}.
 $$
 
 or for a cartesion point $(x,y)\in \mathbb R_+^2$:
@@ -70,7 +70,7 @@ $$
 \end{aligned}
 $$
 
-with the material parameters $E,\nu$ -- the Youngs modulus and Poisson ratio. The traction $\boldsymbol t$ is the Cauchy stress tensor multiplied by the normal vector on the boundary $\boldsymbol \sigma \cdot \boldsymbol n$. Prescribing a value $\tilde{\boldsymbol t}$ is referred to as a Neumann boundary condition in computational mechanics. In this specific example, 
+with the material parameters $E,\nu$ -- the Youngs modulus and Poisson ratio. The traction $\boldsymbol t$ is the Cauchy stress tensor multiplied by the normal vector on the boundary $\boldsymbol \sigma \cdot \boldsymbol n$. Prescribing a value $\tilde{\boldsymbol t}$ on a subset of the boundary $\partial\Omega$ is referred to as a Neumann boundary condition in computational mechanics. In this specific example, 
 
 $$
 \tilde{\boldsymbol t} =\boldsymbol\sigma_\mathrm{analytical} \cdot \boldsymbol{n}.
@@ -94,7 +94,7 @@ B(\boldsymbol u,\delta\boldsymbol u) &= \int_{\Omega} \boldsymbol\varepsilon(\de
 $$
 
 
-In order to solve the weak formulation, the finite-element method (FEM) can be used. This method discretized the domain $\Omega$ into so called finite elements that can for example be triangles or quadrilaterals in 2D. On these elements, ansatz functions are defined such that they are continous between elements. These functions form a basis for the solution space for an approximate solution $\boldsymbol{u}_h$ of the problem.
+In order to solve the weak formulation, the finite-element method (FEM) can be used. This method discretizes the domain $\Omega$ into so called finite elements that can for example be triangles or quadrilaterals in 2D. On these elements, ansatz functions are defined such that they are continous on the boundaries between elements. These functions form a basis for the solution space for an approximate solution $\boldsymbol{u}_h$ of the problem.
 
 ## Comparison of approximate solution with analytical solution
 
@@ -110,7 +110,20 @@ $$
 e_{L_2} = \Vert \boldsymbol{u}-\boldsymbol{u}_h\Vert_{L_2}.
 $$
 
-With that metric, we can perform a convergence analysis for different approximations $\boldsymbol{u}_h$ which differ in the element size $h$. Plotting the error over the used element-size in a log-log plot lets us determine the convergence order of the approximation.
+Alternatively, the sup norm can be used which is defined as
+
+$$
+\Vert \boldsymbol{u}\Vert_{\inf} = \sup_{\boldsymbol x} \Vert \boldsymbol{u}(\boldsymbol{x}) \Vert
+$$
+
+and the error in the sup norm
+
+$$
+e_{\inf} = \Vert \boldsymbol{u}-\boldsymbol{u}_h\Vert_{\inf}.
+$$
+
+
+With these metrices, we can perform a convergence analysis for different approximations $\boldsymbol{u}_h$ which differ in the element size $h$. Plotting the error over the used element-size in a log-log plot lets us determine the convergence order of the approximation.
 
 ## Table of parameters
 
