@@ -1,6 +1,6 @@
 
-include { run_simulation } from './fenics/fenics.nf'
-
+include { run_fenics_simulation } from './fenics/fenics.nf'
+include { kratos_workflow } from './kratos/kratos.nf'
 
 process create_mesh {
     //publishDir "$result_dir/mesh/"
@@ -33,10 +33,11 @@ process summary{
     val solution_metrics
     val solution_field_data
     val benchmark
+    val tool
 
     output:
-    path("summary.json")
-
+    path("$tool/summary.json")
+    
     script:
     """
     #!/usr/bin/env python
@@ -75,6 +76,8 @@ workflow {
     def workflow_config_file = new groovy.json.JsonSlurper().parseText(jsonFile.text)
     def configurations = workflow_config_file.configurations
     def configurations_to_parameter_file = workflow_config_file.configuration_to_parameter_file
+    def benchmark = workflow_config_file.benchmark
+    def tools = workflow_config_file.tools
     //def result_dir = workflow_config_file.result_dir
 
     //println configurations
@@ -97,32 +100,28 @@ workflow {
     input_process_run_simulation = ch_configurations.merge(ch_parameter_files).join(output_process_create_mesh)
     
     def ch_sim_python_script = Channel.value(file('./fenics/run_fenics_simulation.py'))
+    def ch_tools = Channel.fromList(tools)
 
     //Running Simulation
-    output_process_run_simulation = run_simulation(ch_sim_python_script, input_process_run_simulation)
-
-    //Each entry in the channel defined below is a tuple: (configuration, parameter_file, mesh_file, solution_field_data, solution_metrics)
-    matched_channels = input_process_run_simulation.join(output_process_run_simulation)
-
-    input_summary_configuration = matched_channels.map{a,b,c,d,e -> a}
-    input_summary_parameter_file = matched_channels.map{a,b,c,d,e -> b }
-    input_summary_mesh = matched_channels.map{a,b,c,d,e -> c }
-    input_summary_solution_field = matched_channels.map{a,b,c,d,e -> d }
-    input_summary_metrics = matched_channels.map{a,b,c,d,e -> e }
-
-    def benchmark = workflow_config_file.benchmark
-    def ch_benchmark = Channel.value(benchmark)
-
-    //Summarizing results
-    summary(input_summary_configuration.collect(), input_summary_parameter_file.collect(), input_summary_mesh.collect(), input_summary_metrics.collect(),input_summary_solution_field.collect(), ch_benchmark)
 
 
-    ////mesh_file.collect().view()
+    kratos_workflow(input_process_run_simulation)
+    //output_process_run_simulation = kratos_workflow.out
+    //output_process_run_simulation = run_fenics_simulation(ch_sim_python_script, input_process_run_simulation)
+//
+    ////Each entry in the channel defined below is a tuple: (configuration, parameter_file, mesh_file, solution_field_data, solution_metrics)
+    //matched_channels = input_process_run_simulation.join(output_process_run_simulation)
+//
+    //input_summary_configuration = matched_channels.map{a,b,c,d,e -> a}
+    //input_summary_parameter_file = matched_channels.map{a,b,c,d,e -> b }
+    //input_summary_mesh = matched_channels.map{a,b,c,d,e -> c }
+    //input_summary_solution_field = matched_channels.map{a,b,c,d,e -> d }
+    //input_summary_metrics = matched_channels.map{a,b,c,d,e -> e }
+//
     //
-    //summary(config.collect(), param_file.collect(), mesh_file.collect(), solution_field_data.collect(), solution_metrics.collect(), ch_benchmark)
-    ////ch_configurations.view()
-    ////ch_parameter_files.view()
-    ////ch_mesh_files.view()
-
+    //def ch_benchmark = Channel.value(benchmark)
+//
+    ////Summarizing results
+    //summary(input_summary_configuration.collect(), input_summary_parameter_file.collect(), input_summary_mesh.collect(), input_summary_metrics.collect(),input_summary_solution_field.collect(), ch_benchmark, ch_tools)
 
 }
