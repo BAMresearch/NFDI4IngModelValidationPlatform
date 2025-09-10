@@ -44,18 +44,25 @@ jobs:
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
           python generate_config.py
 
-      - name: run-linear-elastic-plate-with-hole-benchmarks_snakemake
+      - name: run_linear-elastic-plate-with-hole-benchmarks_snakemake
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
           snakemake --use-conda --force --cores 'all'
           snakemake --use-conda --force --cores 'all' --reporter metadata4ing
 
-      - name: run-linear-elastic-plate-with-hole-benchmarks_nextflow
+      - name: run_linear-elastic-plate-with-hole-benchmarks_nextflow
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
           nextflow run main.nf -plugins nf-prov@1.4.0
+
+      - name: convert_nextflow_shortcut_outputs_to_files_for_artifact
+        shell: bash -l {0}
+        run: |
+          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
+          cp -rL nextflow_results nextflow_results_for_artifact
+
       
       - name: Archive Linear Elastic plate with a hole benchmark data from snakemake
         uses: actions/upload-artifact@v4
@@ -77,8 +84,7 @@ jobs:
         with:
             name: linear-elastic-plate-with-hole_nextflow
             path: |
-              benchmarks/linear-elastic-plate-with-hole/nextflow_results/work/**
-              !benchmarks/linear-elastic-plate-with-hole/FEniCS_nextflow/work/conda/**
+              benchmarks/linear-elastic-plate-with-hole/nextflow_results_for_artifact/
 
       - name: Archive Linear Elastic plate with a hole benchmark data from nextflow provenance
         uses: actions/upload-artifact@v4
