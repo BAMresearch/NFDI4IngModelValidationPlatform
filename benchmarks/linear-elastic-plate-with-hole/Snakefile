@@ -1,5 +1,5 @@
 import json
-configfile: "workflow_config.json"
+configfile: "workflow_config_snakemake.json"
 
 result_dir = config["result_dir"]
 configuration_to_parameter_file = config["configuration_to_parameter_file"]

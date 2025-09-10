@@ -38,18 +38,23 @@ jobs:
       - name: Update environment
         run: mamba env update -n model-validation -f environment_benchmarks.yml
 
-      - name: run-linear-elastic-plate-with-hole-benchmarks
+      - name: generate-config-files
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
           python generate_config.py
+
+      - name: run-linear-elastic-plate-with-hole-benchmarks_snakemake
+        shell: bash -l {0}
+        run: |
+          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
           snakemake --use-conda --force --cores 'all'
           snakemake --use-conda --force --cores 'all' --reporter metadata4ing
 
-      - name: run-fenics-nextflow-benchmark
+      - name: run-linear-elastic-plate-with-hole-benchmarks_nextflow
         shell: bash -l {0}
         run: |
-          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/FEniCS_nextflow/
+          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
           nextflow run main.nf -plugins nf-prov@1.4.0
       
       - name: Archive Linear Elastic plate with a hole benchmark data from snakemake
@@ -67,17 +72,18 @@ jobs:
               benchmarks/linear-elastic-plate-with-hole/*.zip
 
 
-      - name: Archive fenics nextflow data
+      - name: Archive Linear Elastic plate with a hole benchmark data from nextflow
         uses: actions/upload-artifact@v4
         with:
-            name: fenics-nextflow-output
+            name: linear-elastic-plate-with-hole_nextflow
             path: |
-              benchmarks/linear-elastic-plate-with-hole/FEniCS_nextflow/work/**
+              benchmarks/linear-elastic-plate-with-hole/nextflow_results/work/**
               !benchmarks/linear-elastic-plate-with-hole/FEniCS_nextflow/work/conda/**
 
-      - name: Archive fenics nextflow provenance
+      - name: Archive Linear Elastic plate with a hole benchmark data from nextflow provenance
         uses: actions/upload-artifact@v4
         with:
-            name: fenics-nextflow-provenance
+            name: linear-elastic-plate-with-hole_nextflow_provenance
             path: |
-              benchmarks/linear-elastic-plate-with-hole/FEniCS_nextflow/provenance.json
+              benchmarks/linear-elastic-plate-with-hole/nf_prov_dag.html
+              benchmarks/linear-elastic-plate-with-hole/nf_prov_legacy.json
