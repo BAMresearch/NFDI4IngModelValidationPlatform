@@ -41,10 +41,6 @@ configuration_to_parameter_file = {v: str(k) for k, v in configurations.items()}
 
 benchmark = "linear-elastic-plate-with-hole"
 
-# results are stored in snakemake_results/linear-elastic-plate-with-hole/fenics
-result_dir_snakemake = join("snakemake_results", benchmark)
-result_dir_nextflow = join("nextflow_results", benchmark)
-
 # Template for workflow config
 workflow_config = {
     "configuration_to_parameter_file": configuration_to_parameter_file,
