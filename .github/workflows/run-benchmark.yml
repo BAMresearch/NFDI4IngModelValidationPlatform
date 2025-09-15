@@ -61,12 +61,12 @@ jobs:
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
-          cp -rL nextflow_results nextflow_results_for_artifact
-          zip -r nextflow_results_for_artifact.zip nextflow_results_for_artifact/
+          cp -rL nextflow_results nextflow_artifact
+          zip -r nextflow_artifact.zip nextflow_artifact/
 
       - name: Archive Linear Elastic plate with a hole benchmark data for snakemake and nextflow
         uses: actions/upload-artifact@v4
         with:
-            name: linear-elastic-plate-with-hole_snakemake_provenance
+            name: results_linear-elastic-plate-with-hole
             path: |
               benchmarks/linear-elastic-plate-with-hole/*.zip
