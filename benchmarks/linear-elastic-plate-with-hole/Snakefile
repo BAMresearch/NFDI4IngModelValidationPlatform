@@ -1,7 +1,7 @@
 import json
-configfile: "workflow_config_snakemake.json"
+configfile: "workflow_config.json"
 
-result_dir = config["result_dir"]
+result_dir = "snakemake_results/" + config["benchmark"] 
 configuration_to_parameter_file = config["configuration_to_parameter_file"]
 configurations = config["configurations"]
 tools = config["tools"]
@@ -41,6 +41,7 @@ rule summary:
     input:
         # the summary is performed for all configurations saved into a single file 
         # (snakemake_results/linear-elastic-plate-with-hole/fenics/summary.json)
+        script = "summarise_results.py",
         parameters = expand("{param}", param=[configuration_to_parameter_file[c] for c in configurations]),
         mesh = expand(f"{result_dir}/mesh/mesh_{{configuration}}.msh", configuration=configurations),
         metrics = lambda wildcards: expand(
@@ -54,21 +55,14 @@ rule summary:
     output:
         summary_json = f"{result_dir}/{{tool}}/summary.json",
     conda: "environment_postprocessing.yml",
-    run:
-        import json
-        from pathlib import Path
-
-        all_summaries = []
-        for idx, config in enumerate(configurations):
-            summary = {}
-            summary["benchmark"] = benchmark
-            with open(input.parameters[idx], "r") as param_file:
-                summary["parameters"] = json.load(param_file)
-            summary["mesh"] = f"{config}/mesh"
-            with open(input.metrics[idx], "r") as metrics_file:
-                summary["metrics"] = json.load(metrics_file)
-            summary["configuration"] = config
-            all_summaries.append(summary)
-
-        with open(output.summary_json, "w") as f:
-            json.dump(all_summaries, f, indent=4)
+    shell:
+        """
+        python3 {input.script} \
+            --input_configuration {configurations} \
+            --input_parameter_file {input.parameters} \
+            --input_mesh_file {input.mesh} \
+            --input_solution_metrics {input.metrics} \
+            --input_solution_field_data {input.solution_field_data} \
+            --input_benchmark {benchmark} \
+            --output_summary_json {output.summary_json}
+        """

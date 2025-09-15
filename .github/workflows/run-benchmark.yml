@@ -55,41 +55,18 @@ jobs:
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
-          nextflow run main.nf -plugins nf-prov@1.4.0
-
-      - name: convert_nextflow_shortcut_outputs_to_files_for_artifact
+          nextflow run main.nf -params-file workflow_config.json -plugins nf-prov@1.4.0
+          
+      - name: convert_nextflow_shortcut_outputs_to_files_and_zip_them_for_artifact
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
           cp -rL nextflow_results nextflow_results_for_artifact
+          zip -r nextflow_results_for_artifact.zip nextflow_results_for_artifact/
 
-      
-      - name: Archive Linear Elastic plate with a hole benchmark data from snakemake
-        uses: actions/upload-artifact@v4
-        with:
-            name: linear-elastic-plate-with-hole_snakemake
-            path: |
-              benchmarks/linear-elastic-plate-with-hole/snakemake_results/
-
-      - name: Archive Linear Elastic plate with a hole benchmark data from snakemake provenance
+      - name: Archive Linear Elastic plate with a hole benchmark data for snakemake and nextflow
         uses: actions/upload-artifact@v4
         with:
             name: linear-elastic-plate-with-hole_snakemake_provenance
             path: |
               benchmarks/linear-elastic-plate-with-hole/*.zip
-
-
-      - name: Archive Linear Elastic plate with a hole benchmark data from nextflow
-        uses: actions/upload-artifact@v4
-        with:
-            name: linear-elastic-plate-with-hole_nextflow
-            path: |
-              benchmarks/linear-elastic-plate-with-hole/nextflow_results_for_artifact/
-
-      - name: Archive Linear Elastic plate with a hole benchmark data from nextflow provenance
-        uses: actions/upload-artifact@v4
-        with:
-            name: linear-elastic-plate-with-hole_nextflow_provenance
-            path: |
-              benchmarks/linear-elastic-plate-with-hole/nf_prov_dag.html
-              benchmarks/linear-elastic-plate-with-hole/nf_prov_legacy.json

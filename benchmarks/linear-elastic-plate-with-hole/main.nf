@@ -2,16 +2,6 @@
 include { fenics_workflow } from './fenics/fenics.nf'
 include { kratos_workflow } from './kratos/kratos.nf'
 
-// params._ can be passed through the CLI.
-params.jsonFile = file("workflow_config_nextflow.json")
-params.workflow_config_file = new groovy.json.JsonSlurper().parseText(params.jsonFile.text)
-params.result_dir = params.workflow_config_file.result_dir
-params.configuration_to_parameter_file = params.workflow_config_file.configuration_to_parameter_file
-params.configurations = params.workflow_config_file.configurations
-params.tools = params.workflow_config_file.tools
-params.benchmark = params.workflow_config_file.benchmark
-
-
 process create_mesh {
     //publishDir "$result_dir/mesh/"
     publishDir "${params.result_dir}/mesh/"
@@ -37,6 +27,7 @@ process summary{
     conda 'environment_postprocessing.yml'
 
     input:
+    path python_script
     val configuration
     val parameter_file
     val mesh_file
@@ -50,31 +41,14 @@ process summary{
     
     script:
     """
-    #!/usr/bin/env python
-    import json
-    from pathlib import Path
-    
-    configurations = "${configuration.join(' ')}".split(' ')
-    parameter_files = "${parameter_file.join(' ')}".split(' ')
-    mesh_files = "${mesh_file.join(' ')}".split(' ')
-    solution_field_data = "${solution_field_data.join(' ')}".split(' ')
-    solution_metrics = "${solution_metrics.join(' ')}".split(' ')
-    benchmark = "${benchmark}"
-    all_summaries = []
-    for idx, config in enumerate(configurations):
-        print(idx, config)
-        summary = {}
-        summary["benchmark"] = benchmark
-        print(solution_metrics[idx])
-        with open(parameter_files[idx], "r") as param_file:
-            summary["parameters"] = json.load(param_file)
-        summary["mesh"] = f"{config}/mesh"
-        with open(solution_metrics[idx], "r") as metrics_file:
-            summary["metrics"] = json.load(metrics_file)
-        summary["configuration"] = config
-        all_summaries.append(summary)
-    with open("summary.json", "w") as f:
-        json.dump(all_summaries, f, indent=4)
+    python3 $python_script \
+        --input_configuration ${configuration.join(' ')} \
+        --input_parameter_file ${parameter_file.join(' ')} \
+        --input_mesh_file ${mesh_file.join(' ')} \
+        --input_solution_metrics ${solution_metrics.join(' ')} \
+        --input_solution_field_data ${solution_field_data.join(' ')} \
+        --input_benchmark ${benchmark} \
+        --output_summary_json "summary.json"
 
     """
 }
@@ -82,40 +56,40 @@ process summary{
 
 def prepare_inputs_for_process_summary(input_process_run_simulation, output_process_run_simulation) {
 
-    // A function to prepare inputs for the summary process from the outputs of a simulation process.
+    // Input: channels of the input and the output of the simulation process
+    // Output: a tuple of channels to be used as input for the summary process
+    // Purpose: To prepare inputs for the summary process (invoked once per simulation tool) from the output of the simulation process (depending on the number of configurations, invoked multiple times per simulation tool).
+
+    // Firstly, the join operation is performed between the input and output channels of the simulation process based on the matching key (configuration).
+
+    // Secondly, the individual components (configuration, parameter_file, mesh_file, solution_field_data, solution_metrics) are extracted from the joined tuples and collected into separate lists. 
+    // The collect() method outputs a channel with a single entry as the summary process runs once per simulation tool. This single entry is a list of all the configurations or parameter files or mesh files etc.
     
-    //Each entry in the matched_channel defined below is a tuple: (configuration, parameter_file, mesh_file, solution_field_data, solution_metrics)
-    def matched_channels = input_process_run_simulation.join(output_process_run_simulation)
-    def input_summary_configuration = matched_channels.map{a,_b,_c,_d,_e -> a}.collect()
-    def input_summary_parameter_file = matched_channels.map{_a,b,_c,_d,_e -> b }.collect()
-    def input_summary_mesh = matched_channels.map{_a,_b,c,_d,_e -> c }.collect()
-    def input_summary_solution_field = matched_channels.map{_a,_b,_c,d,_e -> d }.collect()
-    def input_summary_metrics = matched_channels.map{_a,_b,_c,_d,e -> e }.collect()
+    def matched_channels = input_process_run_simulation.join(output_process_run_simulation) 
+
+    def branched_channels = matched_channels.multiMap{ v, w, x, y, z ->
+    configuration : v 
+    parameter_file : w 
+    mesh : x 
+    solution_field : y  
+    metrics : z }
+
     return [
-        input_summary_configuration,
-        input_summary_parameter_file,
-        input_summary_mesh,
-        input_summary_solution_field,
-        input_summary_metrics
+        branched_channels.configuration.collect(),
+        branched_channels.parameter_file.collect(),
+        branched_channels.mesh.collect(),
+        branched_channels.solution_field.collect(),
+        branched_channels.metrics.collect()
     ]
 }
 
 workflow {
     main:
-    // Load JSON file into a map
-    //def jsonFile = file("workflow_config.json")
-    //def workflow_config_file = new groovy.json.JsonSlurper().parseText(jsonFile.text)
-    //def configurations = workflow_config_file.configurations
-    //def configurations_to_parameter_file = workflow_config_file.configuration_to_parameter_file
-    //def benchmark = workflow_config_file.benchmark
-    //def tools = workflow_config_file.tools
-    //def result_dir = workflow_config_file.result_dir
 
     def parameter_files_path = []
     params.configurations.each { elem ->
         parameter_files_path.add(file(params.configuration_to_parameter_file[elem]))
     }
-    //println parameter_files
 
     //def ch_mesh_files = Channel.fromList(mesh_files)
     def ch_parameter_files = Channel.fromList(parameter_files_path)
@@ -123,58 +97,55 @@ workflow {
     def ch_mesh_python_script = Channel.value(file('create_mesh.py'))
 
     //Creating Mesh
+
     output_process_create_mesh = create_mesh(ch_mesh_python_script, ch_configurations, ch_parameter_files)
 
     input_process_run_simulation = ch_configurations.merge(ch_parameter_files).join(output_process_create_mesh)
     
     //Running Simulation
 
-    def ch_benchmark = Channel.value(params.benchmark)
+    ch_tools = Channel.fromList(params.tools) 
 
-    input_summary_configuration = Channel.empty()
-    input_summary_parameter_file = Channel.empty()
-    input_summary_mesh = Channel.empty()
-    input_summary_solution_field = Channel.empty()
-    input_summary_metrics = Channel.empty()
-    ch_tools = Channel.empty()
+    input_process_run_simulation_with_tool = ch_tools.combine(input_process_run_simulation)
+    input_fenics_workflow = input_process_run_simulation_with_tool.filter{ it[0] == 'fenics' }.map{_w,x,y,z -> tuple(x,y,z)}
+    input_kratos_workflow = input_process_run_simulation_with_tool.filter{ it[0] == 'kratos' }.map{_w,x,y,z -> tuple(x,y,z)}
 
 
-    if (params.tools.contains("fenics")) {
+    fenics_workflow(input_fenics_workflow, params.result_dir)
+    output_fenics_workflow = fenics_workflow.out
+    def (fenics_configurations,\
+        fenics_parameter_files,\
+        fenics_meshes,\
+        fenics_solution_fields,\
+        fenics_summary_metrics) = prepare_inputs_for_process_summary(input_fenics_workflow, output_fenics_workflow)
 
-        fenics_workflow(input_process_run_simulation, params.result_dir)
-        output_process_fenics_simulation = fenics_workflow.out
 
-        (input_fenics_summary_configuration, input_fenics_summary_parameter_file, input_fenics_summary_mesh, input_fenics_summary_solution_field, input_fenics_summary_metrics) = prepare_inputs_for_process_summary(input_process_run_simulation, output_process_fenics_simulation)
+    kratos_workflow(input_kratos_workflow, params.result_dir)
+    output_kratos_workflow = kratos_workflow.out
+    def (kratos_configurations, \
+        kratos_parameter_files, \
+        kratos_meshes, \
+        kratos_solution_fields, \
+        kratos_summary_metrics) = prepare_inputs_for_process_summary(input_kratos_workflow, output_kratos_workflow)
 
-        input_summary_configuration = input_summary_configuration.concat( input_fenics_summary_configuration )
-        input_summary_parameter_file = input_summary_parameter_file.concat( input_fenics_summary_parameter_file )
-        input_summary_mesh = input_summary_mesh.concat( input_fenics_summary_mesh )
-        input_summary_solution_field = input_summary_solution_field.concat( input_fenics_summary_solution_field )
-        input_summary_metrics = input_summary_metrics.concat( input_fenics_summary_metrics )
-        ch_tools = ch_tools.concat(Channel.of("fenics"))
-    
-    }  
-    if (params.tools.contains("kratos")) {
 
-        kratos_workflow(input_process_run_simulation, params.result_dir)
-        output_process_kratos_simulation = kratos_workflow.out
-
-        (input_kratos_summary_configuration, input_kratos_summary_parameter_file, input_kratos_summary_mesh, input_kratos_summary_solution_field, input_kratos_summary_metrics) = prepare_inputs_for_process_summary(input_process_run_simulation, output_process_kratos_simulation)
-
-        input_summary_configuration = input_summary_configuration.concat( input_kratos_summary_configuration )
-        input_summary_parameter_file = input_summary_parameter_file.concat( input_kratos_summary_parameter_file )
-        input_summary_mesh = input_summary_mesh.concat( input_kratos_summary_mesh )
-        input_summary_solution_field = input_summary_solution_field.concat( input_kratos_summary_solution_field )
-        input_summary_metrics = input_summary_metrics.concat( input_kratos_summary_metrics )
-        ch_tools = ch_tools.concat(Channel.of("kratos"))
-
-    } else {
-        //throw new IllegalArgumentException("Unsupported tool(s): ${tools}. Supported tools are 'fenics' and 'kratos'.")
-        error "Unsupported tool(s). Supported tools are 'fenics' and 'kratos'."
-    }
-
+    // channels are concatenated in the same order as they are passed to the .concat. The order should be consistent with the order of tools in ch_tools.
+    input_summary_configuration = fenics_configurations.concat(kratos_configurations)
+    input_summary_parameter_file = fenics_parameter_files.concat(kratos_parameter_files)
+    input_summary_mesh = fenics_meshes.concat(kratos_meshes)
+    input_summary_solution_field = fenics_solution_fields.concat(kratos_solution_fields)
+    input_summary_metrics = fenics_summary_metrics.concat(kratos_summary_metrics)
 
     //Summarizing results
-    summary(input_summary_configuration, input_summary_parameter_file, input_summary_mesh, input_summary_metrics,input_summary_solution_field, ch_benchmark, ch_tools)
+    def ch_benchmark = Channel.value(params.benchmark)
+    def ch_summarise_python_script = Channel.value(file('summarise_results.py'))
+    summary(ch_summarise_python_script, \
+            input_summary_configuration, \
+            input_summary_parameter_file, \
+            input_summary_mesh, \
+            input_summary_metrics, \
+            input_summary_solution_field, \
+            ch_benchmark, \
+            ch_tools)
 
 }

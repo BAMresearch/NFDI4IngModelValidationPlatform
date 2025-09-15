@@ -2,7 +2,7 @@ import json
 import os
 
 tool = "fenics"
-result_dir = config["result_dir"]
+result_dir = "snakemake_results/" + config["benchmark"] 
 configuration_to_parameter_file = config["configuration_to_parameter_file"]
 configurations = config["configurations"]
 

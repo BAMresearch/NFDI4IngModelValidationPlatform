@@ -46,25 +46,13 @@ result_dir_snakemake = join("snakemake_results", benchmark)
 result_dir_nextflow = join("nextflow_results", benchmark)
 
 # Template for workflow config
-workflow_config_template = {
-    "result_dir": None,  # to be set
+workflow_config = {
     "configuration_to_parameter_file": configuration_to_parameter_file,
     "configurations": list(configurations.values()),
     "tools": ["fenics", "kratos"],
     "benchmark": benchmark
 }
 
-# Create configs by copying the template and setting result_dir
-
-workflow_config_snakemake = copy.deepcopy(workflow_config_template)
-workflow_config_snakemake["result_dir"] = result_dir_snakemake
-
-workflow_config_nextflow = copy.deepcopy(workflow_config_template)
-workflow_config_nextflow["result_dir"] = result_dir_nextflow
-
-# Write both configs to separate files
-with open("workflow_config_snakemake.json", "w") as f:
-    json.dump(workflow_config_snakemake, f, indent=4)
-with open("workflow_config_nextflow.json", "w") as f:
-    json.dump(workflow_config_nextflow, f, indent=4)
-
+# Write workflow configuration file
+with open("workflow_config.json", "w") as f:
+    json.dump(workflow_config, f, indent=4)
