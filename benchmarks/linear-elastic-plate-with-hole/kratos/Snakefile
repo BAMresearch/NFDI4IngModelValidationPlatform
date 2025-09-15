@@ -27,15 +27,12 @@ rule mesh_to_mdpa:
         """
 
 rule create_kratos_input_and_run_simulation:
-
     # The process combines the creation of the Kratos input file (json) and the execution of the simulation. Initially, these were two separate processes. 
     # The combination was necessary because the create_kratos_input.py specifies the location of the mesh file and the output location of the simulation results in 
     # the json file. In the case of Nextflow, these locations are related to the process's sub-directory (inside the work directory). Executing the simulation as a 
     # separate process results in a failure to find the mesh file and write the output files unless the paths (in the json file) are explicitly provided as an input 
     # to the process.
-
     # This is not an issue in the case of Snakemake, as the working directory doesn't automatically change between different rules.
-
     input:
         parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
         mdpa = f"{result_dir}/{tool}/mesh_{{configuration}}.mdpa",

@@ -27,7 +27,6 @@ process create_kratos_input_and_run_simulation {
     // the json file. In the case of Nextflow, these locations are related to the process's sub-directory (inside the work directory). Executing the simulation as a 
     // separate process results in a failure to find the mesh file and write the output files unless the paths (in the json file) are explicitly provided as an input 
     // to the process. 
-
     // This is not an issue in the case of Snakemake, as the working directory doesn't automatically change between different rules.
 
     publishDir "${params.result_dir}/${params.tool}/"
