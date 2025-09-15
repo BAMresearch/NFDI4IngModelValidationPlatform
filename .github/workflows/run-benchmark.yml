@@ -56,17 +56,17 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
           nextflow run main.nf -params-file workflow_config.json -plugins nf-prov@1.4.0
-          
-      - name: convert_nextflow_shortcut_outputs_to_files_and_zip_them_for_artifact
-        shell: bash -l {0}
-        run: |
-          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
-          cp -rL nextflow_results nextflow_artifact
-          zip -r nextflow_artifact.zip nextflow_artifact/
 
-      - name: Archive Linear Elastic plate with a hole benchmark data for snakemake and nextflow
+      - name: Archive Linear Elastic plate with a hole benchmark data for snakemake
         uses: actions/upload-artifact@v4
         with:
-            name: results_linear-elastic-plate-with-hole
+            name: snakemake_results_linear-elastic-plate-with-hole
             path: |
               benchmarks/linear-elastic-plate-with-hole/*.zip
+
+      - name: Archive Linear Elastic plate with a hole benchmark data for nextflow
+        uses: actions/upload-artifact@v4
+        with:
+            name: nextflow_results_linear-elastic-plate-with-hole
+            path: |
+              benchmarks/linear-elastic-plate-with-hole/nextflow_results/

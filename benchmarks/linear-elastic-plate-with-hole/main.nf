@@ -60,7 +60,7 @@ def prepare_inputs_for_process_summary(input_process_run_simulation, output_proc
     // Output: a tuple of channels to be used as input for the summary process
     // Purpose: To prepare inputs for the summary process (invoked once per simulation tool) from the output of the simulation process (depending on the number of configurations, invoked multiple times per simulation tool).
 
-    // Firstly, the join operation is performed between the input and output channels of the simulation process based on the matching key (configuration).
+    // Firstly, the join operation is performed between the input and output channels of the simulation process based on a matching key (configuration).
 
     // Secondly, the individual components (configuration, parameter_file, mesh_file, solution_field_data, solution_metrics) are extracted from the joined tuples and collected into separate lists. 
     // The collect() method outputs a channel with a single entry as the summary process runs once per simulation tool. This single entry is a list of all the configurations or parameter files or mesh files etc.
@@ -91,7 +91,6 @@ workflow {
         parameter_files_path.add(file(params.configuration_to_parameter_file[elem]))
     }
 
-    //def ch_mesh_files = Channel.fromList(mesh_files)
     def ch_parameter_files = Channel.fromList(parameter_files_path)
     def ch_configurations = Channel.fromList(params.configurations)
     def ch_mesh_python_script = Channel.value(file('create_mesh.py'))
@@ -149,3 +148,10 @@ workflow {
             ch_tools)
 
 }
+
+// Steps to perform to add a new simulation tool to the workflow:
+// 1. Add the tool name to "tools" workflow_config.json (generated here using generate_config.py)
+// 2. Include the tool-specific workflow script at the top of this file.
+// 3. Create an input channel for the new tool (e.g. see the definition of input_fenics_workflow)
+// 4. Invoke the new tool-specific workflow (similar to fenics_workflow) & using its output, prepare inputs for the summary process.
+// 5. Concatenate the prepared inputs to form the final input channels for the summary process.
