@@ -57,7 +57,7 @@ $$
 \end{aligned}
 $$
 
-then the PDE is given by
+then the PDE with the displacement $\boldsymbol u$ as solution variable is given by
 
 $$
 \begin{aligned}
@@ -81,15 +81,15 @@ $$
 In the weak formulation of the problem, we want to find $\boldsymbol u$ such that
 
 $$
-B(\boldsymbol u,\delta\boldsymbol u) = f(\delta\boldsymbol u) \quad \forall \boldsymbol \delta u
+B(\boldsymbol u,\boldsymbol v) = f(\boldsymbol{v}) \quad \forall \boldsymbol v 
 $$
 
-with a test function $\delta \boldsymbol u$ and 
+with a test function $\boldsymbol{v}$ and 
 
 $$
 \begin{aligned}
-B(\boldsymbol u,\delta\boldsymbol u) &= \int_{\Omega} \boldsymbol\varepsilon(\delta\boldsymbol{u}) : \boldsymbol{\sigma}(\boldsymbol{\varepsilon}(\boldsymbol{u})) \mathrm{d}{\boldsymbol{x}} \\
-    f(\delta\boldsymbol u)&=\int_{\Gamma_{\mathrm{N}}} {\boldsymbol{t}}\cdot\delta\boldsymbol{u}\mathrm{d}{\boldsymbol{s}}.
+B(\boldsymbol u,\boldsymbol v) &= \int_{\Omega} \boldsymbol\varepsilon(\boldsymbol{v}) : \boldsymbol{\sigma}(\boldsymbol{\varepsilon}(\boldsymbol{u})) \mathrm{d}{\boldsymbol{x}} \\
+    f(\boldsymbol v)&=\int_{\Gamma_{\mathrm{N}}} {\boldsymbol{t}}\cdot\boldsymbol{v}\mathrm{d}{\boldsymbol{s}}.
 \end{aligned}
 $$
 
@@ -129,9 +129,9 @@ With these metrices, we can perform a convergence analysis for different approxi
 
 | Parameter    | Description                     |
 | ------------ | ------------------------------  |
-| $a$ in $m$   | Radius of the hole.             |
-| $l$ in $m$   | Length of the benchmark domain. |
-| $E$ in $Pa$  | Youngs modulus.                 |
-| $\nu$ in --  | Poisson ratio.                  |
-| $p$ in $Pa$  | Load at infinity.               |
+| $a$[m]   | Radius of the hole.             |
+| $l$[m]   | Length of the benchmark domain. |
+| $E$[Pa]  | Youngs modulus.                 |
+| $\nu$[-]  | Poisson ratio.                  |
+| $p$[Pa]  | Load at infinity.               |
 
