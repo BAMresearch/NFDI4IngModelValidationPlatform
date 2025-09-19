@@ -49,7 +49,8 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
           snakemake --use-conda --force --cores 'all'
-          snakemake --use-conda --force --cores 'all' --reporter metadata4ing
+          snakemake --use-conda --force --cores 'all' --reporter metadata4ing --report-metadata4ing-filename snakemake_reporter_results
+          unzip snakemake_reporter_results.zip snakemake_reporter_results
 
       - name: run_linear-elastic-plate-with-hole-benchmarks_nextflow
         shell: bash -l {0}
@@ -62,7 +63,7 @@ jobs:
         with:
             name: snakemake_results_linear-elastic-plate-with-hole
             path: |
-              benchmarks/linear-elastic-plate-with-hole/*.zip
+              benchmarks/linear-elastic-plate-with-hole/snakemake_reporter_results/
 
       - name: Archive Linear Elastic plate with a hole benchmark data for nextflow
         uses: actions/upload-artifact@v4
