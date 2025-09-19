@@ -140,8 +140,8 @@ With these metrices, we can perform a convergence analysis for different approxi
 
 ### FEniCS
 
-[![Jupyter4NFDI](https://nfdi-jupyter.de/images/jupyter4nfdi_badge.svg)](https://hub.nfdi-jupyter.de/v2/gh/BAMresearch/NFDI4IngModelValidationPlatform/HEAD?labpath=docs%2Fbenchmarks%2Flinear%20elasticity%2Fplate_with_hole_fenics.ipynb)
+[![Jupyter4NFDI](https://nfdi-jupyter.de/images/jupyter4nfdi_badge.svg)](https://hub.nfdi-jupyter.de/v2/gh/BAMresearch/NFDI4IngModelValidationPlatform/HEAD?labpath=notebooks%2Fplate_with_hole_fenics.ipynb)
 
 ### Kratos
 
-[![Jupyter4NFDI](https://nfdi-jupyter.de/images/jupyter4nfdi_badge.svg)](https://hub.nfdi-jupyter.de/v2/gh/BAMresearch/NFDI4IngModelValidationPlatform/HEAD?labpath=docs%2Fbenchmarks%2Flinear%20elasticity%2Fplate_with_hole_Kratos.ipynb)
+[![Jupyter4NFDI](https://nfdi-jupyter.de/images/jupyter4nfdi_badge.svg)](https://hub.nfdi-jupyter.de/v2/gh/BAMresearch/NFDI4IngModelValidationPlatform/HEAD?labpath=notebooks%2Fplate_with_hole_Kratos.ipynb)
