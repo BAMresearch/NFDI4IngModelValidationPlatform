@@ -1,17 +1,36 @@
+# Define the parameter space
+# 40 is default
+meshNs = [10, 20, 40]
+
+rule all:
+    input:
+        expand("cases/meshN_{meshN}/postprocessing/done", meshN=meshNs)
+
 
 rule run_simulation_container:
     input:
-        mesh="system/blockMeshDict",
-        config="system/controlDict",
-        initial_conditions="0/",
+        template="system/blockMeshDict.template",
         scripts="Allrun"
     output: 
-        directory("1000"),
+        directory("cases/meshN_{meshN}/1000"),
+        touch("cases/meshN_{meshN}/postprocessing/done")
     container: "docker://opencfd/openfoam-run:2412"
     shell:
         """
         set -euo pipefail
+
+        echo "Setting up simulation {wildcards.meshN}."
+        mkdir -p cases/meshN_{wildcards.meshN}
+        cp -r 0 system constant Allclean Allrun plot cases/meshN_{wildcards.meshN}/
+        cd cases/meshN_{wildcards.meshN}
+        sed "s/{{meshN}}/{wildcards.meshN}/g" {input.template} > system/blockMeshDict
+        
         echo "Starting simulation."
+        chmod +x Allrun
         ./Allrun
+        
         ls -la
+        tail log.simpleFoam
+
+        touch postprocessing/done
         """

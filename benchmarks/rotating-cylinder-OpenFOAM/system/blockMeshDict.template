@@ -21,8 +21,8 @@ geom
     r0          1;
     r1          2;
 
-    nr          40;
-    ntheta      40;
+    nr          {meshN}; // 40;
+    ntheta      {meshN}; // 40;
 
     g           10;
 
