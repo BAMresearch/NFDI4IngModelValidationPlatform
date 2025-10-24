@@ -86,12 +86,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: snakemake_results_linear-elastic-plate-with-hole
-          path: ./artifact_files
-
-      - name: Unzip metadata4ing_provenance.zip
-        run: |
-          mkdir -p ./metadata4ing_provenance
-          unzip -o ./artifact_files/metadata4ing_provenance.zip -d ./metadata4ing_provenance
+          path: ./snakemake_provenance
 
       - name: Setup Mambaforge with postprocessing env
         uses: conda-incubator/setup-miniconda@v3
@@ -104,7 +99,7 @@ jobs:
       - name: Run plotting script
         shell: bash -l {0}
         run: |
-          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py ./metadata4ing_provenance
+          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py ./snakemake_provenance
 
       - name: Upload PDF plot as artifact
         uses: actions/upload-artifact@v4
