@@ -1,14 +1,6 @@
 # A Guide to add a Benchmark Problem
 
-The platform uses a hierarchical workflow system that incorporates:
-
-- Multiple simulation tools (e.g., FEniCS, Kratos) for solving a problem.
-- Standardized I/O streams to the simulation tools.
-- Multiple parameter configurations per benchmark.
-- Automated mesh generation.
-<!-- Provenance tracking and metadata collection -->
-
-This guide outlines the algorithm needed to add a benchmark problem.
+The steps are as follows:
 
 1. **Create a folder for the problem** 
     
@@ -30,9 +22,14 @@ This guide outlines the algorithm needed to add a benchmark problem.
         - Develop a workflow script connecting the I/O scripts, simulation code and environment.yml files.
 
 3. **Create the mesh generation script**
-    - Write `create_mesh.py` inside `benchmarks/problem_name/` to define the domain geometry.
-    - Provide user-modifiable inputs via a JSON input interface, cf. `benchmarks/linear-elastic-plate-with-hole/create_mesh.py`.
+
+    **With mesh generation**
+    - Create `create_mesh.py` inside `benchmarks/problem_name/` to define the domain geometry.
+    - In the file, provide the interface for the user-adjustable inputs related to geometry, mesh and numerical solver. These inputs are passed to the script via `parameter_*.json`.
     - If required, include an environment file for the mesh generation script in the same directory.
+
+    **Pre-existing meshes**
+    - Provide the path to the mesh(es) location directly to the sub-workflow of the simulation tool. `parameter_*.json` will only contain the material parameters in this case.
 
 4. **Define parameter configurations**
     

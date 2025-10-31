@@ -53,7 +53,7 @@ jobs:
             --reporter metadata4ing \
             --report-metadata4ing-paramscript parameter_extractor.py \
             --report-metadata4ing-filename metadata4ing_provenance
-          unzip metadata4ing_provenance -d reporter_data
+          unzip metadata4ing_provenance -d snakemake_provenance
       
       - name: run_linear-elastic-plate-with-hole-benchmarks_nextflow
         shell: bash -l {0}
@@ -66,7 +66,7 @@ jobs:
         with:
             name: snakemake_results_linear-elastic-plate-with-hole
             path: |
-              benchmarks/linear-elastic-plate-with-hole/reporter_data/
+              benchmarks/linear-elastic-plate-with-hole/snakemake_provenance/
 
       - name: Archive Linear Elastic plate with a hole benchmark data for nextflow
         uses: actions/upload-artifact@v4
