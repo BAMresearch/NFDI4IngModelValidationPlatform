@@ -9,6 +9,20 @@ def create_summary(configurations: list[str],
                    benchmark: str,
                    summary_json: str) -> None:
     
+    """
+    Create a summary JSON file containing simulation results and metadata.
+        
+    Args:
+        configurations: List of configuration names
+        parameter_files: List of paths to parameter JSON files
+        mesh_files: List of paths to mesh files
+        solution_metrics: List of paths to metrics JSON files
+        solution_field_data: List of paths to solution field data files
+        benchmark: Name of the benchmark
+        summary_json: Output path for the summary JSON file
+    """
+    
+    
     all_summaries = []
     for idx, config in enumerate(configurations):
         print(idx, config)

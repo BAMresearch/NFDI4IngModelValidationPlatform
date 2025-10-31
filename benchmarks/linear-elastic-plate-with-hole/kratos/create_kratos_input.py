@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 # Ensure the parent directory is in the path to import PlateWithHoleSolution
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from plateWithHoleSolution import PlateWithHoleSolution
+from analytical_solution import PlateWithHoleSolution
 
 def create_kratos_input(
     parameter_file: str,
