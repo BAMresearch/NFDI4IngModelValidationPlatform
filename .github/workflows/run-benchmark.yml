@@ -51,7 +51,7 @@ jobs:
           snakemake --use-conda --force --cores 'all'
           snakemake --use-conda --force --cores all \
             --reporter metadata4ing \
-            --report-metadata4ing-paramscript parameter_extractor.py \
+            --report-metadata4ing-paramscript ../common/parameter_extractor.py \
             --report-metadata4ing-filename metadata4ing_provenance
           unzip metadata4ing_provenance -d snakemake_provenance
       
@@ -59,7 +59,7 @@ jobs:
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
-          nextflow run main.nf -params-file workflow_config.json -plugins nf-prov@1.4.0
+          nextflow run main.nf -params-file workflow_config.json -c ../common/nextflow.config -plugins nf-prov@1.4.0
 
       - name: Archive Linear Elastic plate with a hole benchmark data for snakemake
         uses: actions/upload-artifact@v4
@@ -99,7 +99,7 @@ jobs:
       - name: Run plotting script
         shell: bash -l {0}
         run: |
-          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py ./snakemake_provenance
+          python benchmarks/linear-elastic-plate-with-hole/plot_metrics.py ./snakemake_provenance
 
       - name: Upload PDF plot as artifact
         uses: actions/upload-artifact@v4

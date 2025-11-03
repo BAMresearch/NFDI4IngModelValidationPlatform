@@ -34,13 +34,15 @@ markdown_extensions:
 
 nav:
   - index.md
-  - introduction.md
-  - benchmark_addition_guide.md
+  - Getting Started:
+      - getting_started/workflow.md
+      - getting_started/provenance.md
+      - getting_started/benchmark_addition_guide.md
   #- conventions.md
   #- data.md
   #- interface.md
   - Benchmarks:
-     - Introduction: "benchmarks/index.md"
+     #- Introduction: "benchmarks/index.md"
      - Linear Elasticity: "benchmarks/linear elasticity"
      #- Plasticity: benchmarks/plasticity
   - "zz_bibliography.md"

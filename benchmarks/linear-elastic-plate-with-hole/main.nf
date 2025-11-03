@@ -137,7 +137,7 @@ workflow {
 
     //Summarizing results
     def ch_benchmark = Channel.value(params.benchmark)
-    def ch_summarize_python_script = Channel.value(file('summarize_results.py'))
+    def ch_summarize_python_script = Channel.value(file('../common/summarize_results.py'))
     summary(ch_summarize_python_script, \
             input_summary_configuration, \
             input_summary_parameter_file, \
