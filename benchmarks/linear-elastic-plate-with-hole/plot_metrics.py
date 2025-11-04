@@ -145,7 +145,7 @@ def plot_element_size_vs_stress(headers, table_data, output_file="element_size_v
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process JSON-LD artifacts and display simulation results.")
-    parser.add_argument("artifact_folder", type=str, help="Path to the folder containing unzipped artifacts")
+    parser.add_argument("--artifact_folder", type=str, help="Path to the folder containing unzipped artifacts")
     args = parser.parse_args()
 
     graphs = load_graphs(args.artifact_folder)

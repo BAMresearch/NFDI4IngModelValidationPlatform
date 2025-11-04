@@ -15,15 +15,17 @@ The benchmark `linear-elastic-plate-with-hole` is implemented with nextflow and 
 
 ```shell
 linear-elastic-plate-with-hole/Snakefile 
+│                                  ├── executes ──> create_mesh.py
+│                                  └── executes ──> summarize_results.py                       
 │
 ├── calls ──> fenics/Snakefile 
-│   └── executes ──> run_fenics_simulation.py
+│                       └── executes ──> run_fenics_simulation.py
 │
 └── calls ──> kratos/Snakefile 
-    ├── executes ──> msh_to_mdpa.py
-    ├── executes ──> create_kratos_input.py
-    ├── executes ──> run_kratos_simulation.py
-    └── executes ──> postprocess_results.py
+                        ├── executes ──> msh_to_mdpa.py
+                        ├── executes ──> create_kratos_input.py
+                        ├── executes ──> run_kratos_simulation.py
+                        └── executes ──> postprocess_results.py
 ```
 
 ## Terminologies

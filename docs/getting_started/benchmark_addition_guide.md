@@ -10,7 +10,7 @@ The steps are as follows:
 
     - For each simulation tool used to solve the problem, create a corresponding subfolder inside the problem directory, e.g.
 
-        ```
+        ```bash
         benchmarks/problem_name/
         ├── tool_A
         ├── tool_B
@@ -24,7 +24,7 @@ The steps are as follows:
 
 3. **Define parameter configurations**
 
-    For each parameter configuration run using simulation tools, create a JSON file in `benchmarks/problem/` specifying parameters related to the domain geometry, mesh information, and constitutive model parameters, cf. [parameter_1.json](https://github.com/BAMresearch/NFDI4IngModelValidationPlatform/blob/main/benchmarks/linear-elastic-plate-with-hole/parameters_1.json).
+    For each parameter configuration run using simulation tools, create a JSON file in `benchmarks/problem/` specifying parameters related to the domain geometry, mesh information, and constitutive model parameters, cf. [parameter_1.json](https://github.com/BAMresearch/NFDI4IngModelValidationPlatform/blob/main/benchmarks/linear-elastic-plate-with-hole/parameters_1.json)
 
 4. **Create a script for discovering the configurations**
 
@@ -53,13 +53,13 @@ The steps are as follows:
             - Comment out the create_mesh rule in the main workflow.
             - Change in summary rule's input:
 
-                ```
+                ```py
                 mesh = expand("{mesh}", param=[configuration_to_mesh_file[c] for c in configurations])
                 ```
 
             - Change in tool's sub-workflow input:
 
-                ```
+                ```py
                 mesh = lambda wildcards: configuration_to_mesh_file[wildcards.configuration]
                 ```
 
@@ -67,7 +67,7 @@ The steps are as follows:
             - Comment out the create_mesh process in the main workflow.
             - Create an input channel for the mesh files.
 
-                ```
+                ```groovy
                 def mesh_files_path = []
                 params.configurations.each { elem -> mesh_files_path.add(file(params.configuration_to_mesh_file[elem])) }
 
@@ -76,7 +76,7 @@ The steps are as follows:
 
             - Merge the configurations, parameters and mesh channels before running simulation.
 
-                ```
+                ```groovy
                 input_process_run_simulation = ch_configurations.merge(ch_parameter_files, ch_mesh_files)
                 ```
 

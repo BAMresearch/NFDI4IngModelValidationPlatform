@@ -1,5 +1,6 @@
 # Provenance
-The package also stores the provenance records i.e.:
+
+The package stores the provenance records i.e.:
 
 - which input files were used,
 - which processes or scripts were executed,
