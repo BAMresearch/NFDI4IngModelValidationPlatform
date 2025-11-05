@@ -63,5 +63,6 @@ if __name__ == "__main__":
         args.input_solution_metrics,
         args.input_solution_field_data,
         args.input_benchmark,
+        args.input_benchmark_uri,
         args.output_summary_json
     )
