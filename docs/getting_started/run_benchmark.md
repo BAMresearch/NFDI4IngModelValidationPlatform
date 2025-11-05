@@ -14,7 +14,7 @@ This guide provides step-by-step instructions for running a benchmark workflow, 
 
 - **Configuration Generation**
 
-    Before running either workflow systems, generate the configuration files:
+    Before running either workflow systems, generate the [configuration files](workflow.md#configuration-generator):
 
     ```bash
     # Navigate to benchmark directory

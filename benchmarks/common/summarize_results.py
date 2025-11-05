@@ -6,8 +6,8 @@ def create_summary(configurations: list[str],
                    mesh_files: list[str],
                    solution_metrics: list[str],
                    solution_field_data: list[str],
-                   benchmark: str,
-                   benchmark_uri: str,
+                   benchmark_and_tool_metadata: str,
+                   tool: str,
                    summary_json: str) -> None:
     
     """
@@ -19,17 +19,25 @@ def create_summary(configurations: list[str],
         mesh_files: List of paths to mesh files
         solution_metrics: List of paths to metrics JSON files
         solution_field_data: List of paths to solution field data files
-        benchmark: Name of the benchmark
-        benchmark_uri: URI of the benchmark
+        benchmark_and_tool_metadata: Path to the benchmark and tool metadata file
         summary_json: Output path for the summary JSON file
     """
     
-    
+    with open(benchmark_and_tool_metadata, "r") as metadata_file:
+        metadata = json.load(metadata_file)
+        benchmark = metadata["benchmark"]
+        benchmark_uri = metadata["benchmark_uri"]
+        tool_uri = metadata.get(tool).get("tool_uri")
+        tool_version = metadata.get(tool).get("tool_version")
+
     all_summaries = []
     for idx, config in enumerate(configurations):
         summary = {}
         summary["benchmark"] = benchmark
         summary["benchmark_uri"] = benchmark_uri
+        summary["tool"] = tool
+        summary["tool_version"] = tool_version
+        summary["tool_uri"] = tool_uri
         with open(parameter_files[idx], "r") as param_file:
             summary["parameters"] = json.load(param_file)
         summary["mesh"] = f"{config}/mesh"
@@ -52,8 +60,10 @@ if __name__ == "__main__":
     parser.add_argument("--input_mesh_file", nargs="+", type=str, required=True, help="Path to the mesh file (input)")
     parser.add_argument("--input_solution_metrics", nargs="+", type=str, required=True, help="Path to the metrics JSON file (input)")
     parser.add_argument("--input_solution_field_data", nargs="+", type=str, required=True, help="Path to the zipped solution files (input)")
-    parser.add_argument("--input_benchmark", required=True, type=str, help="Name of the benchmark (input)")
-    parser.add_argument("--input_benchmark_uri", required=True, type=str, help="URI of the benchmark (input)")
+    parser.add_argument("--input_benchmark_and_tool_metadata", required=True, type=str, help="Path to the benchmark and tool metadata file (input)")
+    parser.add_argument("--input_tool", required=True, type=str, help="Name of the tool (input)")
+    #parser.add_argument("--input_benchmark", required=True, type=str, help="Name of the benchmark (input)")
+    #parser.add_argument("--input_benchmark_uri", required=True, type=str, help="URI of the benchmark (input)")
     parser.add_argument("--output_summary_json", required=True, type=str, help="Path to the summary JSON file (output)")
     args = parser.parse_args()
     create_summary(
@@ -62,7 +72,7 @@ if __name__ == "__main__":
         args.input_mesh_file,
         args.input_solution_metrics,
         args.input_solution_field_data,
-        args.input_benchmark,
-        args.input_benchmark_uri,
+        args.input_benchmark_and_tool_metadata,
+        args.input_tool,
         args.output_summary_json
     )

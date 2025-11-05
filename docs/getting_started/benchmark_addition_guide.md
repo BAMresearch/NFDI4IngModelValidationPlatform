@@ -16,11 +16,7 @@ The steps are as follows:
         ├── tool_B
         ```
 
-    -   Inside each tool’s folder (e.g. tool_A/):
-        - Write a script for running the simulation.
-        - Write the I/O interface scripts needed to ensure a common I/O interface across the tools.
-        - Create an environment.yml file listing out all the tool-specific software dependencies.
-        - Develop a workflow script (Snakemake/Nextflow) connecting the I/O scripts, simulation code and environment.yml files.
+    and add the scripts, environment files, sub-workflows required by the tool inside the tool's folder. Cf. [main.nf](https://github.com/BAMresearch/NFDI4IngModelValidationPlatform/blob/main/benchmarks/linear-elastic-plate-with-hole/main.nf) and [Snakefile](https://github.com/BAMresearch/NFDI4IngModelValidationPlatform/blob/main/benchmarks/linear-elastic-plate-with-hole/Snakefile) for details on how to add a tool.
 
 3. **Define parameter configurations**
 
@@ -30,7 +26,7 @@ The steps are as follows:
 
     - Create the script `generate_config.py` in `benchmarks/problem/`.
     - The script should:
-        - Discover all the configuration JSON files.
+        - Discover all the parameter configuration JSON files.
         - Extract configurations.
         - List the simulation tools for each configuration, cf. [generate_config.py](https://github.com/BAMresearch/NFDI4IngModelValidationPlatform/blob/main/benchmarks/linear-elastic-plate-with-hole/generate_config.py).
 

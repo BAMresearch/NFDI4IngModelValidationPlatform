@@ -14,7 +14,7 @@ from pint import UnitRegistry
 
 # Add parent directory to sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from analytical_solution import PlateWithHoleSolution
+from analytical_solution import AnalyticalSolution
 
 
 def run_fenics_simulation(
@@ -76,7 +76,7 @@ def run_fenics_simulation(
         .magnitude
     )
 
-    analytical_solution = PlateWithHoleSolution(
+    analytical_solution = AnalyticalSolution(
         E=E,
         nu=nu,
         radius=radius,

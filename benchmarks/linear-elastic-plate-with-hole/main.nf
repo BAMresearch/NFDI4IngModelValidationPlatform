@@ -33,9 +33,8 @@ process summary{
     val mesh_file
     val solution_metrics
     val solution_field_data
-    val benchmark
+    path benchmark_and_tool_metadata
     val tool
-    val benchmark_uri
 
     output:
     path("summary.json")
@@ -48,8 +47,8 @@ process summary{
         --input_mesh_file ${mesh_file.join(' ')} \
         --input_solution_metrics ${solution_metrics.join(' ')} \
         --input_solution_field_data ${solution_field_data.join(' ')} \
-        --input_benchmark ${benchmark} \
-        --input_benchmark_uri ${benchmark_uri} \
+        --input_benchmark_and_tool_metadata ${benchmark_and_tool_metadata} \
+        --input_tool ${tool} \
         --output_summary_json "summary.json"
 
     """
@@ -138,8 +137,9 @@ workflow {
     input_summary_metrics = fenics_summary_metrics.concat(kratos_summary_metrics)
 
     //Summarizing results
-    def ch_benchmark = Channel.value(params.benchmark)
-    def ch_benchmark_uri = Channel.value(params.benchmark_uri)
+    //def ch_benchmark = Channel.value(params.benchmark)
+    //def ch_benchmark_uri = Channel.value(params.benchmark_uri)
+    def ch_benchmark_and_tool_metadata_file = Channel.value(file('benchmark_and_tool_metadata.json'))
     def ch_summarize_python_script = Channel.value(file('../common/summarize_results.py'))
     summary(ch_summarize_python_script, \
             input_summary_configuration, \
@@ -147,15 +147,14 @@ workflow {
             input_summary_mesh, \
             input_summary_metrics, \
             input_summary_solution_field, \
-            ch_benchmark, \
-            ch_benchmark_uri, \
+            ch_benchmark_and_tool_metadata_file, \
             ch_tools)
 
 }
 /*
 Steps to add a new simulation tool to the workflow:
 
-1. Write the tool-specific workflow & scripts and store them in the benchmarks/linear-elastic-plate-with-hole/tool_name/.
+1. Write the tool-specific workflow, scripts, environment file and store them in the benchmarks/linear-elastic-plate-with-hole/tool_name/.
 2. Add the tool name to "tools" workflow_config.json (generated here using generate_config.py)
 3. Include the tool-specific workflow script at the top of this file.
 4. Create an input channel for the new tool (e.g. see the definition of input_fenics_workflow)
@@ -170,4 +169,4 @@ be matched with their corresponding inputs using a common key.
 
 Information on channel operations: https://www.nextflow.io/docs/latest/reference/operator.html
 Information on channels: https://training.nextflow.io/2.2/basic_training/channels/
-*/ 
+*/

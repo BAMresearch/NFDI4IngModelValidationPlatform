@@ -39,17 +39,39 @@ if duplicates:
 # Reverse mapping for easy lookup by configuration name
 configuration_to_parameter_file = {v: str(k) for k, v in configurations.items()}
 
+tools = ["fenics", "kratos"]
+tools_uri = ["https://github.com/FEniCS/dolfinx", "https://github.com/KratosMultiphysics/Kratos"]
+software_versions = ["0.9", "10.3.1"]
 benchmark = "linear-elastic-plate-with-hole"
+benchmark_uri = "https://portal.mardi4nfdi.de/wiki/Model:6775296"
 
 # Template for workflow config
 workflow_config = {
     "configuration_to_parameter_file": configuration_to_parameter_file,
     "configurations": list(configurations.values()),
-    "tools": ["fenics", "kratos"],
+    "tools": tools,
     "benchmark": benchmark,
-    "benchmark_uri": "https://portal.mardi4nfdi.de/wiki/Model:6775296",
 }
 
 # Write workflow configuration file
 with open("workflow_config.json", "w") as f:
     json.dump(workflow_config, f, indent=4)
+
+benchmark_and_tool_metadata = {}
+
+# Create tool entries using loops
+for i, tool in enumerate(tools):
+    benchmark_and_tool_metadata[tool] = {
+        "tool_uri": tools_uri[i],
+        "tool_version": software_versions[i]
+    }
+
+# Add the remaining metadata
+benchmark_and_tool_metadata.update({
+    "benchmark": benchmark,
+    "benchmark_uri": benchmark_uri,
+})
+
+# Write benchmark_and_tool_metadata configuration file
+with open("benchmark_and_tool_metadata.json", "w") as f:
+    json.dump(benchmark_and_tool_metadata, f, indent=4)
