@@ -7,6 +7,7 @@ def create_summary(configurations: list[str],
                    solution_metrics: list[str],
                    solution_field_data: list[str],
                    benchmark: str,
+                   benchmark_uri: str,
                    summary_json: str) -> None:
     
     """
@@ -19,16 +20,16 @@ def create_summary(configurations: list[str],
         solution_metrics: List of paths to metrics JSON files
         solution_field_data: List of paths to solution field data files
         benchmark: Name of the benchmark
+        benchmark_uri: URI of the benchmark
         summary_json: Output path for the summary JSON file
     """
     
     
     all_summaries = []
     for idx, config in enumerate(configurations):
-        print(idx, config)
         summary = {}
         summary["benchmark"] = benchmark
-        print(solution_metrics[idx])
+        summary["benchmark_uri"] = benchmark_uri
         with open(parameter_files[idx], "r") as param_file:
             summary["parameters"] = json.load(param_file)
         summary["mesh"] = f"{config}/mesh"

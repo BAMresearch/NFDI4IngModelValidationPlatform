@@ -6,6 +6,7 @@ configuration_to_parameter_file = config["configuration_to_parameter_file"]
 configurations = config["configurations"]
 tools = config["tools"]
 benchmark = config["benchmark"]
+benchmark_uri = config["benchmark_uri"]
 
 
 rule all:
@@ -64,6 +65,7 @@ rule summary:
             --input_solution_metrics {input.metrics} \
             --input_solution_field_data {input.solution_field_data} \
             --input_benchmark {benchmark} \
+            --input_benchmark_uri {benchmark_uri} \
             --output_summary_json {output.summary_json}
         """
 

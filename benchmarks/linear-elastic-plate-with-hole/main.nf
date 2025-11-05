@@ -35,6 +35,7 @@ process summary{
     val solution_field_data
     val benchmark
     val tool
+    val benchmark_uri
 
     output:
     path("summary.json")
@@ -48,6 +49,7 @@ process summary{
         --input_solution_metrics ${solution_metrics.join(' ')} \
         --input_solution_field_data ${solution_field_data.join(' ')} \
         --input_benchmark ${benchmark} \
+        --input_benchmark_uri ${benchmark_uri} \
         --output_summary_json "summary.json"
 
     """
@@ -137,6 +139,7 @@ workflow {
 
     //Summarizing results
     def ch_benchmark = Channel.value(params.benchmark)
+    def ch_benchmark_uri = Channel.value(params.benchmark_uri)
     def ch_summarize_python_script = Channel.value(file('../common/summarize_results.py'))
     summary(ch_summarize_python_script, \
             input_summary_configuration, \
@@ -145,6 +148,7 @@ workflow {
             input_summary_metrics, \
             input_summary_solution_field, \
             ch_benchmark, \
+            ch_benchmark_uri, \
             ch_tools)
 
 }
