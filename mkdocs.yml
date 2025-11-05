@@ -42,4 +42,5 @@ nav:
      - Linear Elasticity: "benchmarks/linear elasticity"
      #- Plasticity: benchmarks/plasticity
   - "zz_bibliography.md"
+  - rohub.md
 
