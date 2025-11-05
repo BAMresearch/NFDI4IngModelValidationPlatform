@@ -81,10 +81,10 @@ This guide provides step-by-step instructions for running a benchmark workflow, 
         To generate a plot, run:
 
         ```bash
-        python plot_metrics.py --artifact_folder ./snakemake_provenance
+        python plot_metrics.py ./snakemake_provenance
         ```
 
-        The command generates `element_size_vs_stress.pdf` file, that plots the maximum Von-Mises stress as reported by simulation tool(s) over the changing mesh element size.
+        The script `plot_metrics.py` takes in as input the path to the directory that contains the provenance report and generates `element_size_vs_stress.pdf` file, that plots the maximum Von-Mises stress as reported by simulation tool(s) over the changing mesh element size.
 
 ## Nextflow workflow
 
