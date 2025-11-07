@@ -24,13 +24,12 @@ The steps are as follows:
 
 4. **Create a script for discovering the configurations**
 
-    - Create the script `generate_config.py` in `benchmarks/problem/`.
-    - The script should:
-        - Discover all the parameter configuration JSON files.
-        - Extract configurations.
-        - List the simulation tools for each configuration, cf. [generate_config.py](https://github.com/BAMresearch/NFDI4IngModelValidationPlatform/blob/main/benchmarks/linear-elastic-plate-with-hole/generate_config.py).
+    - Copy the script `benchmarks/linear-elastic-plate-with-hole/generate_config.py` to `benchmarks/problem_name/`.
+    - Modify the list of simulation tools for the benchmark, cf. [generate_config.py](https://github.com/BAMresearch/NFDI4IngModelValidationPlatform/blob/main/benchmarks/linear-elastic-plate-with-hole/generate_config.py).
 
-        **Note:** The simulation-tool-specific keywords are used by the main workflow to call the corresponding sub-workflows.
+    **Note:** The simulation-tool-specific keywords are used by the main workflow to call the corresponding sub-workflows.
+
+    **Note:** In the future, the file will be moved to the `benchmarks/common/`folder and the list of simulation tools which is benchmark-specific will be provided separately.
 
 5. **Create the mesh generation script**
 

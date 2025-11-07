@@ -33,7 +33,8 @@ process summary{
     val mesh_file
     val solution_metrics
     val solution_field_data
-    path benchmark_and_tool_metadata
+    val benchmark
+    val benchmark_uri
     val tool
 
     output:
@@ -47,8 +48,8 @@ process summary{
         --input_mesh_file ${mesh_file.join(' ')} \
         --input_solution_metrics ${solution_metrics.join(' ')} \
         --input_solution_field_data ${solution_field_data.join(' ')} \
-        --input_benchmark_and_tool_metadata ${benchmark_and_tool_metadata} \
-        --input_tool ${tool} \
+        --input_benchmark ${benchmark} \
+        --input_benchmark_uri ${benchmark_uri} \
         --output_summary_json "summary.json"
 
     """
@@ -137,9 +138,8 @@ workflow {
     input_summary_metrics = fenics_summary_metrics.concat(kratos_summary_metrics)
 
     //Summarizing results
-    //def ch_benchmark = Channel.value(params.benchmark)
-    //def ch_benchmark_uri = Channel.value(params.benchmark_uri)
-    def ch_benchmark_and_tool_metadata_file = Channel.value(file('benchmark_and_tool_metadata.json'))
+    def ch_benchmark = Channel.value(params.benchmark)
+    def ch_benchmark_uri = Channel.value(params.benchmark_uri)
     def ch_summarize_python_script = Channel.value(file('../common/summarize_results.py'))
     summary(ch_summarize_python_script, \
             input_summary_configuration, \
@@ -147,7 +147,8 @@ workflow {
             input_summary_mesh, \
             input_summary_metrics, \
             input_summary_solution_field, \
-            ch_benchmark_and_tool_metadata_file, \
+            ch_benchmark, \
+            ch_benchmark_uri, \
             ch_tools)
 
 }
@@ -169,4 +170,4 @@ be matched with their corresponding inputs using a common key.
 
 Information on channel operations: https://www.nextflow.io/docs/latest/reference/operator.html
 Information on channels: https://training.nextflow.io/2.2/basic_training/channels/
-*/
+*/ 

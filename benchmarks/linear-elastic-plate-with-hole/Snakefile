@@ -6,6 +6,7 @@ configuration_to_parameter_file = config["configuration_to_parameter_file"]
 configurations = config["configurations"]
 tools = config["tools"]
 benchmark = config["benchmark"]
+benchmark_uri = config["benchmark_uri"]
 
 
 rule all:
@@ -52,7 +53,6 @@ rule summary:
             f"{result_dir}/{{tool}}/solution_field_data_{{configuration}}.zip",
             tool=[wildcards.tool], configuration=configurations
         ),
-        benchmark_and_tool_metadata_file = f"benchmark_and_tool_metadata.json",
     output:
         summary_json = f"{result_dir}/{{tool}}/summary.json",
     conda: "environment_postprocessing.yml",
@@ -64,8 +64,8 @@ rule summary:
             --input_mesh_file {input.mesh} \
             --input_solution_metrics {input.metrics} \
             --input_solution_field_data {input.solution_field_data} \
-            --input_benchmark_and_tool_metadata {input.benchmark_and_tool_metadata_file} \
-            --input_tool {wildcards.tool} \
+            --input_benchmark {benchmark} \
+            --input_benchmark_uri {benchmark_uri} \
             --output_summary_json {output.summary_json}
         """
 

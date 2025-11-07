@@ -31,11 +31,6 @@ markdown_extensions:
       enable_dollar_delimiter: true
   - pymdownx.tasklist:
   - pymdownx.superfences
-  #- pymdownx.snippets:
-  #    check_paths: true
-  #- pymdownx.inlinehilite
-  #    custom_checkbox: true
-  #- markdown_checklist.extension
 
 nav:
   - index.md
