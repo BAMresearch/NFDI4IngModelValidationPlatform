@@ -1,4 +1,6 @@
 name: mesh-generation
+# Environment file for create_mesh.py script. Called by the main workflow.
+
 channels:
   - conda-forge
 

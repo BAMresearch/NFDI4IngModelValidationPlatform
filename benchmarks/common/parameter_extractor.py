@@ -4,6 +4,12 @@ from snakemake_report_plugin_metadata4ing.interfaces import (
     ParameterExtractorInterface,
 )
 
+"""
+Parses the parameter configuration files and their corresponding output files. Returns a dictionary.
+https://github.com/izus-fokus/snakemake-report-plugin-metadata4ing
+
+"""
+
 class ParameterExtractor(ParameterExtractorInterface):
     def extract_params(self, rule_name: str, file_path: str) -> dict:
         results = {}

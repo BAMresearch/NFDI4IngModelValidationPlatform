@@ -4,9 +4,9 @@ from pint import UnitRegistry
 from argparse import ArgumentParser
 from pathlib import Path
 import sys
-# Ensure the parent directory is in the path to import PlateWithHoleSolution
+# Ensure the parent directory is in the path to import AnalyticalSolution
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from plateWithHoleSolution import PlateWithHoleSolution
+from analytical_solution import AnalyticalSolution
 
 def create_kratos_input(
     parameter_file: str,
@@ -50,7 +50,7 @@ def create_kratos_input(
         .magnitude
     )
 
-    analytical_solution = PlateWithHoleSolution(
+    analytical_solution = AnalyticalSolution(
         E=E,
         nu=nu,
         radius=radius,

@@ -39,14 +39,17 @@ if duplicates:
 # Reverse mapping for easy lookup by configuration name
 configuration_to_parameter_file = {v: str(k) for k, v in configurations.items()}
 
+tools = ["fenics", "kratos"]
 benchmark = "linear-elastic-plate-with-hole"
+benchmark_uri = "https://portal.mardi4nfdi.de/wiki/Model:6775296"
 
 # Template for workflow config
 workflow_config = {
     "configuration_to_parameter_file": configuration_to_parameter_file,
     "configurations": list(configurations.values()),
-    "tools": ["fenics", "kratos"],
-    "benchmark": benchmark
+    "tools": tools,
+    "benchmark": benchmark,
+    "benchmark_uri": benchmark_uri
 }
 
 # Write workflow configuration file

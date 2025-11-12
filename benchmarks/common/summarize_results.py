@@ -7,14 +7,29 @@ def create_summary(configurations: list[str],
                    solution_metrics: list[str],
                    solution_field_data: list[str],
                    benchmark: str,
+                   benchmark_uri: str,
                    summary_json: str) -> None:
+    
+    """
+    Create a summary JSON file containing simulation results and metadata.
+        
+    Args:
+        configurations: List of configuration names
+        parameter_files: List of paths to parameter JSON files
+        mesh_files: List of paths to mesh files
+        solution_metrics: List of paths to metrics JSON files
+        solution_field_data: List of paths to solution field data files
+        benchmark: Name of the benchmark
+        benchmark_uri: URI of the benchmark
+        summary_json: Output path for the summary JSON file
+    """
+    
     
     all_summaries = []
     for idx, config in enumerate(configurations):
-        print(idx, config)
         summary = {}
         summary["benchmark"] = benchmark
-        print(solution_metrics[idx])
+        summary["benchmark_uri"] = benchmark_uri
         with open(parameter_files[idx], "r") as param_file:
             summary["parameters"] = json.load(param_file)
         summary["mesh"] = f"{config}/mesh"
@@ -38,6 +53,7 @@ if __name__ == "__main__":
     parser.add_argument("--input_solution_metrics", nargs="+", type=str, required=True, help="Path to the metrics JSON file (input)")
     parser.add_argument("--input_solution_field_data", nargs="+", type=str, required=True, help="Path to the zipped solution files (input)")
     parser.add_argument("--input_benchmark", required=True, type=str, help="Name of the benchmark (input)")
+    parser.add_argument("--input_benchmark_uri", required=True, type=str, help="URI of the benchmark (input)")
     parser.add_argument("--output_summary_json", required=True, type=str, help="Path to the summary JSON file (output)")
     args = parser.parse_args()
     create_summary(
@@ -47,5 +63,6 @@ if __name__ == "__main__":
         args.input_solution_metrics,
         args.input_solution_field_data,
         args.input_benchmark,
+        args.input_benchmark_uri,
         args.output_summary_json
     )

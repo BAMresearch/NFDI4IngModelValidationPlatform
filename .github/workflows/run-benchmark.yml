@@ -51,21 +51,22 @@ jobs:
           snakemake --use-conda --force --cores 'all'
           snakemake --use-conda --force --cores all \
             --reporter metadata4ing \
-            --report-metadata4ing-paramscript parameter_extractor.py \
-            --report-metadata4ing-filename metadata4ing_provenance
+            --report-metadata4ing-paramscript ../common/parameter_extractor.py \
+            --report-metadata4ing-filename snakemake_provenance
+          unzip snakemake_provenance -d snakemake_provenance
       
       - name: run_linear-elastic-plate-with-hole-benchmarks_nextflow
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
-          nextflow run main.nf -params-file workflow_config.json -plugins nf-prov@1.4.0
+          nextflow run main.nf -params-file workflow_config.json -c ../common/nextflow.config -plugins nf-prov@1.4.0
 
       - name: Archive Linear Elastic plate with a hole benchmark data for snakemake
         uses: actions/upload-artifact@v4
         with:
             name: snakemake_results_linear-elastic-plate-with-hole
             path: |
-              benchmarks/linear-elastic-plate-with-hole/metadata4ing_provenance.zip
+              benchmarks/linear-elastic-plate-with-hole/snakemake_provenance/
 
       - name: Archive Linear Elastic plate with a hole benchmark data for nextflow
         uses: actions/upload-artifact@v4
@@ -85,12 +86,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: snakemake_results_linear-elastic-plate-with-hole
-          path: ./artifact_files
-
-      - name: Unzip metadata4ing_provenance.zip
-        run: |
-          mkdir -p ./metadata4ing_provenance
-          unzip -o ./artifact_files/metadata4ing_provenance.zip -d ./metadata4ing_provenance
+          path: ./snakemake_provenance
 
       - name: Setup Mambaforge with postprocessing env
         uses: conda-incubator/setup-miniconda@v3
@@ -103,7 +99,7 @@ jobs:
       - name: Run plotting script
         shell: bash -l {0}
         run: |
-          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py ./metadata4ing_provenance
+          python benchmarks/linear-elastic-plate-with-hole/plot_metrics.py ./snakemake_provenance
 
       - name: Upload PDF plot as artifact
         uses: actions/upload-artifact@v4
