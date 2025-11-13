@@ -7,7 +7,7 @@ dependencies:
   - python-gmsh
   - pint
   - pyvista
+  - sympy
   - pip
   - pip:
-    - KratosMultiphysics-all
-  - sympy
+    - KratosMultiphysics-all==9.0.2

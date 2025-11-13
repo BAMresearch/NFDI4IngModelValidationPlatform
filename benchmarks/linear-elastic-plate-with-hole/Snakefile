@@ -21,9 +21,11 @@ rule create_mesh:
         parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
     output:
         mesh = f"{result_dir}/mesh/mesh_{{configuration}}.msh",
-    conda: "environment_mesh.yml"
+    # conda: "environment_mesh.yml"
     shell:
         """
+        source /opt/miniforge/etc/profile.d/conda.sh
+        conda activate mesh
         python3 {input.script} --input_parameter_file {input.parameters} --output_mesh_file {output.mesh}
         """
 
@@ -54,9 +56,11 @@ rule summary:
         ),
     output:
         summary_json = f"{result_dir}/{{tool}}/summary.json",
-    conda: "environment_postprocessing.yml",
+    # conda: "environment_postprocessing.yml",
     shell:
         """
+        source /opt/miniforge/etc/profile.d/conda.sh
+        conda activate postprocessing
         python3 {input.script} \
             --input_configuration {configurations} \
             --input_parameter_file {input.parameters} \
