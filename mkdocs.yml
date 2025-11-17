@@ -20,6 +20,7 @@ plugins:
       recurse: false
       file_pattern: '.*\.(md|ipynb)$'
   - mkdocs-jupyter:
+      include: ["*.ipynb"]
       execute: false
       include_source: True
 
@@ -29,13 +30,18 @@ markdown_extensions:
   - mdx_math:
       enable_dollar_delimiter: true
   - pymdownx.tasklist:
-  #    custom_checkbox: true
-  #- markdown_checklist.extension
+  - pymdownx.superfences
 
 nav:
   - index.md
+  - Getting Started:
+      - getting_started/workflow.md
+      - getting_started/provenance.md
+      - getting_started/benchmark_addition_guide.md
+      - getting_started/run_benchmark.md
   - Benchmarks:
      - Introduction: "benchmarks/index.md"
      - Linear Elasticity: "benchmarks/linear elasticity"
   - "zz_bibliography.md"
+  - rohub.md
 

@@ -11,4 +11,4 @@ dependencies:
   - conda
   - pip
   - pip:
-      - "--editable=git+https://github.com/izus-fokus/snakemake-report-plugin-metadata4ing.git#egg=snakemake-report-plugin-metadata4ing"
+      - "git+https://github.com/izus-fokus/snakemake-report-plugin-metadata4ing@v1.0.0#egg=snakemake-report-plugin-metadata4ing"

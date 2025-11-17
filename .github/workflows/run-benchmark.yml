@@ -49,20 +49,24 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
           snakemake --use-conda --force --cores 'all'
-          snakemake --use-conda --force --cores 'all' --reporter metadata4ing
-
+          snakemake --use-conda --force --cores all \
+            --reporter metadata4ing \
+            --report-metadata4ing-paramscript ../common/parameter_extractor.py \
+            --report-metadata4ing-filename snakemake_provenance
+          unzip snakemake_provenance -d snakemake_provenance
+      
       - name: run_linear-elastic-plate-with-hole-benchmarks_nextflow
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
-          nextflow run main.nf -params-file workflow_config.json -plugins nf-prov@1.4.0
+          nextflow run main.nf -params-file workflow_config.json -c ../common/nextflow.config -plugins nf-prov@1.4.0
 
       - name: Archive Linear Elastic plate with a hole benchmark data for snakemake
         uses: actions/upload-artifact@v4
         with:
             name: snakemake_results_linear-elastic-plate-with-hole
             path: |
-              benchmarks/linear-elastic-plate-with-hole/*.zip
+              benchmarks/linear-elastic-plate-with-hole/snakemake_provenance/
 
       - name: Archive Linear Elastic plate with a hole benchmark data for nextflow
         uses: actions/upload-artifact@v4
@@ -70,3 +74,35 @@ jobs:
             name: nextflow_results_linear-elastic-plate-with-hole
             path: |
               benchmarks/linear-elastic-plate-with-hole/nextflow_results/
+
+  process-artifacts:
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - name: Checkout repo content
+        uses: actions/checkout@v2
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: snakemake_results_linear-elastic-plate-with-hole
+          path: ./snakemake_provenance
+
+      - name: Setup Mambaforge with postprocessing env
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+            miniforge-version: latest
+            activate-environment: postprocessing 
+            use-mamba: true
+            environment-file: benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
+
+      - name: Run plotting script
+        shell: bash -l {0}
+        run: |
+          python benchmarks/linear-elastic-plate-with-hole/plot_metrics.py ./snakemake_provenance
+
+      - name: Upload PDF plot as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: element-size-vs-stress-plot
+          path: element_size_vs_stress.pdf

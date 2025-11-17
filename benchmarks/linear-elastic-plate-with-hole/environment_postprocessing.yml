@@ -1,6 +1,9 @@
 name: postprocessing
+# Environment file for summarize_results.py script. Called by the main workflow.
+
 channels:
   - conda-forge
+  - defaults
 
 channel_priority: strict
 
@@ -8,3 +11,5 @@ dependencies:
   - python=3.12
   - pint
   - pyvista
+  - rdflib
+  - matplotlib

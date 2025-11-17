@@ -34,6 +34,7 @@ process summary{
     val solution_metrics
     val solution_field_data
     val benchmark
+    val benchmark_uri
     val tool
 
     output:
@@ -48,6 +49,7 @@ process summary{
         --input_solution_metrics ${solution_metrics.join(' ')} \
         --input_solution_field_data ${solution_field_data.join(' ')} \
         --input_benchmark ${benchmark} \
+        --input_benchmark_uri ${benchmark_uri} \
         --output_summary_json "summary.json"
 
     """
@@ -137,21 +139,35 @@ workflow {
 
     //Summarizing results
     def ch_benchmark = Channel.value(params.benchmark)
-    def ch_summarise_python_script = Channel.value(file('summarise_results.py'))
-    summary(ch_summarise_python_script, \
+    def ch_benchmark_uri = Channel.value(params.benchmark_uri)
+    def ch_summarize_python_script = Channel.value(file('../common/summarize_results.py'))
+    summary(ch_summarize_python_script, \
             input_summary_configuration, \
             input_summary_parameter_file, \
             input_summary_mesh, \
             input_summary_metrics, \
             input_summary_solution_field, \
             ch_benchmark, \
+            ch_benchmark_uri, \
             ch_tools)
 
 }
+/*
+Steps to add a new simulation tool to the workflow:
 
-// Steps to perform to add a new simulation tool to the workflow:
-// 1. Add the tool name to "tools" workflow_config.json (generated here using generate_config.py)
-// 2. Include the tool-specific workflow script at the top of this file.
-// 3. Create an input channel for the new tool (e.g. see the definition of input_fenics_workflow)
-// 4. Invoke the new tool-specific workflow (similar to fenics_workflow) & using its output, prepare inputs for the summary process.
-// 5. Concatenate the prepared inputs to form the final input channels for the summary process.
+1. Write the tool-specific workflow, scripts, environment file and store them in the benchmarks/linear-elastic-plate-with-hole/tool_name/.
+2. Add the tool name to "tools" workflow_config.json (generated here using generate_config.py)
+3. Include the tool-specific workflow script at the top of this file.
+4. Create an input channel for the new tool (e.g. see the definition of input_fenics_workflow)
+5. Invoke the new tool-specific workflow (similar to fenics_workflow) & using its output, prepare inputs for the summary process.
+6. Concatenate the prepared inputs to form the final input channels for the summary process.
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+Remark: Care should be taken to track the entries in the I/O channels, as the process output for a given configuration 
+may not arrive in the same order as the inputs were sent. When reusing channel entries after process execution, outputs should 
+be matched with their corresponding inputs using a common key.
+
+Information on channel operations: https://www.nextflow.io/docs/latest/reference/operator.html
+Information on channels: https://training.nextflow.io/2.2/basic_training/channels/
+*/ 
