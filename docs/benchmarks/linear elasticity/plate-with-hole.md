@@ -140,11 +140,11 @@ With these metrices, we can perform a convergence analysis for different approxi
 
 | Parameter    | Description                     |
 | ------------ | ------------------------------  |
-| $h$[m]   | Element size                        |
-| $q$[-] | Element order, i.e. the geometry interpolation order (curved edges or linear edges) |
-| $p$[-]  | Degree of the ansatz functions           |
-| $r$[-]  | Degree of the quadrature rule, meaning the polynomial degree which is still integrated exactly      |
-| $\mathcal Q$[-]  | Quadrature rule               |
+| $h$[m]   | Element size.                        |
+| $q$[-] | Element order, i.e. the geometry interpolation order (curved edges or linear edges). |
+| $p$[-]  | Degree of the ansatz functions.           |
+| $r$[-]  | Degree of the quadrature rule, meaning the polynomial degree which is still integrated exactly.      |
+| $\mathcal Q$[-]  | Quadrature rule (e.g. Gauss or Gauss-Lobatto).               |
 
 
 ## Numerical Results
