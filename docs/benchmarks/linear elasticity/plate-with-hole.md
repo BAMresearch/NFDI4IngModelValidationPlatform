@@ -127,6 +127,7 @@ With these metrices, we can perform a convergence analysis for different approxi
 
 ## Table of parameters
 
+### Model parameters
 | Parameter    | Description                     |
 | ------------ | ------------------------------  |
 | $a$[m]   | Radius of the hole.             |
@@ -134,6 +135,16 @@ With these metrices, we can perform a convergence analysis for different approxi
 | $E$[Pa]  | Youngs modulus.                 |
 | $\nu$[-]  | Poisson ratio.                  |
 | $p$[Pa]  | Load at infinity.               |
+
+### Numerical parameters
+
+| Parameter    | Description                     |
+| ------------ | ------------------------------  |
+| $h$[m]   | Element size                        |
+| $q$[-] | Element order, i.e. the geometry interpolation order (curved edges or linear edges) |
+| $p$[-]  | Degree of the ansatz functions           |
+| $r$[-]  | Degree of the quadrature rule, meaning the polynomial degree which is still integrated exactly      |
+| $\mathcal Q$[-]  | Quadrature rule               |
 
 
 ## Numerical Results
