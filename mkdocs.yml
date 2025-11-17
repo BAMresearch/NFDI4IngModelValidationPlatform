@@ -39,9 +39,8 @@ nav:
       - getting_started/provenance.md
       - getting_started/benchmark_addition_guide.md
       - getting_started/run_benchmark.md
+      - rohub.md
   - Benchmarks:
-     - Introduction: "benchmarks/index.md"
      - Linear Elasticity: "benchmarks/linear elasticity"
   - "zz_bibliography.md"
-  - rohub.md
 
