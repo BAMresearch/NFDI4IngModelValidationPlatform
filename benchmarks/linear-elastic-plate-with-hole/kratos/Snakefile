@@ -16,10 +16,12 @@ rule mesh_to_mdpa:
         script = f"{tool}/msh_to_mdpa.py",
     output:
         mdpa = f"{result_dir}/{tool}/mesh_{{configuration}}.mdpa",
-    conda:
-        "environment_simulation.yml",
+    # conda:
+    #     "environment_simulation.yml",
     shell:
         """
+        source /opt/miniforge/etc/profile.d/conda.sh
+        conda activate kratos-sim
         python3 {input.script} \
             --input_parameter_file {input.parameters} \
             --input_mesh_file {input.mesh} \
@@ -44,10 +46,12 @@ rule create_kratos_input_and_run_simulation:
         kratos_inputfile = f"{result_dir}/{tool}/ProjectParameters_{{configuration}}.json",
         kratos_materialfile = f"{result_dir}/{tool}/MaterialParameters_{{configuration}}.json",
         result_vtk = f"{result_dir}/{tool}/{{configuration}}/Structure_0_1.vtk",
-    conda:
-        "environment_simulation.yml",
+    # conda:
+    #     "environment_simulation.yml",
     shell:
         """
+        source /opt/miniforge/etc/profile.d/conda.sh
+        conda activate kratos-sim
         python3 {input.script_create_kratos_input} \
             --input_parameter_file {input.parameters} \
             --input_mdpa_file {input.mdpa} \
@@ -70,10 +74,12 @@ rule postprocess_kratos_results:
     output:
         zip = f"{result_dir}/{tool}/solution_field_data_{{configuration}}.zip",
         metrics = f"{result_dir}/{tool}/solution_metrics_{{configuration}}.json",
-    conda:
-        "environment_simulation.yml",
+    # conda:
+    #     "environment_simulation.yml",
     shell:
         """
+        source /opt/miniforge/etc/profile.d/conda.sh
+        conda activate kratos-sim
         python3 {input.script} \
             --input_parameter_file {input.parameters} \
             --input_result_vtk {input.result_vtk} \
