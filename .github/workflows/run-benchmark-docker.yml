@@ -69,13 +69,7 @@ jobs:
               mamba env create -n postprocessing -f /NFDI_Benchmark/benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
 
               echo '>>> Running simulation'
-
-              # Check which conda environment is active
-              echo '>>> Current Conda environments:'
-              conda info --envs
-              echo '>>> Active Conda environment:'
-              echo $CONDA_DEFAULT_ENV
-
+              conda activate model-validation
               cd /NFDI_Benchmark/benchmarks/linear-elastic-plate-with-hole
               snakemake --use-conda --force --cores all
 
