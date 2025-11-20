@@ -13,7 +13,7 @@ env:
   CACHE_NUMBER: 1
 
 jobs:
-  tests:
+  build-and-run:
     runs-on: ubuntu-latest
 
     steps:
@@ -51,7 +51,7 @@ jobs:
               echo '>>> Building Kratos environment'
               mamba env create -n kratos-sim -f /NFDI_Benchmark/benchmarks/linear-elastic-plate-with-hole/kratos/environment_simulation.yml
               conda activate kratos-sim
-              python -c \"import KratosMultiphysics; print('Kratos version:', KratosMultiphysics.__version__)\"
+              python -c \"import KratosMultiphysics; print('Kratos imported OK')\"
 
               echo '>>> Building FEniCS environment'
               mamba env create -n fenics-sim -f /NFDI_Benchmark/benchmarks/linear-elastic-plate-with-hole/fenics/environment_simulation.yml
