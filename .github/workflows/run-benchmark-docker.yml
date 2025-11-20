@@ -54,6 +54,7 @@ jobs:
               python -c \"import KratosMultiphysics; print('Kratos imported OK')\"
 
               echo '>>> Building FEniCS environment'
+              conda deactivate
               mamba env create -n fenics-sim -f /NFDI_Benchmark/benchmarks/linear-elastic-plate-with-hole/fenics/environment_simulation.yml
               conda activate fenics-sim
               export OMP_NUM_THREADS=1
@@ -67,7 +68,14 @@ jobs:
               echo '>>> Building Postprocessing environment'
               mamba env create -n postprocessing -f /NFDI_Benchmark/benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
 
-              echo '>>> Running Snakemake simulation'
+              echo '>>> Running simulation'
+
+              # Check which conda environment is active
+              echo '>>> Current Conda environments:'
+              conda info --envs
+              echo '>>> Active Conda environment:'
+              echo $CONDA_DEFAULT_ENV
+
               cd /NFDI_Benchmark/benchmarks/linear-elastic-plate-with-hole
               snakemake --use-conda --force --cores all
 
