@@ -1,4 +1,6 @@
 name: postprocessing
+# Environment file for summarize_results.py script. Called by the main workflow.
+
 channels:
   - conda-forge
   - defaults

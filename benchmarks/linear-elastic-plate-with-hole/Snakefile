@@ -6,6 +6,7 @@ configuration_to_parameter_file = config["configuration_to_parameter_file"]
 configurations = config["configurations"]
 tools = config["tools"]
 benchmark = config["benchmark"]
+benchmark_uri = config["benchmark_uri"]
 
 
 rule all:
@@ -43,7 +44,7 @@ rule summary:
     input:
         # the summary is performed for all configurations saved into a single file 
         # (snakemake_results/linear-elastic-plate-with-hole/fenics/summary.json)
-        script = "summarise_results.py",
+        script = "../common/summarize_results.py",
         parameters = expand("{param}", param=[configuration_to_parameter_file[c] for c in configurations]),
         mesh = expand(f"{result_dir}/mesh/mesh_{{configuration}}.msh", configuration=configurations),
         metrics = lambda wildcards: expand(
@@ -68,5 +69,22 @@ rule summary:
             --input_solution_metrics {input.metrics} \
             --input_solution_field_data {input.solution_field_data} \
             --input_benchmark {benchmark} \
+            --input_benchmark_uri {benchmark_uri} \
             --output_summary_json {output.summary_json}
         """
+
+""" 
+Steps to add a new simulation tool to the workflow:
+
+1. Write the tool-specific workflow, scripts, environment file and store them in the benchmarks/linear-elastic-plate-with-hole/tool_name/.
+2. Add the tool name to "tools" workflow_config.json (generated here using generate_config.py)
+
+------------------------------------------------------------------------------------------------------------------------
+"rule all" defines the final target of the workflow. Knowing the final target, the snakemake determines
+the dependency chain automatically.
+
+Wildcards in the rule definitions allow to generalize the rules for multiple configurations and tools.
+They act like placeholders (variables) in filenames or paths that get automatically filled in by Snakemake.
+
+Information on snakemake rules: https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html
+"""

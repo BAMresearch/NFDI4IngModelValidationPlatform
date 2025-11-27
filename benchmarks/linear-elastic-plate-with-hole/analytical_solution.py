@@ -1,7 +1,7 @@
 import numpy as np
 import sympy as sp
 
-class PlateWithHoleSolution:
+class AnalyticalSolution:
     def __init__(self, E: float, nu: float, radius: float, L:float, load:float) -> None:
         self.radius = radius
         self.L = L
