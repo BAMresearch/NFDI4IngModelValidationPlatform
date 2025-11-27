@@ -16,6 +16,7 @@ benchmarks/linear-elastic-plate-with-hole/workflow_config.json
 # Generated folders and outputs
 benchmarks/linear-elastic-plate-with-hole/metadata4ing_provenance/
 benchmarks/linear-elastic-plate-with-hole/snakemake_results/
+benchmarks/linear-elastic-plate-with-hole/results/
 
 # (Optional) ignore all ZIP and PDF files in benchmarks if they are always generated
 # benchmarks/**/*.zip

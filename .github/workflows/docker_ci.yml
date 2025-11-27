@@ -1,0 +1,113 @@
+name: Docker-based CI
+
+on:
+  push:
+    branches:
+      - dumux_and_rotating_cylinder
+  pull_request:
+    branches:
+      - dumux_and_rotating_cylinder
+  workflow_dispatch:
+  schedule:
+    - cron: '3 16 * * *'
+
+jobs:
+  # -----------------------------
+  # Build Docker images (Linux only)
+  # -----------------------------
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build base image
+        id: base
+        run: |
+          docker build -t ci-base -f dockerfiles/Dockerfile.base .
+
+      - name: Build Docker images
+        run: |
+          docker build -t ci-mesh -f dockerfiles/Dockerfile.mesh .
+          docker build -t ci-fenics -f dockerfiles/Dockerfile.fenics .
+          docker build -t ci-kratos -f dockerfiles/Dockerfile.kratos .
+          docker build -t ci-postprocessing -f dockerfiles/Dockerfile.postprocessing .
+
+      - name: Generate config and mesh
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace/benchmarks/linear-elastic-plate-with-hole ci-mesh \
+            python generate_config.py
+
+          docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace/benchmarks/linear-elastic-plate-with-hole ci-mesh \
+            bash -c 'mkdir -p results/linear-elastic-plate-with-hole/mesh && \
+                    for f in parameters_*.json; do \
+                      python create_mesh.py --input_parameter_file "$f" \
+                                            --output_mesh_file "results/linear-elastic-plate-with-hole/mesh/mesh_${f%.json}.msh"; \
+                    done'
+
+      - name: Run Kratos simulations
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace/benchmarks/linear-elastic-plate-with-hole ci-kratos \
+            bash -c 'mkdir -p results/linear-elastic-plate-with-hole/kratos && \
+                    for f in parameters_*.json; do \
+                      # Convert mesh to MDPA
+                      python kratos/msh_to_mdpa.py \
+                        --input_parameter_file "$f" \
+                        --input_mesh_file "results/linear-elastic-plate-with-hole/mesh/mesh_${f%.json}.msh" \
+                        --output_mdpa_file "results/linear-elastic-plate-with-hole/kratos/mesh_${f%.json}.mdpa"; \
+                      \
+                      # Create Kratos input and run simulation
+                      python kratos/create_kratos_input.py \
+                        --input_parameter_file "$f" \
+                        --input_mdpa_file "results/linear-elastic-plate-with-hole/kratos/mesh_${f%.json}.mdpa" \
+                        --input_kratos_input_template kratos/input_template.json \
+                        --input_material_template kratos/StructuralMaterials_template.json \
+                        --output_kratos_inputfile "results/linear-elastic-plate-with-hole/kratos/ProjectParameters_${f%.json}.json" \
+                        --output_kratos_materialfile "results/linear-elastic-plate-with-hole/kratos/MaterialParameters_${f%.json}.json"; \
+                      \
+                      python kratos/run_kratos_simulation.py \
+                        --input_parameter_file "$f" \
+                        --input_kratos_inputfile "results/linear-elastic-plate-with-hole/kratos/ProjectParameters_${f%.json}.json" \
+                        --input_kratos_materialfile "results/linear-elastic-plate-with-hole/kratos/MaterialParameters_${f%.json}.json"; \
+                    done'
+
+      - name: Run fenics simulations
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/workspace \
+            -w /workspace/benchmarks/linear-elastic-plate-with-hole ci-fenics \
+            bash -c 'mkdir -p results/linear-elastic-plate-with-hole/fenics && \
+                    for f in parameters_*.json; do \
+                      config_name="${f%.json}"; \
+                      python fenics/run_fenics_simulation.py \
+                        --input_parameter_file "$f" \
+                        --input_mesh_file "results/linear-elastic-plate-with-hole/mesh/mesh_${config_name}.msh" \
+                        --output_solution_file_zip "results/linear-elastic-plate-with-hole/fenics/solution_field_data_${config_name}.zip" \
+                        --output_metrics_file "results/linear-elastic-plate-with-hole/fenics/solution_metrics_${config_name}.json"; \
+                    done'
+
+      # - name: Postprocessing (metadata + extraction + plot)
+      #   run: |
+      #     docker run --rm \
+      #       -v ${{ github.workspace }}:/workspace \
+      #       -w /workspace/benchmarks/linear-elastic-plate-with-hole \
+      #       ci-postprocessing \
+      #       bash -c '
+      #         echo "Generating metadata...";
+      #         python parameter_extractor.py ./results metadata4ing_provenance.zip;
+
+      #         echo "Extracting ZIP...";
+      #         mkdir -p ./metadata4ing_provenance;
+      #         unzip -o metadata4ing_provenance.zip -d ./metadata4ing_provenance;
+
+      #         echo "Plotting provenance...";
+      #         python plot_provenance.py ./metadata4ing_provenance
+      #       '
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-results
+          path:  
+            benchmarks/linear-elastic-plate-with-hole/results
+            # benchmarks/linear-elastic-plate-with-hole/metadata4ing_provenance/
+            # benchmarks/linear-elastic-plate-with-hole/metadata4ing_provenance.zip
+            # benchmarks/linear-elastic-plate-with-hole/*.pdf
