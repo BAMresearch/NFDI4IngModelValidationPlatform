@@ -1,0 +1,22 @@
+FROM dolfinx/dolfinx:v0.9.0
+
+# -----------------------------
+# Install system dependencies
+# -----------------------------
+RUN apt-get update && apt-get install -y \
+        cmake \
+        gcc \
+        g++ \
+        git \
+        gmsh \
+        libgomp1 \
+        libxrender1 \
+        libxext6 \
+        libglu1-mesa \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies missing in the image
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install pint sympy pyvista gmsh
+
+WORKDIR /workspace/benchmarks/linear-elastic-plate-with-hole

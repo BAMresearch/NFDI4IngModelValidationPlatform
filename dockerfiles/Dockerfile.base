@@ -1,0 +1,16 @@
+# Base image for all other stages
+FROM ubuntu:22.04
+
+# Set environment
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install basic packages
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip python3-venv git unzip curl wget build-essential \
+    && ln -s /usr/bin/python3 /usr/bin/python \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip
+RUN python3 -m pip install --upgrade pip
+
+WORKDIR /workspace

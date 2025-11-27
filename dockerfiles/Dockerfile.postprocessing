@@ -1,0 +1,6 @@
+FROM ci-base AS postprocessing
+
+# Python dependencies for postprocessing
+RUN pip install matplotlib pyvista pint rdflib
+
+WORKDIR /workspace/benchmarks/linear-elastic-plate-with-hole

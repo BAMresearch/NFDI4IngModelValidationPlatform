@@ -1,0 +1,21 @@
+FROM ci-base AS kratos
+
+# -----------------------------
+# Install system dependencies
+# -----------------------------
+RUN apt-get update && apt-get install -y \
+        cmake \
+        gcc \
+        g++ \
+        git \
+        gmsh \
+        libgomp1 \
+        libxrender1 \
+        libxext6 \
+        libglu1-mesa \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python dependencies for Kratos simulations
+RUN pip install meshio pyvista pint sympy KratosMultiphysics-all gmsh
+
+WORKDIR /workspace/benchmarks/linear-elastic-plate-with-hole
