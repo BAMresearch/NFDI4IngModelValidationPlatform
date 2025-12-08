@@ -1,22 +1,52 @@
+# Dockerfile.fenics
+# Stage 1: reuse ci-base to get meshes & project
+FROM ci-base AS mesh-stage
+
+# Stage 2: Fenics runtime image
 FROM dolfinx/dolfinx:v0.9.0
+ARG DEBIAN_FRONTEND=noninteractive
 
 # -----------------------------
-# Install system dependencies
+# 1) Copy project + generated meshes from ci-base
 # -----------------------------
-RUN apt-get update && apt-get install -y \
-        cmake \
-        gcc \
-        g++ \
-        git \
-        gmsh \
-        libgomp1 \
-        libxrender1 \
-        libxext6 \
-        libglu1-mesa \
-    && rm -rf /var/lib/apt/lists/*
+# copy the whole /sim produced by ci-base to /sim in final image
+COPY --from=mesh-stage /sim /sim
 
-# Install Python dependencies missing in the image
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install pint sympy pyvista gmsh
+# -----------------------------
+# 2) Install any Python packages missing from dolfinx that fenics scripts need
+# -----------------------------
+RUN python3 -m pip install --upgrade pip setuptools wheel
+# add packages required by fenics scripts (meshio, pyvista, pint, sympy, gmsh python API if needed)
+RUN python3 -m pip install --no-cache-dir meshio pyvista pint sympy
 
-WORKDIR /workspace/benchmarks/linear-elastic-plate-with-hole
+# -----------------------------
+# 3) User + permissions (ensure sim exists)
+# -----------------------------
+# attempt to create sim user only if not present; avoid overwriting /sim
+RUN id -u sim >/dev/null 2>&1 || useradd -m -s /bin/bash sim
+RUN chown -R sim:sim /sim
+
+WORKDIR /sim
+VOLUME /sim/shared
+USER sim
+
+# -----------------------------
+# 4) Build-time Fenics simulations (bake results into image)
+# -----------------------------
+WORKDIR /sim/benchmarks/linear-elastic-plate-with-hole
+
+RUN mkdir -p results/fenics && \
+    for f in parameters_*.json; do \
+        cfg="${f%.json}"; \
+        python3 fenics/run_fenics_simulation.py \
+            --input_parameter_file "$f" \
+            --input_mesh_file results/linear-elastic-plate-with-hole/mesh/mesh_${cfg}.msh \
+            --output_solution_file_zip results/fenics/solution_field_data_${cfg}.zip \
+            --output_metrics_file results/fenics/solution_metrics_${cfg}.json; \
+    done
+
+# -----------------------------
+# 5) Final
+# -----------------------------
+WORKDIR /sim
+ENTRYPOINT ["/bin/bash"]

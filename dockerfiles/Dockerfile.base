@@ -1,16 +1,70 @@
-# Base image for all other stages
-FROM ubuntu:22.04
+# Dockerfile.base
+# ci-base: ubuntu:22.04, installs system deps + python deps, generates config & meshes at build time
 
-# Set environment
-ENV DEBIAN_FRONTEND=noninteractive
+FROM ubuntu:22.04 AS ci-base
+ARG DEBIAN_FRONTEND=noninteractive
 
-# Install basic packages
-RUN apt-get update && apt-get install -y \
-    python3 python3-pip python3-venv git unzip curl wget build-essential \
-    && ln -s /usr/bin/python3 /usr/bin/python \
+# -----------------------------
+# 1) Install system packages (kept together for caching)
+# -----------------------------
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip python3-venv \
+    cmake gcc g++ git wget curl unzip build-essential \
+    gmsh libgomp1 libxrender1 libxext6 libglu1-mesa \
+    libgl1-mesa-glx libosmesa6 xvfb \
+    libblas-dev liblapack-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip
-RUN python3 -m pip install --upgrade pip
+# -----------------------------
+# 2) Python & common pip packages (cache layer)
+# -----------------------------
+RUN python3 -m pip install --upgrade pip setuptools wheel
+# install packages needed by mesh generation (meshio, pyvista, etc.)
+RUN python3 -m pip install --no-cache-dir meshio pyvista pint sympy gmsh
 
-WORKDIR /workspace
+# -----------------------------
+# 3) Create a non-root runtime user (do not use /sim as home to avoid overwrites)
+# -----------------------------
+RUN useradd -m -s /bin/bash sim
+# create workspace
+RUN mkdir -p /sim && chown sim:sim /sim
+WORKDIR /sim
+
+# optional shared mount
+RUN mkdir -p /sim/shared
+VOLUME /sim/shared
+
+# -----------------------------
+# 4) Copy only required files to optimize cache
+#    (adjust these paths to match the repo)
+# -----------------------------
+COPY benchmarks/linear-elastic-plate-with-hole /sim/benchmarks/linear-elastic-plate-with-hole
+
+# if we have a requirements.txt for additional packages used by mesh scripts, copy it:
+# COPY requirements_mesh.txt /sim/requirements_mesh.txt
+# RUN python3 -m pip install --no-cache-dir -r /sim/requirements_mesh.txt
+
+# ensure ownership
+RUN chown -R sim:sim /sim
+
+# -----------------------------
+# 5) Build-time mesh generation (runs as non-root)
+#    This will bake meshes into the image layers.
+# -----------------------------
+USER sim
+WORKDIR /sim/benchmarks/linear-elastic-plate-with-hole
+
+RUN cd /sim/benchmarks/linear-elastic-plate-with-hole && \
+    ls && \
+    python3 generate_config.py && \
+    mkdir -p results/linear-elastic-plate-with-hole/mesh && \
+    for f in parameters_*.json; do \
+        python3 create_mesh.py --input_parameter_file "$f" \
+                               --output_mesh_file results/linear-elastic-plate-with-hole/mesh/mesh_${f%.json}.msh; \
+    done
+
+# -----------------------------
+# 6) Final workdir and entrypoint
+# -----------------------------
+WORKDIR /sim
+ENTRYPOINT ["/bin/bash"]
