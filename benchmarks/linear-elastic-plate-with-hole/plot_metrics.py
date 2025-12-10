@@ -3,7 +3,6 @@ import argparse
 from rdflib import Graph
 import matplotlib.pyplot as plt
 from collections import defaultdict
-from generate_config import workflow_config
 
 def load_graphs(base_dir):
     """
@@ -25,12 +24,11 @@ def load_graphs(base_dir):
     return graph_list
 
 
-def query_and_build_table(graph_list):
+def query_and_build_table(graph_list, tools):
     """
     Run SPARQL query on graphs and build a table.
     Returns headers and table_data.
     """
-    tools = workflow_config["tools"]
     filter_conditions = " || ".join(
         f'CONTAINS(LCASE(?tool_name), "{tool.lower()}")' for tool in tools
     )
@@ -147,7 +145,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process JSON-LD artifacts and display simulation results.")
     parser.add_argument("artifact_folder", type=str, help="Path to the folder containing unzipped artifacts")
     args = parser.parse_args()
-
+    tools = ["fenics", "kratos"]                    # Specify the simulation tools used for filtering knowledge graphs
     graphs = load_graphs(args.artifact_folder)
-    headers, table_data = query_and_build_table(graphs)
+    headers, table_data = query_and_build_table(graphs, tools)
     plot_element_size_vs_stress(headers, table_data, output_file="element_size_vs_stress.pdf")
