@@ -55,7 +55,6 @@ process summary{
     """
 }
 
-
 def prepare_inputs_for_process_summary(input_process_run_simulation, output_process_run_simulation) {
 
     // Input: channels of the input and the output of the simulation process
@@ -102,40 +101,30 @@ workflow {
     output_process_create_mesh = create_mesh(ch_mesh_python_script, ch_configurations, ch_parameter_files)
 
     input_process_run_simulation = ch_configurations.merge(ch_parameter_files).join(output_process_create_mesh)
-    
+
     //Running Simulation
+    
+    ch_tool = Channel.value(params.tool) 
+    
+    if (params.tool == "fenics") {
+        fenics_workflow(input_process_run_simulation, params.result_dir)
+        output_simulation_tool_workflow = fenics_workflow.out
+        
+    } 
+    else if (params.tool == "kratos") {
+        kratos_workflow(input_process_run_simulation, params.result_dir)
+        output_simulation_tool_workflow = kratos_workflow.out
+    }
+    else {
+        error "Unknown tool: ${params.tool}"
+    }
+    
+    def (input_summary_configuration,\
+    input_summary_parameter_file,\
+    input_summary_mesh,\
+    input_summary_solution_field,\
+    input_summary_metrics) = prepare_inputs_for_process_summary(input_process_run_simulation, output_simulation_tool_workflow)
 
-    ch_tools = Channel.fromList(params.tools) 
-
-    input_process_run_simulation_with_tool = ch_tools.combine(input_process_run_simulation)
-    input_fenics_workflow = input_process_run_simulation_with_tool.filter{ it[0] == 'fenics' }.map{_w,x,y,z -> tuple(x,y,z)}
-    input_kratos_workflow = input_process_run_simulation_with_tool.filter{ it[0] == 'kratos' }.map{_w,x,y,z -> tuple(x,y,z)}
-
-
-    fenics_workflow(input_fenics_workflow, params.result_dir)
-    output_fenics_workflow = fenics_workflow.out
-    def (fenics_configurations,\
-        fenics_parameter_files,\
-        fenics_meshes,\
-        fenics_solution_fields,\
-        fenics_summary_metrics) = prepare_inputs_for_process_summary(input_fenics_workflow, output_fenics_workflow)
-
-
-    kratos_workflow(input_kratos_workflow, params.result_dir)
-    output_kratos_workflow = kratos_workflow.out
-    def (kratos_configurations, \
-        kratos_parameter_files, \
-        kratos_meshes, \
-        kratos_solution_fields, \
-        kratos_summary_metrics) = prepare_inputs_for_process_summary(input_kratos_workflow, output_kratos_workflow)
-
-
-    // channels are concatenated in the same order as they are passed to the .concat. The order should be consistent with the order of tools in ch_tools.
-    input_summary_configuration = fenics_configurations.concat(kratos_configurations)
-    input_summary_parameter_file = fenics_parameter_files.concat(kratos_parameter_files)
-    input_summary_mesh = fenics_meshes.concat(kratos_meshes)
-    input_summary_solution_field = fenics_solution_fields.concat(kratos_solution_fields)
-    input_summary_metrics = fenics_summary_metrics.concat(kratos_summary_metrics)
 
     //Summarizing results
     def ch_benchmark = Channel.value(params.benchmark)
@@ -149,18 +138,15 @@ workflow {
             input_summary_solution_field, \
             ch_benchmark, \
             ch_benchmark_uri, \
-            ch_tools)
+            ch_tool)/**/
 
 }
 /*
 Steps to add a new simulation tool to the workflow:
 
 1. Write the tool-specific workflow, scripts, environment file and store them in the benchmarks/linear-elastic-plate-with-hole/tool_name/.
-2. Add the tool name to "tools" workflow_config.json (generated here using generate_config.py)
-3. Include the tool-specific workflow script at the top of this file.
-4. Create an input channel for the new tool (e.g. see the definition of input_fenics_workflow)
-5. Invoke the new tool-specific workflow (similar to fenics_workflow) & using its output, prepare inputs for the summary process.
-6. Concatenate the prepared inputs to form the final input channels for the summary process.
+2. Include the tool-specific workflow script at the top of this file.
+3. Add an if-else statement for the new tool to be compared with the user input at CLI.
 
 ---------------------------------------------------------------------------------------------------------------------------------
 

@@ -4,14 +4,14 @@ configfile: "workflow_config.json"
 result_dir = "snakemake_results/" + config["benchmark"] 
 configuration_to_parameter_file = config["configuration_to_parameter_file"]
 configurations = config["configurations"]
-tools = config["tools"]
+tool = config["tool"]
 benchmark = config["benchmark"]
 benchmark_uri = config["benchmark_uri"]
 
 
 rule all:
     input:
-        expand(f"{result_dir}/{{tool}}/summary.json", tool=tools),
+        expand(f"{result_dir}/{{tool}}/summary.json", tool=tool),
 
 rule create_mesh:    
     input:
@@ -34,8 +34,8 @@ rule create_mesh:
 # solution_metrics_{configuration}.json and 
 # and solution_field_data_{configuration}.zip whee all the visualization files are stored
 # (e.g. vtk)
-for tool in tools:
-    include: f"{tool}/Snakefile"
+#for tool in tools:
+include: f"{tool}/Snakefile"
 
 
 rule summary:
@@ -70,12 +70,6 @@ rule summary:
         """
 
 """ 
-Steps to add a new simulation tool to the workflow:
-
-1. Write the tool-specific workflow, scripts, environment file and store them in the benchmarks/linear-elastic-plate-with-hole/tool_name/.
-2. Add the tool name to "tools" workflow_config.json (generated here using generate_config.py)
-
-------------------------------------------------------------------------------------------------------------------------
 "rule all" defines the final target of the workflow. Knowing the final target, the snakemake determines
 the dependency chain automatically.
 
