@@ -1,0 +1,65 @@
+# SPDX-FileCopyrightText: Copyright © DuMux Project contributors, see AUTHORS.md in root folder
+# SPDX-License-Identifier: CC0-1.0
+
+# build system clutter
+build-*
+Testing
+!bin/testing
+
+# auto-saved files
+*~
+
+# hidden files
+.cproject
+.project
+.vscode
+
+# left overs from git rebase
+*.orig
+*.rej
+
+# latex clutter
+*.pdf
+*.aux
+*.blg
+*.log
+*.bbl
+*.dvi
+*.idx
+*.out
+*.tdo
+*.toc
+*.synctex.gz
+
+# Python clutter
+*.pyc
+__pycache__
+.ipynb_checkpoints
+*.bin
+*.npy
+
+# Environments
+.env
+.venv
+env/
+venv/
+
+# macOS
+.DS_Store
+
+# always consider files containing source code regardless of their name
+!*.cc
+!*.hh
+!*.c
+!*.h
+!*.sh
+!*.py
+
+# always consider reference solutions
+!*reference.vtu
+
+# ignore files generated during python setup.py sdist
+MANIFEST
+_skbuild/
+dist
+*.egg-info
