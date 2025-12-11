@@ -4,7 +4,6 @@ channels:
   - bioconda
 dependencies:
   - snakemake
-  - nextflow
   - pyvista
   - meshio
   - conda-lock

@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 
 
-def generate_snakefile(tool_name: str, environment_file: str, simulation_script: str, output_path: str = None):
+def generate_snakefile(benchmark_name: str, tool_name: str, environment_file: str, simulation_script: str, output_path: str = None):
     """
     Generate a Snakefile for a simulation tool.
     
@@ -22,40 +22,23 @@ def generate_snakefile(tool_name: str, environment_file: str, simulation_script:
         output_path: Optional path where to save the Snakefile. If None, saves to {tool_name}/Snakefile
     """
     
-    # Template for the Snakefile
+    # Load template from external file
+    template_path = Path(__file__).parent / "snakefile_template.txt"
+    with open(template_path, 'r') as f:
+        snakefile_template = f.read()
     
-    snakefile_template = f'''import json
-import os
-
-tool = "{tool_name}"
-result_dir = "snakemake_results/" + config["benchmark"] 
-configuration_to_parameter_file = config["configuration_to_parameter_file"]
-configurations = config["configurations"]
-
-
-rule run_{tool_name}_simulation:
-    input: 
-        script = "{{tool}}/{simulation_script}",
-        parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
-        mesh = f"{{result_dir}}/mesh/mesh_{{{{configuration}}}}.msh",
-    output:
-        zip = f"{{result_dir}}/{{{{tool}}}}/solution_field_data_{{{{configuration}}}}.zip",
-        metrics = f"{{result_dir}}/{{{{tool}}}}/solution_metrics_{{{{configuration}}}}.json",
-    conda:
-        "{environment_file}",
-    shell:
-        """
-        python3 {{input.script}} --input_parameter_file {{input.parameters}} --input_mesh_file {{input.mesh}} --output_solution_file_zip {{output.zip}} --output_metrics_file {{output.metrics}}
-        """
-    '''
+    # Replace placeholders with actual values
+    snakefile_content = snakefile_template.replace("{TOOL_NAME}", tool_name) \
+                                          .replace("{SIMULATION_SCRIPT}", simulation_script) \
+                                          .replace("{ENVIRONMENT_FILE}", environment_file)
     
     # Determine output path
     if output_path is None:
-        output_path = f"../linear-elastic-plate-with-hole/{tool_name}/Snakefile"
+        output_path = f"../{benchmark_name}/{tool_name}/Snakefile"
     
     # Write the Snakefile
     with open(output_path, 'w') as f:
-        f.write(snakefile_template)
+        f.write(snakefile_content)
     
     print(f"Snakefile generated successfully: {output_path}")
 
@@ -78,7 +61,13 @@ def main():
 
     """
     )
-    
+    parser.add_argument(
+        '--benchmark_name',
+        type=str,
+        required=True,
+        help='Name of the benchmark (same as the benchmark directory name)'
+    )
+        
     parser.add_argument(
         '--tool',
         type=str,
@@ -103,6 +92,7 @@ def main():
     args = parser.parse_args()
     
     generate_snakefile(
+        benchmark_name=args.benchmark_name,
         tool_name=args.tool,
         environment_file=args.environment_file,
         simulation_script=args.simulation_script

@@ -48,7 +48,7 @@ jobs:
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/common/
-          python simulation_tool_snakefile_generator.py --tool fenics --simulation_script run_fenics_simulation.py --environment_file environment_simulation.yml
+          python simulation_tool_snakefile_generator.py --benchmark_name linear-elastic-plate-with-hole --tool fenics --simulation_script run_fenics_simulation.py --environment_file environment_simulation.yml
 
       - name: run_linear-elastic-plate-with-hole-benchmarks_snakemake
         shell: bash -l {0}
@@ -67,13 +67,6 @@ jobs:
             --report-metadata4ing-paramscript ../common/parameter_extractor.py \
             --report-metadata4ing-filename snakemake_provenance_kratos
           unzip snakemake_provenance_kratos -d snakemake_provenance_kratos
-      
-      - name: run_linear-elastic-plate-with-hole-benchmarks_nextflow
-        shell: bash -l {0}
-        run: |
-          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
-          nextflow run main.nf -params-file workflow_config.json --tool="fenics" -c ../common/nextflow.config -plugins nf-prov@1.4.0
-          nextflow run main.nf -params-file workflow_config.json --tool="kratos"  -c ../common/nextflow.config -plugins nf-prov@1.4.0
 
       - name: Archive Linear Elastic plate with a hole benchmark data for snakemake fenics
         uses: actions/upload-artifact@v4
@@ -89,13 +82,6 @@ jobs:
             path: |
               benchmarks/linear-elastic-plate-with-hole/snakemake_provenance_kratos/
 
-      - name: Archive Linear Elastic plate with a hole benchmark data for nextflow fenics
-        uses: actions/upload-artifact@v4
-        with:
-            name: nextflow_results_linear-elastic-plate-with-hole
-            path: |
-              benchmarks/linear-elastic-plate-with-hole/nextflow_results/
-
   process-artifacts:
     runs-on: ubuntu-latest
     needs: tests
@@ -107,13 +93,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: snakemake_fenics_result_linear-elastic-plate-with-hole
-          path: ./snakemake_provenance
+          path: ./snakemake_fenics_provenance
 
       - name: Download snakemake kratos artifact
         uses: actions/download-artifact@v4
         with:
           name: snakemake_kratos_result_linear-elastic-plate-with-hole
-          path: ./snakemake_provenance
+          path: ./snakemake_kratos_provenance
 
       - name: Setup Mambaforge with postprocessing env
         uses: conda-incubator/setup-miniconda@v3
@@ -126,7 +112,7 @@ jobs:
       - name: Run plotting script
         shell: bash -l {0}
         run: |
-          python benchmarks/linear-elastic-plate-with-hole/plot_metrics.py ./snakemake_provenance
+          python benchmarks/linear-elastic-plate-with-hole/plot_metrics.py ./snakemake_fenics_provenance ./snakemake_kratos_provenance
 
       - name: Upload PDF plot as artifact
         uses: actions/upload-artifact@v4

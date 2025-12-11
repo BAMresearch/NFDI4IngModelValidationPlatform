@@ -1,0 +1,23 @@
+import json
+import os
+
+tool = "{TOOL_NAME}"
+result_dir = "snakemake_results/" + config["benchmark"] 
+configuration_to_parameter_file = config["configuration_to_parameter_file"]
+configurations = config["configurations"]
+
+
+rule run_{TOOL_NAME}_simulation:
+    input: 
+        script = f"{tool}/{SIMULATION_SCRIPT}",
+        parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
+        mesh = f"{result_dir}/{tool}/mesh/mesh_{{configuration}}.msh",
+    output:
+        zip = f"{result_dir}/{tool}/solution_field_data_{{configuration}}.zip",
+        metrics = f"{result_dir}/{tool}/solution_metrics_{{configuration}}.json",
+    conda:
+        "{ENVIRONMENT_FILE}",
+    shell:
+        """
+        python3 {input.script} --input_parameter_file {input.parameters} --input_mesh_file {input.mesh} --output_solution_file_zip {output.zip} --output_metrics_file {output.metrics}
+        """
