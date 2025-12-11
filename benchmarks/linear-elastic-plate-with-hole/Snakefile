@@ -4,14 +4,14 @@ configfile: "workflow_config.json"
 result_dir = "snakemake_results/" + config["benchmark"] 
 configuration_to_parameter_file = config["configuration_to_parameter_file"]
 configurations = config["configurations"]
-tools = config["tools"]
+tool = config["tool"]
 benchmark = config["benchmark"]
 benchmark_uri = config["benchmark_uri"]
 
 
 rule all:
     input:
-        expand(f"{result_dir}/{{tool}}/summary.json", tool=tools),
+        f"{result_dir}/{tool}/summary.json"
 
 rule create_mesh:    
     input:
@@ -21,7 +21,7 @@ rule create_mesh:
         # otherwise, you could just write configuration_to_parameter_file(configuration)
         parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
     output:
-        mesh = f"{result_dir}/mesh/mesh_{{configuration}}.msh",
+        mesh = f"{result_dir}/{tool}/mesh/mesh_{{configuration}}.msh",
     conda: "environment_mesh.yml"
     shell:
         """
@@ -29,13 +29,11 @@ rule create_mesh:
         """
 
 # Include tool-specific rules
-# The should have at least the mesh file and the parameters as input
+# They should have at least the mesh file and the parameters as input
 # and output for each configuration a 
 # solution_metrics_{configuration}.json and 
-# and solution_field_data_{configuration}.zip whee all the visualization files are stored
-# (e.g. vtk)
-for tool in tools:
-    include: f"{tool}/Snakefile"
+# and solution_field_data_{configuration}.zip where all the visualization files are stored (e.g. vtk)
+include: f"{tool}/Snakefile"
 
 
 rule summary:
@@ -44,7 +42,7 @@ rule summary:
         # (snakemake_results/linear-elastic-plate-with-hole/fenics/summary.json)
         script = "../common/summarize_results.py",
         parameters = expand("{param}", param=[configuration_to_parameter_file[c] for c in configurations]),
-        mesh = expand(f"{result_dir}/mesh/mesh_{{configuration}}.msh", configuration=configurations),
+        mesh = expand(f"{result_dir}/{tool}/mesh/mesh_{{configuration}}.msh", configuration=configurations),
         metrics = lambda wildcards: expand(
             f"{result_dir}/{{tool}}/solution_metrics_{{configuration}}.json",
             tool=[wildcards.tool], configuration=configurations
@@ -70,12 +68,6 @@ rule summary:
         """
 
 """ 
-Steps to add a new simulation tool to the workflow:
-
-1. Write the tool-specific workflow, scripts, environment file and store them in the benchmarks/linear-elastic-plate-with-hole/tool_name/.
-2. Add the tool name to "tools" workflow_config.json (generated here using generate_config.py)
-
-------------------------------------------------------------------------------------------------------------------------
 "rule all" defines the final target of the workflow. Knowing the final target, the snakemake determines
 the dependency chain automatically.
 

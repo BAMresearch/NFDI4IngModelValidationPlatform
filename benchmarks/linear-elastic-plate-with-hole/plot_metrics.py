@@ -3,34 +3,33 @@ import argparse
 from rdflib import Graph
 import matplotlib.pyplot as plt
 from collections import defaultdict
-from generate_config import workflow_config
 
-def load_graphs(base_dir):
+def load_graphs(base_dirs):
     """
     Walk through the base_dir and load all JSON-LD files into rdflib Graphs.
     """
     graph_list = []
-    for root, _, files in os.walk(base_dir):
-        for file in files:
-            if file.endswith(".jsonld"):
-                file_path = os.path.join(root, file)
-                try:
-                    g = Graph()
-                    g.parse(file_path, format='json-ld')
-                    graph_list.append(g)
-                    print(f"✅ Parsed: {file_path}")
-                except Exception as e:
-                    print(f"❌ Failed to parse {file_path}: {e}")
+    for base_dir in base_dirs:
+        for root, _, files in os.walk(base_dir):
+            for file in files:
+                if file.endswith(".jsonld"):
+                    file_path = os.path.join(root, file)
+                    try:
+                        g = Graph()
+                        g.parse(file_path, format='json-ld')
+                        graph_list.append(g)
+                        print(f"✅ Parsed: {file_path}")
+                    except Exception as e:
+                        print(f"❌ Failed to parse {file_path}: {e}")
     print(f"\nTotal graphs loaded: {len(graph_list)}")
     return graph_list
 
 
-def query_and_build_table(graph_list):
+def query_and_build_table(graph_list, tools):
     """
     Run SPARQL query on graphs and build a table.
     Returns headers and table_data.
     """
-    tools = workflow_config["tools"]
     filter_conditions = " || ".join(
         f'CONTAINS(LCASE(?tool_name), "{tool.lower()}")' for tool in tools
     )
@@ -145,9 +144,9 @@ def plot_element_size_vs_stress(headers, table_data, output_file="element_size_v
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process JSON-LD artifacts and display simulation results.")
-    parser.add_argument("artifact_folder", type=str, help="Path to the folder containing unzipped artifacts")
+    parser.add_argument("artifact_folders", type=str, nargs='+', help="Path(s) to the folder(s) containing unzipped artifacts")
     args = parser.parse_args()
-
-    graphs = load_graphs(args.artifact_folder)
-    headers, table_data = query_and_build_table(graphs)
+    tools = ["fenics", "kratos"]                    # Specify the simulation tools used for filtering knowledge graphs
+    graphs = load_graphs(args.artifact_folders)
+    headers, table_data = query_and_build_table(graphs, tools)
     plot_element_size_vs_stress(headers, table_data, output_file="element_size_vs_stress.pdf")

@@ -12,7 +12,7 @@ kratos_material_template = f"{tool}/StructuralMaterials_template.json"
 rule mesh_to_mdpa:
     input:
         parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
-        mesh = f"{result_dir}/mesh/mesh_{{configuration}}.msh",
+        mesh = f"{result_dir}/{tool}/mesh/mesh_{{configuration}}.msh",
         script = f"{tool}/msh_to_mdpa.py",
     output:
         mdpa = f"{result_dir}/{tool}/mesh_{{configuration}}.mdpa",
