@@ -1,0 +1,35 @@
+FROM ci-base
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Only pip packages required
+RUN python3 -m pip install --upgrade pip setuptools wheel && \
+    python3 -m pip install --no-cache-dir KratosMultiphysics-all meshio pyvista pint sympy
+
+# User (already exists in ci-base)
+USER sim
+WORKDIR /sim
+VOLUME /sim/shared
+
+# Run Kratos simulations
+WORKDIR /sim/benchmarks/linear-elastic-plate-with-hole
+RUN mkdir -p results/kratos && \
+    for f in parameters_*.json; do \
+        python3 kratos/msh_to_mdpa.py \
+            --input_parameter_file "$f" \
+            --input_mesh_file results/linear-elastic-plate-with-hole/mesh/mesh_${f%.json}.msh \
+            --output_mdpa_file results/kratos/mesh_${f%.json}.mdpa; \
+        python3 kratos/create_kratos_input.py \
+            --input_parameter_file "$f" \
+            --input_mdpa_file results/kratos/mesh_${f%.json}.mdpa \
+            --input_kratos_input_template kratos/input_template.json \
+            --input_material_template kratos/StructuralMaterials_template.json \
+            --output_kratos_inputfile results/kratos/ProjectParameters_${f%.json}.json \
+            --output_kratos_materialfile results/kratos/MaterialParameters_${f%.json}.json; \
+        python3 kratos/run_kratos_simulation.py \
+            --input_parameter_file "$f" \
+            --input_kratos_inputfile results/kratos/ProjectParameters_${f%.json}.json \
+            --input_kratos_materialfile results/kratos/MaterialParameters_${f%.json}.json; \
+    done
+
+ENTRYPOINT ["/bin/bash"]

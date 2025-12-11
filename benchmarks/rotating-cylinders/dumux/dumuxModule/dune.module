@@ -1,0 +1,12 @@
+################################
+# Dune module information file #
+################################
+
+# Name of the module
+Module: dumuxModule
+Version: 1.0
+Maintainer: sarbani.roy@simtech.uni-stuttgart.de
+# Required build dependencies
+Depends: dune-common dune-istl dune-geometry dune-uggrid dune-grid dune-localfunctions dumux
+# Optional build dependencies
+#Suggests:

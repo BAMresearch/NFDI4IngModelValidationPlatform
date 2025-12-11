@@ -15,9 +15,23 @@ rule run_fenics_simulation:
     output:
         zip = f"{result_dir}/{{tool}}/solution_field_data_{{configuration}}.zip",
         metrics = f"{result_dir}/{{tool}}/solution_metrics_{{configuration}}.json",
-    conda:
-        "environment_simulation.yml",
+    # conda:
+    #     "environment_simulation.yml",
     shell:
         """
-        python3 {input.script} --input_parameter_file {input.parameters} --input_mesh_file {input.mesh} --output_solution_file_zip {output.zip} --output_metrics_file {output.metrics}
+        # Disable 'unbound variable' errors to avoid ADDR2LINE issues
+        set +u
+        # Load conda
+        source /opt/miniforge/etc/profile.d/conda.sh
+        # Activate the FEniCS environment
+        conda activate fenics-sim
+        # Prevent OpenMP crash under qemu (macOS/arm64 emulation)
+        export OMP_NUM_THREADS=1
+
+        # Run the actual simulation
+        python3 {input.script} \
+            --input_parameter_file {input.parameters} \
+            --input_mesh_file {input.mesh} \
+            --output_solution_file_zip {output.zip} \
+            --output_metrics_file {output.metrics}
         """

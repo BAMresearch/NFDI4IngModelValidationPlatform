@@ -1,0 +1,107 @@
+name: Docker-based CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '3 16 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+            persist-credentials: false
+
+      # -----------------------------
+      # Build Docker images
+      # -----------------------------
+      - name: Build base image (mesh generation included)
+        run: docker build -t ci-base -f dockerfiles/Dockerfile.base .
+
+      - name: Build Fenics image (simulations included)
+        run: docker build -t ci-fenics -f dockerfiles/Dockerfile.fenics .
+
+      - name: Build Kratos image (simulations included)
+        run: docker build -t ci-kratos -f dockerfiles/Dockerfile.kratos .
+
+      # -----------------------------
+      # Extract Fenics results
+      # -----------------------------
+      - name: Extract Results from Fenics container
+        run: |
+          docker create --name fenics_temp ci-fenics
+          # Copy the results folder as-is from container to host
+          docker cp fenics_temp:/sim/benchmarks/linear-elastic-plate-with-hole/results ./benchmarks/linear-elastic-plate-with-hole/
+          docker rm fenics_temp
+
+      # -----------------------------
+      # Extract Kratos results
+      # -----------------------------
+      - name: Extract Kratos results
+        run: |
+          docker create --name kratos_temp ci-kratos
+          # Copy the results folder as-is from container to host
+          docker cp kratos_temp:/sim/benchmarks/linear-elastic-plate-with-hole/results ./benchmarks/linear-elastic-plate-with-hole/
+          docker rm kratos_temp
+
+      # -----------------------------
+      # Upload Artifacts
+      # -----------------------------
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-results
+          path: |
+            benchmarks/linear-elastic-plate-with-hole/results/fenics
+            benchmarks/linear-elastic-plate-with-hole/results/kratos
+
+      # # -----------------------------
+      # # Optional: commit generated results to GitHub
+      # # -----------------------------
+      # - name: Commit generated results
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     git config --global user.name "github-actions[bot]"
+      #     git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      #     # Create a flat zip of the simulation results
+      #     cd benchmarks/linear-elastic-plate-with-hole
+      #     tar -cJf simulation_results.tar.xz results
+      #     cd ../..
+
+      #     # Add only the zip
+      #     git add -f benchmarks/linear-elastic-plate-with-hole/simulation_results.tar.xz
+
+      #     git commit -m "Add generated simulation results" || echo "No changes to commit"
+      #     git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:main
+
+      # - name: Build Postprocessing image
+      #   run: |
+      #     docker build -t ci-postprocessing -f dockerfiles/Dockerfile.postprocessing .
+
+      # - name: Postprocessing (metadata + extraction + plot)
+      #   run: |
+      #     docker run --rm \
+      #       -v ${{ github.workspace }}:/workspace \
+      #       -w /workspace/benchmarks/linear-elastic-plate-with-hole \
+      #       ci-postprocessing \
+      #       bash -c '
+      #         echo "Generating metadata...";
+      #         python parameter_extractor.py ./results metadata4ing_provenance.zip;
+      #
+      #         echo "Extracting ZIP...";
+      #         mkdir -p ./metadata4ing_provenance;
+      #         unzip -o metadata4ing_provenance.zip -d ./metadata4ing_provenance;
+      #
+      #         echo "Plotting provenance...";
+      #         python plot_provenance.py ./metadata4ing_provenance
+      #       '
