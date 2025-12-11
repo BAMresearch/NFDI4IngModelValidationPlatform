@@ -1,9 +1,0 @@
-name: rohub
-channels:
-  - conda-forge
-dependencies:
-  - python=3.12
-  - sparqlwrapper
-  - pip
-  - pip:
-    - "--editable=git+https://gitlab.pcss.pl/daisd-public/rohub/rohub-api.git#egg=rohub"
