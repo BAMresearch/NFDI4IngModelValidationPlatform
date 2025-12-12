@@ -12,6 +12,12 @@ def parse_args():
         required=True,
         help="Path to the folder containing provenance data",
     )
+    parser.add_argument(
+        "--provenance_filename",
+        type=str,
+        default="ro-crate-metadata.json",
+        help="File name for the provenance graph",
+    )
     return parser.parse_args()
 
 
