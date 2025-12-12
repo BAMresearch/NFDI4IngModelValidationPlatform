@@ -6,12 +6,13 @@ from typing import List, Tuple
 import re
 from rocrate_validator import services, models
 
+
 class ProvenanceAnalyzer:
     """
     A class to analyze, validate, and visualize provenance data from RO-Crate metadata files.
 
-    This class loads RO-Crate JSON-LD files, builds dynamic SPARQL queries to extract 
-    workflow metadata about methods, parameters, and metrics, and provides visualization 
+    This class loads RO-Crate JSON-LD files, builds dynamic SPARQL queries to extract
+    workflow metadata about methods, parameters, and metrics, and provides visualization
     capabilities. It also validates RO-Crate files against the RO-Crate 1.1 profile.
 
     Attributes:
@@ -61,13 +62,13 @@ class ProvenanceAnalyzer:
     def sanitize_variable_name(self, name: str) -> str:
         """
         Convert a string into a valid SPARQL variable name.
-        
+
         Replaces invalid characters with underscores and ensures the variable
         name doesn't start with a digit.
-        
+
         Args:
             name (str): The original string to convert.
-            
+
         Returns:
             str: A sanitized variable name safe for use in SPARQL queries.
         """
@@ -80,20 +81,20 @@ class ProvenanceAnalyzer:
 
     def build_dynamic_query(self, parameters, metrics, tools=None, named_graph=None):
         """
-        Generate a dynamic SPARQL query to extract m4i:Method instances with specified 
+        Generate a dynamic SPARQL query to extract m4i:Method instances with specified
         parameters and metrics.
-        
+
         The query extracts methods along with their associated parameters (via m4i:hasParameter),
         metrics (via m4i:investigates), and the tools that implement them (via ssn:implementedBy).
-        
+
         Args:
             parameters (list): List of parameter names to query (matched via rdfs:label).
             metrics (list): List of metric names to query (matched via rdfs:label).
-            tools (list, optional): List of tool name substrings to filter results. 
+            tools (list, optional): List of tool name substrings to filter results.
                                    Case-insensitive matching. Defaults to None.
-            named_graph (str, optional): URI of a named graph to query within. 
+            named_graph (str, optional): URI of a named graph to query within.
                                         If None, queries the default graph. Defaults to None.
-        
+
         Returns:
             str: A complete SPARQL query string ready to execute.
         """
@@ -171,7 +172,7 @@ class ProvenanceAnalyzer:
             query (str): The SPARQL query string to execute.
 
         Returns:
-            rdflib.plugins.sparql.processor.SPARQLResult: The query results object 
+            rdflib.plugins.sparql.processor.SPARQLResult: The query results object
                                                           from rdflib.
         """
         return graph.query(query)
@@ -190,7 +191,7 @@ class ProvenanceAnalyzer:
     ):
         """
         Generates a scatter/line plot from the extracted provenance data.
-        
+
         The plot displays data points grouped by a specified column, with each group
         shown as a separate line series. The x-axis uses a logarithmic scale.
 
@@ -202,9 +203,9 @@ class ProvenanceAnalyzer:
             y_axis_index (int or str): Index or key for the y-axis values in each row.
             group_by_index (int or str): Index or key for the grouping variable (used for legend).
             title (str): Title of the plot.
-            output_file (str, optional): Path where the plot will be saved as an image. 
+            output_file (str, optional): Path where the plot will be saved as an image.
                                         If None, displays the plot. Defaults to None.
-            figsize (Tuple[int, int], optional): Figure dimensions (width, height). 
+            figsize (Tuple[int, int], optional): Figure dimensions (width, height).
                                                 Defaults to (12, 5).
         """
 
@@ -244,36 +245,32 @@ class ProvenanceAnalyzer:
         else:
             plt.show()
 
-
-    def validate_provevance(self): 
+    def validate_provevance(self):
         """
         Validates the RO-Crate against the RO-Crate 1.1 profile.
-        
+
         Uses the rocrate-validator library to check if the RO-Crate metadata
         conforms to the RO-Crate 1.1 specification with required severity level.
-        
+
         Raises:
             AssertionError: If the RO-Crate has validation issues, with details
                            about each issue's severity and message.
-        
+
         Prints:
             Success message if the RO-Crate is valid.
         """
         settings = services.ValidationSettings(
             rocrate_uri=self.provenance_folderpath,
-            profile_identifier='ro-crate-1.1',
+            profile_identifier="ro-crate-1.1",
             requirement_severity=models.Severity.REQUIRED,
         )
 
         result = services.validate(settings)
 
-        assert not result.has_issues(), (
-            "RO-Crate is invalid!\n" +
-            "\n".join(
-                f"Detected issue of severity {issue.severity.name} with check "
-                f'"{issue.check.identifier}": {issue.message}'
-                for issue in result.get_issues()
-            )
+        assert not result.has_issues(), "RO-Crate is invalid!\n" + "\n".join(
+            f"Detected issue of severity {issue.severity.name} with check "
+            f'"{issue.check.identifier}": {issue.message}'
+            for issue in result.get_issues()
         )
 
         print("RO-Crate is valid!")

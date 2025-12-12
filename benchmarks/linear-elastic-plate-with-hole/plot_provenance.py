@@ -9,7 +9,7 @@ import pandas as pd
 def parse_args():
     """
     Parse command-line arguments for the provenance processing script.
-    
+
     Returns:
         argparse.Namespace: Parsed arguments containing:
             - provenance_folderpath: Path to the folder with RO-Crate data
@@ -43,14 +43,14 @@ def parse_args():
 def sparql_result_to_dataframe(results):
     """
     Convert SPARQL query results into a pandas DataFrame.
-    
+
     Extracts variable bindings from each result row using asdict() and converts
     RDF values to Python native types using toPython().
-    
+
     Args:
-        results (rdflib.plugins.sparql.processor.SPARQLResult): SPARQL query results 
+        results (rdflib.plugins.sparql.processor.SPARQLResult): SPARQL query results
                                                                 from rdflib.
-    
+
     Returns:
         pd.DataFrame: DataFrame where each row represents a query result and columns
                      correspond to SPARQL variables.
@@ -67,16 +67,16 @@ def sparql_result_to_dataframe(results):
 def apply_custom_filters(data: pd.DataFrame) -> pd.DataFrame:
     """
     Filter provenance data to include only first-order linear elements.
-    
+
     Filters rows where element_degree = 1 and element_order = 1, then removes
     these filtering columns from the result.
-    
+
     Args:
-        data (pd.DataFrame): Input DataFrame containing element_degree and 
+        data (pd.DataFrame): Input DataFrame containing element_degree and
                             element_order columns.
-    
+
     Returns:
-        pd.DataFrame: Filtered DataFrame with element_degree and element_order 
+        pd.DataFrame: Filtered DataFrame with element_degree and element_order
                      columns removed and index reset.
     """
     filtered_df = data[(data["element_degree"] == 1) & (data["element_order"] == 1)]
@@ -89,16 +89,16 @@ def apply_custom_filters(data: pd.DataFrame) -> pd.DataFrame:
 def summary_file_to_dataframe(summary_path, parameters, metrics):
     """
     Load benchmark data from a summary.json file into a DataFrame.
-    
+
     Handles both dictionary-style parameter/metric values (with 'value' key) and
     direct scalar values. Converts parameter names from underscore to hyphen format
     for JSON lookup.
-    
+
     Args:
         summary_path (str): Path to the summary.json file.
         parameters (list): List of parameter names to extract.
         metrics (list): List of metric names to extract.
-    
+
     Returns:
         pd.DataFrame: DataFrame with columns for each parameter and metric.
     """
@@ -134,20 +134,20 @@ def summary_file_to_dataframe(summary_path, parameters, metrics):
 def compare_dataframes(df1: pd.DataFrame, df2: pd.DataFrame):
     """
     Compare two DataFrames for identical content regardless of row order.
-    
+
     Sorts both DataFrames by all columns, then checks for equality. If differences
     are found, prints rows that appear in one DataFrame but not the other.
-    
+
     Args:
         df1 (pd.DataFrame): First DataFrame to compare.
         df2 (pd.DataFrame): Second DataFrame to compare.
-    
+
     Returns:
         bool: True if DataFrames contain identical data, False otherwise.
-    
+
     Raises:
         ValueError: If the DataFrames have different columns.
-    
+
     Prints:
         Rows that are present in one DataFrame but missing in the other,
         when differences are detected.
@@ -186,23 +186,23 @@ def compare_dataframes(df1: pd.DataFrame, df2: pd.DataFrame):
 def load_and_query_graph(analyzer, parameters, metrics, tools):
     """
     Load the RO-Crate graph and execute a SPARQL query to extract provenance data.
-    
+
     Args:
         analyzer (ProvenanceAnalyzer): Initialized analyzer instance.
         parameters (list): List of parameter names to query.
         metrics (list): List of metric names to query.
         tools (list): List of tool names to filter by.
-    
+
     Returns:
         pd.DataFrame: DataFrame containing the query results.
-    
+
     Raises:
         AssertionError: If the query returns no data.
     """
     graph = analyzer.load_graph_from_file()
     query = analyzer.build_dynamic_query(parameters, metrics, tools)
     results = analyzer.run_query_on_graph(graph, query)
-    
+
     provenance_df = sparql_result_to_dataframe(results)
     assert len(provenance_df), "No data found for the provenance query."
 
@@ -214,18 +214,18 @@ def validate_provenance_data(
 ):
     """
     Validate provenance query results against ground truth data from summary.json files.
-    
+
     For each tool, loads the corresponding summary.json file and compares its data
     against the filtered provenance query results for that tool.
-    
+
     Args:
         provenance_df (pd.DataFrame): DataFrame containing all provenance query results.
         parameters (list): List of parameter names used in the comparison.
         metrics (list): List of metric names used in the comparison.
         tools (list): List of tool names to validate.
-        provenance_folderpath (str): Base path to the provenance folder containing 
+        provenance_folderpath (str): Base path to the provenance folder containing
                                      summary.json files.
-    
+
     Raises:
         AssertionError: If data mismatch is found between summary.json and provenance
                        data for any tool.
@@ -252,14 +252,14 @@ def validate_provenance_data(
 def plot_results(analyzer, final_df, output_file):
     """
     Generate a visualization plot of the provenance results.
-    
+
     Creates a scatter/line plot showing the relationship between element size
     and maximum von Mises stress, grouped by tool name.
-    
+
     Args:
         analyzer (ProvenanceAnalyzer): Initialized analyzer instance.
         final_df (pd.DataFrame): DataFrame containing filtered data to plot.
-                                Expected columns: element_size, max_von_mises_stress_nodes, 
+                                Expected columns: element_size, max_von_mises_stress_nodes,
                                 tool_name (in that order).
         output_file (str): Path where the plot image will be saved.
     """
@@ -278,7 +278,7 @@ def plot_results(analyzer, final_df, output_file):
 def run(args, parameters, metrics, tools):
     """
     Execute the complete provenance analysis workflow.
-    
+
     Performs the following steps:
     1. Initialize the ProvenanceAnalyzer
     2. Validate the RO-Crate metadata structure
@@ -286,7 +286,7 @@ def run(args, parameters, metrics, tools):
     4. Validate query results against summary.json ground truth data
     5. Apply custom filters to the data
     6. Generate visualization plot
-    
+
     Args:
         args (argparse.Namespace): Parsed command-line arguments.
         parameters (list): List of parameter names to extract.
@@ -297,7 +297,7 @@ def run(args, parameters, metrics, tools):
         provenance_folderpath=args.provenance_folderpath,
         provenance_filename=args.provenance_filename,
     )
-    
+
     analyzer.validate_provevance()
 
     provenance_df = load_and_query_graph(analyzer, parameters, metrics, tools)
@@ -314,7 +314,7 @@ def run(args, parameters, metrics, tools):
 def main():
     """
     Main entry point for the provenance analysis script.
-    
+
     Parses command-line arguments, defines the parameters and metrics to extract,
     retrieves tool names from the workflow configuration, and executes the analysis
     workflow.

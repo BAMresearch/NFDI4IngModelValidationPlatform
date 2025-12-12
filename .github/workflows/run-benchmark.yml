@@ -115,7 +115,9 @@ jobs:
       
       - name: Re-zip provenance folder
         run: |
-          zip -r "./${SNAKEMAKE_PROVENANCE_FILE}.zip" "./${SNAKEMAKE_PROVENANCE_FILE}"
+          cd "./${SNAKEMAKE_PROVENANCE_FILE}"
+          zip -r "../${SNAKEMAKE_PROVENANCE_FILE}.zip" .
+
 
       - name: Upload RoCrate Zip file onto RoHub
         shell: bash -l {0}
