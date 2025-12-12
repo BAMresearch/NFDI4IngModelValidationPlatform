@@ -99,6 +99,12 @@ jobs:
             activate-environment: postprocessing 
             use-mamba: true
             environment-file: benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
+      
+      - name: Validate Provenance
+        shell: bash -l {0}
+        run: |
+          python benchmarks/linear-elastic-plate-with-hole/validate_provenance.py \
+            --provenance_folderpath "./$SNAKEMAKE_PROVENANCE_FILE" 
 
       - name: Run plotting script
         shell: bash -l {0}

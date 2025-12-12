@@ -281,11 +281,10 @@ def run(args, parameters, metrics, tools):
 
     Performs the following steps:
     1. Initialize the ProvenanceAnalyzer
-    2. Validate the RO-Crate metadata structure
-    3. Load and query the provenance graph
-    4. Validate query results against summary.json ground truth data
-    5. Apply custom filters to the data
-    6. Generate visualization plot
+    2. Load and query the provenance graph
+    3. Validate query results against summary.json ground truth data
+    4. Apply custom filters to the data
+    5. Generate visualization plot
 
     Args:
         args (argparse.Namespace): Parsed command-line arguments.
@@ -293,12 +292,11 @@ def run(args, parameters, metrics, tools):
         metrics (list): List of metric names to extract.
         tools (list): List of tool names to process.
     """
+    
     analyzer = ProvenanceAnalyzer(
         provenance_folderpath=args.provenance_folderpath,
         provenance_filename=args.provenance_filename,
     )
-
-    analyzer.validate_provevance()
 
     provenance_df = load_and_query_graph(analyzer, parameters, metrics, tools)
 
