@@ -14,7 +14,7 @@ on:
 
 env:
   CACHE_NUMBER: 1  # increase to reset cache manually
-  SNAKEMAKE_PROVENANCE_FILE: metadata4ing_provenance
+  SNAKEMAKE_RESULT_FILE: metadata4ing_provenance
   PROVENANACE_FILE_NAME: element_size_vs_max_mises_stress.pdf
 
 jobs:
@@ -52,7 +52,7 @@ jobs:
             --reporter metadata4ing \
             --report-metadata4ing-paramscript parameter_extractor.py \
             --report-metadata4ing-config metadata4ing.config \
-            --report-metadata4ing-filename $SNAKEMAKE_PROVENANCE_FILE
+            --report-metadata4ing-filename $SNAKEMAKE_RESULT_FILE
 
       - name: run_linear-elastic-plate-with-hole-benchmarks_nextflow
         shell: bash -l {0}
@@ -65,7 +65,7 @@ jobs:
         with:
             name: snakemake_results_linear-elastic-plate-with-hole
             path: |
-              benchmarks/linear-elastic-plate-with-hole/${{ env.SNAKEMAKE_PROVENANCE_FILE }}.zip
+              benchmarks/linear-elastic-plate-with-hole/${{ env.SNAKEMAKE_RESULT_FILE }}.zip
 
       - name: Archive Linear Elastic plate with a hole benchmark data for nextflow
         uses: actions/upload-artifact@v4
@@ -87,10 +87,10 @@ jobs:
           name: snakemake_results_linear-elastic-plate-with-hole
           path: ./artifact_files
 
-      - name: Unzip Snakemake Provevnance
+      - name: Unzip Snakemake Result File
         run: |
-          mkdir -p ./$SNAKEMAKE_PROVENANCE_FILE
-          unzip -o ./artifact_files/$SNAKEMAKE_PROVENANCE_FILE.zip -d ./$SNAKEMAKE_PROVENANCE_FILE
+          mkdir -p ./$SNAKEMAKE_RESULT_FILE
+          unzip -o ./artifact_files/$SNAKEMAKE_RESULT_FILE.zip -d ./$SNAKEMAKE_RESULT_FILE
 
       - name: Setup Mambaforge with postprocessing env
         uses: conda-incubator/setup-miniconda@v3
@@ -100,35 +100,35 @@ jobs:
             use-mamba: true
             environment-file: benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
       
-      - name: Validate Provenance
+      - name: Validate Snakemake Result File
         shell: bash -l {0}
         run: |
-          python benchmarks/linear-elastic-plate-with-hole/validate_provenance.py \
-            --provenance_folderpath "./$SNAKEMAKE_PROVENANCE_FILE" 
+          python benchmarks/common/validate_provenance.py \
+            --provenance_folderpath "./$SNAKEMAKE_RESULT_FILE" 
 
       - name: Run plotting script
         shell: bash -l {0}
         run: |
-          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py \
-            --provenance_folderpath "./$SNAKEMAKE_PROVENANCE_FILE" \
+          python benchmarks/common/plot_provenance.py \
+            --provenance_folderpath "./$SNAKEMAKE_RESULT_FILE" \
             --output_file $PROVENANACE_FILE_NAME
 
-      - name: Upload provenance file as artifact
+      - name: Upload snakemake results file as artifact
         uses: actions/upload-artifact@v4
         with:
           name: element-size-vs-stress-plot
           path: ${{ env.PROVENANACE_FILE_NAME }}
       
-      - name: Re-zip provenance folder
+      - name: Re-zip snakemake result folder
         run: |
-          cd "./${SNAKEMAKE_PROVENANCE_FILE}"
-          zip -r "../${SNAKEMAKE_PROVENANCE_FILE}.zip" .
+          cd "./${SNAKEMAKE_RESULT_FILE}"
+          zip -r "../${SNAKEMAKE_RESULT_FILE}.zip" .
 
 
       - name: Upload RoCrate Zip file onto RoHub
         shell: bash -l {0}
         run: |
-          python benchmarks/linear-elastic-plate-with-hole/upload_provenance.py \
-            --provenance_folderpath "./${SNAKEMAKE_PROVENANCE_FILE}.zip" \
+          python benchmarks/common/upload_provenance.py \
+            --provenance_folderpath "./${SNAKEMAKE_RESULT_FILE}.zip" \
             --username "${{ secrets.ROHUB_USERNAME }}" \
             --password "${{ secrets.ROHUB_PASSWORD }}"
