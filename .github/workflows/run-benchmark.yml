@@ -130,6 +130,6 @@ jobs:
         run: |
           python benchmarks/common/upload_provenance.py \
             --provenance_folderpath "./${SNAKEMAKE_RESULT_FILE}.zip" \
-            --benchmark_name "linear-elastic-plate-with-hole"
+            --benchmark_name "linear-elastic-plate-with-hole" \
             --username "${{ secrets.ROHUB_USERNAME }}" \
             --password "${{ secrets.ROHUB_PASSWORD }}"
