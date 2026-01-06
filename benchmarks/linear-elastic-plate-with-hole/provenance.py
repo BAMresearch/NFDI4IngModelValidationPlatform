@@ -245,7 +245,7 @@ class ProvenanceAnalyzer:
         else:
             plt.show()
 
-    def validate_provevance(self):
+    def validate_provenance(self):
         """
         Validates the RO-Crate against the RO-Crate 1.1 profile.
 

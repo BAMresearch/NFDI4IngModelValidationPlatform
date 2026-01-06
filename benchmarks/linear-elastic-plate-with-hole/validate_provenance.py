@@ -27,7 +27,7 @@ def run(args):
         provenance_filename=args.provenance_filename,
     )
 
-    analyzer.validate_provevance()
+    analyzer.validate_provenance()
 
 
 def main():

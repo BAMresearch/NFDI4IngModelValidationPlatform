@@ -113,7 +113,7 @@ jobs:
             --provenance_folderpath "./$SNAKEMAKE_PROVENANCE_FILE" \
             --output_file $PROVENANACE_FILE_NAME
 
-      - name: Upload provevance file as artifact
+      - name: Upload provenance file as artifact
         uses: actions/upload-artifact@v4
         with:
           name: element-size-vs-stress-plot
