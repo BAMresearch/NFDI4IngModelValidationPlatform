@@ -109,7 +109,7 @@ jobs:
       - name: Run plotting script
         shell: bash -l {0}
         run: |
-          python benchmarks/common/plot_provenance.py \
+          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py \
             --provenance_folderpath "./$SNAKEMAKE_RESULT_FILE" \
             --output_file $PROVENANACE_FILE_NAME
 
@@ -130,5 +130,6 @@ jobs:
         run: |
           python benchmarks/common/upload_provenance.py \
             --provenance_folderpath "./${SNAKEMAKE_RESULT_FILE}.zip" \
+            --benchmark_name "linear-elastic-plate-with-hole"
             --username "${{ secrets.ROHUB_USERNAME }}" \
             --password "${{ secrets.ROHUB_PASSWORD }}"
