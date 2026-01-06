@@ -124,7 +124,7 @@ class ProvenanceAnalyzer:
         )
 
         # Tool block with optional filter
-        tool_block = "?method ssn:implementedBy ?tool .\n?tool a schema:SoftwareApplication ;\n rdfs:label ?tool_name .\n"
+        tool_block = "?method m4i:implementedByTool ?tool .\n?tool a schema:SoftwareApplication ;\n rdfs:label ?tool_name .\n"
         if tools:
             filter_cond = " || ".join(
                 f'CONTAINS(LCASE(?tool_name), "{t.lower()}")' for t in tools

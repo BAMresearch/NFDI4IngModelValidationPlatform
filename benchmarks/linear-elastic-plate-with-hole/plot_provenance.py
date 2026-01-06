@@ -87,7 +87,7 @@ def apply_custom_filters(data: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def summary_file_to_dataframe(summary_path, parameters, metrics):
+def summary_file_to_dataframe(analyzer, summary_path, parameters, metrics):
     """
     Load benchmark data from a summary.json file into a DataFrame.
 
@@ -111,21 +111,20 @@ def summary_file_to_dataframe(summary_path, parameters, metrics):
         record = {}
 
         for p in parameters:
-            json_name = p.replace("_", "-")
-            param_value = entry["parameters"][json_name]
-
+            param_value = entry["parameters"][p]
+            sanitized_param_name = analyzer.sanitize_variable_name(p)
             if isinstance(param_value, dict):
-                record[p] = param_value.get("value")
+                record[sanitized_param_name] = param_value.get("value")
             else:
-                record[p] = param_value
+                record[sanitized_param_name] = param_value
 
         for m in metrics:
             metric_value = entry["metrics"][m]
-
+            sanitized_metric_name = analyzer.sanitize_variable_name(m)
             if isinstance(metric_value, dict):
-                record[m] = metric_value.get("value")
+                record[sanitized_metric_name] = metric_value.get("value")
             else:
-                record[m] = metric_value
+                record[sanitized_metric_name] = metric_value
 
         records.append(record)
 
@@ -211,7 +210,7 @@ def load_and_query_graph(analyzer, parameters, metrics, tools):
 
 
 def validate_provenance_data_summary_file(
-    provenance_df, parameters, metrics, tools, provenance_folderpath
+    analyzer, provenance_df, parameters, metrics, tools, provenance_folderpath
 ):
     """
     Validate provenance query results against ground truth data from summary.json files.
@@ -239,7 +238,7 @@ def validate_provenance_data_summary_file(
             tool,
             "summary.json",
         )
-        summary_df = summary_file_to_dataframe(summary_path, parameters, metrics)
+        summary_df = summary_file_to_dataframe(analyzer, summary_path, parameters, metrics)
 
         filtered_df = provenance_df[
             provenance_df["tool_name"].str.contains(tool, case=False, na=False)
@@ -349,7 +348,7 @@ def run(args, parameters, metrics, tools):
     provenance_df = load_and_query_graph(analyzer, parameters, metrics, tools)
 
     validate_provenance_data_summary_file(
-        provenance_df, parameters, metrics, tools, args.provenance_folderpath
+        analyzer, provenance_df, parameters, metrics, tools, args.provenance_folderpath
     )
 
     validate_provenance_data_csv_file(provenance_df, tools)
@@ -369,7 +368,7 @@ def main():
     """
     args = parse_args()
 
-    parameters = ["element_size", "element_order", "element_degree"]
+    parameters = ["element-size", "element-order", "element-degree"]
     metrics = ["max_von_mises_stress_nodes"]
     tools = workflow_config["tools"]
 
