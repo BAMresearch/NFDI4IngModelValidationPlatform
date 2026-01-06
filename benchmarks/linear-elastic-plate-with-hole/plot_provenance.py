@@ -7,7 +7,6 @@ import os
 import pandas as pd
 
 
-
 def parse_args():
     """
     Parse command-line arguments for the provenance processing script.
@@ -211,7 +210,7 @@ def load_and_query_graph(analyzer, parameters, metrics, tools):
     return provenance_df
 
 
-def validate_provenance_data(
+def validate_provenance_data_summary_file(
     provenance_df, parameters, metrics, tools, provenance_folderpath
 ):
     """
@@ -249,6 +248,49 @@ def validate_provenance_data(
         assert compare_dataframes(
             summary_df, filtered_df
         ), f"Data mismatch for tool '{tool}'. See above for details."
+
+
+def validate_provenance_data_csv_file(provenance_df, tools, float_precision=6):
+    """
+    Validate that the provided provenance DataFrame contains all rows from reference CSV files for the given tools.
+
+    This function iterates over a list of tool names, loads the corresponding CSV file
+    from the `tests` directory (located next to this script), and asserts that each row
+    in the CSV exists in the `provenance_df`. Extra columns in either the CSV or the DataFrame
+    are ignored. Float values are compared using rounding to avoid minor numerical differences.
+
+    Args:
+        provenance_df (pd.DataFrame): The DataFrame containing provenance data to validate.
+        tools (list of str): A list of tool names. For each tool, a CSV file `<tool>.csv`
+                             should exist in the `tests` folder.
+        float_precision (int, optional): Number of decimal places to round float columns for comparison.
+                                         Defaults to 6.
+
+    Raises:
+        AssertionError: If any row in any of the CSV files is not found in `provenance_df`.
+                        The error message includes the missing row for easier debugging.
+    """
+    for tool in tools:
+        csv_data_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "tests", f"{tool}.csv"
+        )
+        df_csv = pd.read_csv(csv_data_path)
+
+        common_cols = df_csv.columns.intersection(provenance_df.columns)
+        df_subset = provenance_df[common_cols].copy()
+        df_csv_copy = df_csv[common_cols].copy()
+
+        # Round float columns
+        float_cols = df_csv_copy.select_dtypes(include="float").columns
+        df_subset[float_cols] = df_subset[float_cols].round(float_precision)
+        df_csv_copy[float_cols] = df_csv_copy[float_cols].round(float_precision)
+
+        # Check each CSV row
+        for i, row in df_csv_copy.iterrows():
+            mask = pd.Series(True, index=df_subset.index)
+            for col in df_csv_copy.columns:
+                mask &= df_subset[col] == row[col]
+            assert mask.any(), f"CSV row {i} not found in DataFrame:\n{row.to_dict()}"
 
 
 def plot_results(analyzer, final_df, output_file):
@@ -295,10 +337,10 @@ def run(args, parameters, metrics, tools):
         tools (list): List of tool names to process.
     """
     root_dir = Path(__file__).parent.parent.parent
-    
+
     sys.path.insert(0, str(root_dir))
     from benchmarks.common.provenance import ProvenanceAnalyzer
-    
+
     analyzer = ProvenanceAnalyzer(
         provenance_folderpath=args.provenance_folderpath,
         provenance_filename=args.provenance_filename,
@@ -306,9 +348,11 @@ def run(args, parameters, metrics, tools):
 
     provenance_df = load_and_query_graph(analyzer, parameters, metrics, tools)
 
-    validate_provenance_data(
+    validate_provenance_data_summary_file(
         provenance_df, parameters, metrics, tools, args.provenance_folderpath
     )
+
+    validate_provenance_data_csv_file(provenance_df, tools)
 
     final_df = apply_custom_filters(provenance_df)
 

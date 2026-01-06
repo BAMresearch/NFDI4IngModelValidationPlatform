@@ -125,11 +125,11 @@ jobs:
           zip -r "../${SNAKEMAKE_RESULT_FILE}.zip" .
 
 
-      - name: Upload RoCrate Zip file onto RoHub
-        shell: bash -l {0}
-        run: |
-          python benchmarks/common/upload_provenance.py \
-            --provenance_folderpath "./${SNAKEMAKE_RESULT_FILE}.zip" \
-            --benchmark_name "linear-elastic-plate-with-hole"
-            --username "${{ secrets.ROHUB_USERNAME }}" \
-            --password "${{ secrets.ROHUB_PASSWORD }}"
+      # - name: Upload RoCrate Zip file onto RoHub
+      #   shell: bash -l {0}
+      #   run: |
+      #     python benchmarks/common/upload_provenance.py \
+      #       --provenance_folderpath "./${SNAKEMAKE_RESULT_FILE}.zip" \
+      #       --benchmark_name "linear-elastic-plate-with-hole" \
+      #       --username "${{ secrets.ROHUB_USERNAME }}" \
+      #       --password "${{ secrets.ROHUB_PASSWORD }}"
