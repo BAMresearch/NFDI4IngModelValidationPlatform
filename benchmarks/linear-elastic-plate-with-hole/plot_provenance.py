@@ -1,9 +1,11 @@
 import argparse
-from provenance import ProvenanceAnalyzer
+import sys
+from pathlib import Path
 from generate_config import workflow_config
 import json
 import os
 import pandas as pd
+
 
 
 def parse_args():
@@ -292,6 +294,10 @@ def run(args, parameters, metrics, tools):
         metrics (list): List of metric names to extract.
         tools (list): List of tool names to process.
     """
+    root_dir = Path(__file__).parent.parent.parent
+    
+    sys.path.insert(0, str(root_dir))
+    from benchmarks.common.provenance import ProvenanceAnalyzer
     
     analyzer = ProvenanceAnalyzer(
         provenance_folderpath=args.provenance_folderpath,
