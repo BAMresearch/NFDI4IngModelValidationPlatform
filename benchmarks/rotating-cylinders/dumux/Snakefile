@@ -1,0 +1,26 @@
+# Snakefile — rotating cylinders benchmark
+
+import os
+import glob
+
+tool = "dumux"
+
+# Directory where simulation writes VTU files
+output_dir = "."
+
+# Dynamically find all VTU files starting with "test_rotatingcylinders"
+vtu_files = glob.glob(os.path.join(output_dir, "test_rotatingcylinders*.vtu"))
+
+rule run_rotating_cylinders_simulation:
+    input:
+        script = "docker_rotatingCylinders.sh"
+    output:
+        # We can use a sentinel file since the container produces multiple outputs
+        os.path.join(output_dir, ".simulation_done")
+    conda:
+        "environment.yaml",
+    shell:
+        """
+        bash {input.script} open
+        touch {output}
+        """
