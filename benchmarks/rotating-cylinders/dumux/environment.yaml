@@ -1,0 +1,10 @@
+name: rc-dumux
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - bash
+  - coreutils
+  - pip
+  - pip:
+      - snakemake
