@@ -273,6 +273,8 @@ def validate_provenance_data_csv_file(analyzer, provenance_df, tools, float_prec
         AssertionError: If any CSV row (considering only overlapping columns) is missing in `provenance_df`.
     """
 
+    stress_cols = {"max_von_mises_stress_nodes", "max_von_mises_stress_gauss_points"}
+
     for tool in tools:
         df_subset = provenance_df[
             provenance_df["tool_name"].str.lower().str.startswith(tool.lower())
@@ -287,6 +289,7 @@ def validate_provenance_data_csv_file(analyzer, provenance_df, tools, float_prec
         df_subset = df_subset[common_cols].reset_index(drop=True)
         df_csv = df_csv[common_cols].reset_index(drop=True)
 
+        # Round all floats to avoid minor precision issues
         for col in df_csv.select_dtypes(include=["float", "float64", "float32"]).columns:
             df_csv[col] = df_csv[col].round(float_precision)
 
@@ -303,14 +306,18 @@ def validate_provenance_data_csv_file(analyzer, provenance_df, tools, float_prec
                     v_df = row_df[col]
 
                     if pd.api.types.is_numeric_dtype(df_subset[col]):
-                        if not np.isclose(v_csv, v_df, atol=tol, rtol=0):
-                            mismatches.append((col, v_csv, v_df))
+                        if col in stress_cols:
+                            if not np.isclose(v_csv, v_df, atol=tol, rtol=0):
+                                mismatches.append((col, v_csv, v_df))
+                        else:
+                            if v_csv != v_df:
+                                mismatches.append((col, v_csv, v_df))
                     else:
+                        # Non-numeric columns: exact match
                         if v_csv != v_df:
                             mismatches.append((col, v_csv, v_df))
 
                 if not mismatches:
-                    matched = True
                     matched = True
                     break
 
@@ -327,7 +334,6 @@ def validate_provenance_data_csv_file(analyzer, provenance_df, tools, float_prec
                     f"\n[{tool}] CSV row {i} not matched in DataFrame within tolerance {tol} "
                     f"on columns {list(common_cols)}:\n{row_csv.to_dict()}"
                 )
-
 
 
 def plot_results(analyzer, final_df, output_file):
