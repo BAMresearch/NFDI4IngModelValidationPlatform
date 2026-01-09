@@ -12,6 +12,7 @@ dependencies:
   - rdflib
   - matplotlib
   - pandas
+  - numpy
   - pip
   - pip:
       - roc-validator

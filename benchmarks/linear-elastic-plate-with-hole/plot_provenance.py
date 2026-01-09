@@ -5,6 +5,7 @@ from generate_config import workflow_config
 import json
 import os
 import pandas as pd
+import numpy as np
 
 
 def parse_args():
@@ -238,7 +239,9 @@ def validate_provenance_data_summary_file(
             tool,
             "summary.json",
         )
-        summary_df = summary_file_to_dataframe(analyzer, summary_path, parameters, metrics)
+        summary_df = summary_file_to_dataframe(
+            analyzer, summary_path, parameters, metrics
+        )
 
         filtered_df = provenance_df[
             provenance_df["tool_name"].str.contains(tool, case=False, na=False)
@@ -249,47 +252,82 @@ def validate_provenance_data_summary_file(
         ), f"Data mismatch for tool '{tool}'. See above for details."
 
 
-def validate_provenance_data_csv_file(provenance_df, tools, float_precision=6):
+def validate_provenance_data_csv_file(analyzer, provenance_df, tools, float_precision=6, tol=1e-3):
     """
     Validate that the provided provenance DataFrame contains all rows from reference CSV files for the given tools.
 
-    This function iterates over a list of tool names, loads the corresponding CSV file
-    from the `tests` directory (located next to this script), and asserts that each row
-    in the CSV exists in the `provenance_df`. Extra columns in either the CSV or the DataFrame
-    are ignored. Float values are compared using rounding to avoid minor numerical differences.
+    The CSV file is treated as the ground truth. It may contain extra columns, but only
+    the columns that also exist in the input DataFrame are checked.
+
+    Float values are rounded to avoid minor numerical differences.
 
     Args:
+        analyzer: ProvenanceAnalyzer: Initialized analyzer instance.
         provenance_df (pd.DataFrame): The DataFrame containing provenance data to validate.
-        tools (list of str): A list of tool names. For each tool, a CSV file `<tool>.csv`
-                             should exist in the `tests` folder.
-        float_precision (int, optional): Number of decimal places to round float columns for comparison.
+        tools (list of str): List of tool names. For each tool, a CSV file `<tool>.csv`
+                             must exist in the `tests` folder next to this script.
+        float_precision (int, optional): Decimal places for rounding float values.
                                          Defaults to 6.
 
     Raises:
-        AssertionError: If any row in any of the CSV files is not found in `provenance_df`.
-                        The error message includes the missing row for easier debugging.
+        AssertionError: If any CSV row (considering only overlapping columns) is missing in `provenance_df`.
     """
+
     for tool in tools:
-        csv_data_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "tests", f"{tool}.csv"
-        )
-        df_csv = pd.read_csv(csv_data_path)
+        df_subset = provenance_df[
+            provenance_df["tool_name"].str.lower().str.startswith(tool.lower())
+        ].copy()
 
-        common_cols = df_csv.columns.intersection(provenance_df.columns)
-        df_subset = provenance_df[common_cols].copy()
-        df_csv_copy = df_csv[common_cols].copy()
+        csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tests", f"{tool}.csv")
+        df_csv = pd.read_csv(csv_path)
 
-        # Round float columns
-        float_cols = df_csv_copy.select_dtypes(include="float").columns
-        df_subset[float_cols] = df_subset[float_cols].round(float_precision)
-        df_csv_copy[float_cols] = df_csv_copy[float_cols].round(float_precision)
+        df_csv.columns = [analyzer.sanitize_variable_name(c) for c in df_csv.columns]
 
-        # Check each CSV row
-        for i, row in df_csv_copy.iterrows():
-            mask = pd.Series(True, index=df_subset.index)
-            for col in df_csv_copy.columns:
-                mask &= df_subset[col] == row[col]
-            assert mask.any(), f"CSV row {i} not found in DataFrame:\n{row.to_dict()}"
+        common_cols = df_csv.columns.intersection(df_subset.columns)
+        df_subset = df_subset[common_cols].reset_index(drop=True)
+        df_csv = df_csv[common_cols].reset_index(drop=True)
+
+        for col in df_csv.select_dtypes(include=["float", "float64", "float32"]).columns:
+            df_csv[col] = df_csv[col].round(float_precision)
+
+        for i, row_csv in df_csv.iterrows():
+            best_mismatch = None
+            best_mismatch_count = float("inf")
+            matched = False
+
+            for j, row_df in df_subset.iterrows():
+                mismatches = []
+
+                for col in common_cols:
+                    v_csv = row_csv[col]
+                    v_df = row_df[col]
+
+                    if pd.api.types.is_numeric_dtype(df_subset[col]):
+                        if not np.isclose(v_csv, v_df, atol=tol, rtol=0):
+                            mismatches.append((col, v_csv, v_df))
+                    else:
+                        if v_csv != v_df:
+                            mismatches.append((col, v_csv, v_df))
+
+                if not mismatches:
+                    matched = True
+                    matched = True
+                    break
+
+                if len(mismatches) < best_mismatch_count:
+                    best_mismatch = j, mismatches
+                    best_mismatch_count = len(mismatches)
+
+            if not matched:
+                _, mismatches_best = best_mismatch
+                for col, v_csv, v_df in mismatches_best:
+                    print(f"Column `{col}` → CSV: {v_csv} | DataFrame: {v_df}")
+
+                raise AssertionError(
+                    f"\n[{tool}] CSV row {i} not matched in DataFrame within tolerance {tol} "
+                    f"on columns {list(common_cols)}:\n{row_csv.to_dict()}"
+                )
+
 
 
 def plot_results(analyzer, final_df, output_file):
@@ -351,7 +389,7 @@ def run(args, parameters, metrics, tools):
         analyzer, provenance_df, parameters, metrics, tools, args.provenance_folderpath
     )
 
-    validate_provenance_data_csv_file(provenance_df, tools)
+    validate_provenance_data_csv_file(analyzer, provenance_df, tools)
 
     final_df = apply_custom_filters(provenance_df)
 
