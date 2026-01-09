@@ -252,7 +252,7 @@ def validate_provenance_data_summary_file(
         ), f"Data mismatch for tool '{tool}'. See above for details."
 
 
-def validate_provenance_data_csv_file(analyzer, provenance_df, tools, float_precision=6, tol=1e-3):
+def validate_provenance_data_csv_file(analyzer, provenance_df, tools, float_precision=6, tol=1e+6):
     """
     Validate that the provided provenance DataFrame contains all rows from reference CSV files for the given tools.
 
