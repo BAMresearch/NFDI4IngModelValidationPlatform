@@ -7,7 +7,6 @@ channel_priority: strict
 dependencies:
   - python=3.12
   - fenics-dolfinx=0.9.*
-  - libadios2=2.10.1
   - mpich
   - petsc4py
   - pint
