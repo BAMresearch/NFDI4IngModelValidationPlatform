@@ -109,7 +109,7 @@ jobs:
       - name: Run plotting script
         shell: bash -l {0}
         run: |
-          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py \
+          python benchmarks/linear-elastic-plate-with-hole/plot_metrics.py \
             --provenance_folderpath "./$SNAKEMAKE_RESULT_FILE" \
             --output_file $PROVENANACE_FILE_NAME
 
