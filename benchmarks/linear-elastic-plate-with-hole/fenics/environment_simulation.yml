@@ -1,4 +1,6 @@
 name: fenics_simulation
+# Environment file for fenics simulation scripts. Called by fenics tool workflow.
+
 channels:
   - conda-forge
 
