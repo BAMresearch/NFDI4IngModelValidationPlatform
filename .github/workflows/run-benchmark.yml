@@ -153,4 +153,11 @@ jobs:
           fi
               
           exit $exit_code
+    
+      - name: Upload RoHub error log
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: rohub-upload-error-log
+          path: rohub_upload_error.log
 
