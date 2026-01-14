@@ -131,22 +131,26 @@ jobs:
         run: |
           set +e
               
-          # Run Python, capture stdout+stderr
+          LOG_FILE=rohub_upload_error.log
+              
+          # Run Python and capture errors
           python benchmarks/common/upload_provenance.py \
             --provenance_folderpath "./${SNAKEMAKE_RESULT_FILE}.zip" \
             --benchmark_name "linear-elastic-plate-with-hole" \
             --username "${{ secrets.ROHUB_USERNAME }}" \
             --password "${{ secrets.ROHUB_PASSWORD }}" \
-            > rohub_upload_error.log 2>&1
+            > "$LOG_FILE" 2>&1
               
           exit_code=$?
               
-          # If success, delete log
-          if [ $exit_code -eq 0 ]; then
-            rm -f rohub_upload_error.log
-          else
-            # Show log in CI immediately
+          # If failed, show content immediately
+          if [ $exit_code -ne 0 ]; then
             echo "=== RoHub upload failed, log contents ==="
-            cat rohub_upload_error.log
+            cat "$LOG_FILE"
+          else
+            # Remove log on success
+            rm -f "$LOG_FILE"
           fi
+              
+          exit $exit_code
 
