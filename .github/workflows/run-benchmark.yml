@@ -129,30 +129,20 @@ jobs:
         continue-on-error: true
         shell: bash -l {0}
         run: |
-          set +e
-              
           LOG_FILE=rohub_upload_error.log
-              
+
           # Run Python and capture errors
+          # Use 'tee' to both see output in CI and write to file
           python benchmarks/common/upload_provenance.py \
             --provenance_folderpath "./${SNAKEMAKE_RESULT_FILE}.zip" \
             --benchmark_name "linear-elastic-plate-with-hole" \
             --username "${{ secrets.ROHUB_USERNAME }}" \
-            --password "${{ secrets.ROHUB_PASSWORD }}" \
-            > "$LOG_FILE" 2>&1
-              
-          exit_code=$?
-              
-          # If failed, show content immediately
-          if [ $exit_code -ne 0 ]; then
-            echo "=== RoHub upload failed, log contents ==="
-            cat "$LOG_FILE"
-          else
-            # Remove log on success
+            --password "${{ secrets.ROHUB_PASSWORD }}" 2>&1 | tee "$LOG_FILE"
+
+          # If Python succeeded, remove the log (optional)
+          if [ ${PIPESTATUS[0]} -eq 0 ]; then
             rm -f "$LOG_FILE"
           fi
-              
-          exit $exit_code
     
       - name: Upload RoHub error log
         if: ${{ failure() }}
