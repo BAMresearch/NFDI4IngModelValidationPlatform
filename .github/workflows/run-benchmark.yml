@@ -126,34 +126,35 @@ jobs:
 
       - name: Upload RoCrate Zip file onto RoHub
         id: rohub_upload
-        continue-on-error: true
         shell: bash -l {0}
+        continue-on-error: true
         run: |
           LOG_FILE=rohub_upload_error.log
 
-          # Run Python, capture errors
+          # Run Python and capture all stdout+stderr
           python benchmarks/common/upload_provenance.py \
             --provenance_folderpath "./${SNAKEMAKE_RESULT_FILE}.zip" \
             --benchmark_name "linear-elastic-plate-with-hole" \
             --username "${{ secrets.ROHUB_USERNAME }}" \
             --password "${{ secrets.ROHUB_PASSWORD }}" \
-            > "$LOG_FILE" 2>&1
-          PYTHON_EXIT_CODE=$?
+            2>&1 | tee "$LOG_FILE"
 
-          # If Python succeeded, delete log
+          PYTHON_EXIT_CODE=${PIPESTATUS[0]}
+
+          # Check exit code: 0 = failure, 1 = success (per your convention)
           if [ $PYTHON_EXIT_CODE -eq 0 ]; then
-            rm -f "$LOG_FILE"
-          else
-            echo "=== RoHub upload failed, see $LOG_FILE ==="
+            echo "=== RoHub upload failed — see log below ==="
             cat "$LOG_FILE"
+          else
+            echo "✅ RoHub upload succeeded"
+            rm -f "$LOG_FILE"
           fi
 
-          # Always exit 0 so next steps run
+          # Export exit code for subsequent steps if needed
           echo "python_exit_code=$PYTHON_EXIT_CODE" >> $GITHUB_ENV
-          exit 0
-    
+      
       - name: Upload RoHub error log
-        if: ${{ env.python_exit_code != '0' }}
+        if: ${{ env.python_exit_code == '0' }}
         uses: actions/upload-artifact@v4
         with:
           name: rohub-upload-error-log
