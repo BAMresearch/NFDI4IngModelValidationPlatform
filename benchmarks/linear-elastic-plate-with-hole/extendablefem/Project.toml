@@ -1,0 +1,14 @@
+[deps]
+ExtendableFEM = "a722555e-65e0-4074-a036-ca7ce79a4aed"
+ExtendableGrids = "cfc395e8-590f-11e8-1f13-43a2532b2fa8"
+Fire = "652a1917-b8e5-5d9b-be38-bbf27e56fe44"
+Gmsh = "705231aa-382f-11e9-3f0c-b7cb4346fdeb"
+GridVisualize = "5eed8a63-0fb0-45eb-886d-8d5a387d12b8"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+LinearSolve = "7ed4a6bd-45f5-4d41-b270-4a48e9bafcae"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+ZipArchives = "49080126-0e18-4c2a-b176-c102e4b3760c"
+
+[compat]
+LinearSolve = "~3.50.0"
