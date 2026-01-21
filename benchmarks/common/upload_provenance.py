@@ -16,7 +16,7 @@ The module supports both production and development environments of RoHub.
 import argparse
 import rohub
 import time
-
+import sys
 
 def parse_args():
     """
@@ -103,6 +103,7 @@ def run(args):
     
     if USE_DEVELOPMENT_VERSION:
         # Development server configuration
+        
         rohub.settings.API_URL = "https://rohub2020-devel.apps.bst2.paas.psnc.pl/api/"
         rohub.settings.KEYCLOAK_CLIENT_ID = "rohub2020-cli"
         rohub.settings.KEYCLOAK_CLIENT_SECRET = "714617a7-87bc-4a88-8682-5f9c2f60337d"
@@ -196,7 +197,13 @@ def main():
         or upload fails, or if required arguments are not provided.
     """
     args = parse_args()
-    run(args)
+    try:
+        run(args)
+        sys.exit(1)
+    except Exception as error:
+        print("⚠️ RoHub upload failed:")
+        print(error)
+        sys.exit(0)
 
 
 if __name__ == "__main__":
