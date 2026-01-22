@@ -8,3 +8,4 @@ dependencies:
   - pip
   - pip:
       - snakemake
+      - meshio
