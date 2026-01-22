@@ -1,26 +1,54 @@
-# Snakefile — rotating cylinders benchmark
-
 import os
-import glob
 
+# 1. Setup and Config
 tool = "dumux"
+result_dir = f"snakemake_results/rotating-cylinders/{tool}"
+configurations = config["configurations"]
+configuration_to_parameter_file = config["configuration_to_parameter_file"]
+vtu_mapping = config["configuration_to_solution_vtu_files"]
 
-# Directory where simulation writes VTU files
-output_dir = "."
+container_image = "git.iws.uni-stuttgart.de:4567/benchmarks/rotating-cylinders:3.0"
+shared_dir = os.getcwd()
+# dumux_input = f"{shared_dir}/{tool}/input_files" 
+dumux_dir = f"{shared_dir}/{tool}" 
 
-# Dynamically find all VTU files starting with "test_rotatingcylinders"
-vtu_files = glob.glob(os.path.join(output_dir, "test_rotatingcylinders*.vtu"))
-
-rule run_rotating_cylinders_simulation:
+# Rule 1: Only runs the simulation, outputs the VTU files
+rule run_dumux_simulation:
     input:
-        script = "docker_rotatingCylinders.sh"
+        params=lambda wildcards: f"{dumux_dir}/input_files/{configuration_to_parameter_file[wildcards.configuration]}"
     output:
-        # We can use a sentinel file since the container produces multiple outputs
-        os.path.join(output_dir, ".simulation_done")
-    conda:
-        "environment.yaml",
+        # Use a list of the actual files you expect
+        vtu_files = [
+            f"{tool}/test_rotatingcylinders_{{configuration}}-00000.vtu",
+            f"{tool}/test_rotatingcylinders_{{configuration}}-00001.vtu"
+        ]
+    resources:
+        serial_run=1
+    singularity:
+        f"docker://{container_image}"
     shell:
         """
-        bash {input.script} open
-        touch {output}
+        set -euo pipefail
+        cd /dumux/rotating-cylinders/build-cmake/test/freeflow/navierstokes/rotatingcylinders
+        ./test_ff_navierstokes_rotatingcylinders {input.params} -IO.OutputPath {dumux_dir}
+        """
+
+# Rule 2: Only runs post-processing, depends on the VTU files
+rule postprocess_dumux:
+    input:
+        sim_data = [
+            f"{tool}/test_rotatingcylinders_{{configuration}}-00000.vtu",
+            f"{tool}/test_rotatingcylinders_{{configuration}}-00001.vtu"
+        ],
+        postprocess_script=f"{tool}/run_dumux_postprocessing.py"
+    output:
+        metrics=f"{result_dir}/solution_metrics_{{configuration}}.json",
+        fields=f"{result_dir}/solution_field_data_{{configuration}}.zip"
+    shell:
+        """
+        python3 {input.postprocess_script} \
+            --input_dumux_output_dir {dumux_dir} \
+            --input_configuration {wildcards.configuration} \
+            --output_solution_file_zip {output.fields} \
+            --output_metrics_file {output.metrics}
         """
