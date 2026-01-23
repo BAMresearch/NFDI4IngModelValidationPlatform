@@ -2,25 +2,24 @@ import os
 
 # 1. Setup and Config
 tool = "dumux"
-result_dir = f"snakemake_results/rotating-cylinders/{tool}"
-configurations = config["configurations"]
-configuration_to_parameter_file = config["configuration_to_parameter_file"]
-vtu_mapping = config["configuration_to_solution_vtu_files"]
 
-container_image = "git.iws.uni-stuttgart.de:4567/benchmarks/rotating-cylinders:3.0"
+# Use .get() to prevent crashes if config isn't fully loaded yet
+benchmark_name = config.get("benchmark", "rotating-cylinders")
+result_dir = f"snakemake_results/{benchmark_name}/{tool}"
+
+container_image = config.get("container_image", "git.iws.uni-stuttgart.de:4567/benchmarks/rotating-cylinders:3.0")
 shared_dir = os.getcwd()
-# dumux_input = f"{shared_dir}/{tool}/input_files" 
-dumux_dir = f"{shared_dir}/{tool}" 
+dumux_dir = f"{shared_dir}/{tool}"
 
-# Rule 1: Only runs the simulation, outputs the VTU files
+# Rule 1: Simulation
 rule run_dumux_simulation:
     input:
-        params=lambda wildcards: f"{dumux_dir}/input_files/{configuration_to_parameter_file[wildcards.configuration]}"
+        # Lambda prevents KeyError before the JSON is generated
+        params = lambda wildcards: f"{dumux_dir}/input_files/{config['configuration_to_parameter_file'][wildcards.configuration]}"
     output:
-        # Use a list of the actual files you expect
         vtu_files = [
-            f"{tool}/test_rotatingcylinders_{{configuration}}-00000.vtu",
-            f"{tool}/test_rotatingcylinders_{{configuration}}-00001.vtu"
+            f"{dumux_dir}/test_rotatingcylinders_{{configuration}}-00000.vtu",
+            f"{dumux_dir}/test_rotatingcylinders_{{configuration}}-00001.vtu"
         ]
     resources:
         serial_run=1
@@ -30,20 +29,20 @@ rule run_dumux_simulation:
         """
         set -euo pipefail
         cd /dumux/rotating-cylinders/build-cmake/test/freeflow/navierstokes/rotatingcylinders
-        ./test_ff_navierstokes_rotatingcylinders {input.params} -IO.OutputPath {dumux_dir}
+        ./test_ff_navierstokes_rotatingcylinders {input.params}
         """
 
-# Rule 2: Only runs post-processing, depends on the VTU files
+# Rule 2: Post-processing
 rule postprocess_dumux:
     input:
         sim_data = [
-            f"{tool}/test_rotatingcylinders_{{configuration}}-00000.vtu",
-            f"{tool}/test_rotatingcylinders_{{configuration}}-00001.vtu"
+            f"{dumux_dir}/test_rotatingcylinders_{{configuration}}-00000.vtu",
+            f"{dumux_dir}/test_rotatingcylinders_{{configuration}}-00001.vtu"
         ],
-        postprocess_script=f"{tool}/run_dumux_postprocessing.py"
+        postprocess_script = f"{dumux_dir}/run_dumux_postprocessing.py"
     output:
-        metrics=f"{result_dir}/solution_metrics_{{configuration}}.json",
-        fields=f"{result_dir}/solution_field_data_{{configuration}}.zip"
+        metrics = f"{result_dir}/solution_metrics_{{configuration}}.json",
+        fields = f"{result_dir}/solution_field_data_{{configuration}}.zip"
     shell:
         """
         python3 {input.postprocess_script} \
