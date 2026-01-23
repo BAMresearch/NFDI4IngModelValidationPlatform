@@ -1,70 +1,65 @@
 # benchmarks/rotating-cylinders/Snakefile
-
 import json
 import os
 
-# --------------------------
-# Load workflow configuration
-# --------------------------
-with open("rotating-cylinders_config.json") as f:
-    config = json.load(f)
+# Ensure the config exists before loading
+if not os.path.exists("rotating-cylinders_config.json"):
+    # Run the generator script if the file is missing
+    os.system("python3 generate_rc_config.py")
 
+configfile: "rotating-cylinders_config.json"
+
+# Variables for clarity
 tools = config["tools"]
-benchmark = config["benchmark"]
-benchmark_uri = config["benchmark_uri"]
-configurations = config["configurations"]
-config_to_param = config["configuration_to_parameter_file"]
-config_to_vtu_files = config.get("configuration_to_solution_vtu_files", {})
+CONFIGS = config["configurations"]
+RESULT_DIR = f"snakemake_results/{config['benchmark']}"
+shared_dir = os.getcwd()
+dumux_dir = f"{shared_dir}/dumux"
 
-# --------------------------
-# Helper functions
-# --------------------------
-def parameter_file(cfg):
-    return config_to_param[cfg]
+rule all:
+    input:
+        # This will create paths for every tool in every configuration
+        expand(
+            f"{RESULT_DIR}/{{tool}}/solution_metrics_{{configuration}}.json",
+            tool=tools,
+            configuration=CONFIGS
+        )
 
-def vtu_files(cfg):
-    return config_to_vtu_files.get(cfg, [])
+# Divide and Conquer: This rule handles the templating for EACH configuration
+rule generate_dumux_input:
+    input:
+        template = "params.template"
+    output:
+        # f-string uses double braces for Snakemake wildcards to escape Python evaluation
+        param_file = f"{dumux_dir}/input_files/params_{{configuration}}.input"
+    run:
+        # Split "10_80" into c0="10" and c1="80"
+        c0, c1 = wildcards.configuration.split("_")
+        
+        with open(input.template, "r") as f:
+            content = f.read()
+            
+        formatted = content.format(
+            cells0_x=c0,
+            cells0_y=c0,
+            cells1=c1,
+            problem_name=f"/dumux/shared/dumux/test_rotatingcylinders_{c0}_{c1}"
+        )
+        
+        os.makedirs(os.path.dirname(output.param_file), exist_ok=True)
+        with open(output.param_file, "w") as f:
+            f.write(formatted)
 
-def summary_file(tool_name):
-    return f"{tool_name}_summary.json"
-
-# --------------------------
-# Include tool Snakefiles
-# --------------------------
+# Include tool specific rules
 for tool in tools:
     include: f"{tool}/Snakefile"
 
-# --------------------------
-# Global result directory
-# --------------------------
-result_dir = f"snakemake_results/rotating-cylinders"
-
-# --------------------------
-# Rule: Aggregate all outputs
-# --------------------------
-rule all:
-    input:
-        expand(f"{result_dir}/dumux/solution_metrics_{{configuration}}.json", configuration=configurations),
-        expand(f"{result_dir}/dumux/solution_field_data_{{configuration}}.zip", configuration=configurations)
-
-# --------------------------
-# Rule: Create summary
-# --------------------------
-rule create_summary:
-    input:
-        parameter_files=[parameter_file(cfg) for cfg in configurations],
-        solution_vtu_files=sum([vtu_files(cfg) for cfg in configurations], [])  # flatten list of lists
-    output:
-        summary=summary_file("dumux")
-    params:
-        configs=configurations
-    shell:
-        """
-        python create_dumux_summary.py \
-            --input_configuration {params.configs} \
-            --input_parameter_file {input.parameter_files} \
-            --input_solution_vtu {input.solution_vtu_files} \
-            --input_benchmark "{benchmark}" \
-            --input_benchmark_uri "{benchmark_uri}" \
-            --output_summary_json {output.summary}
-        """
+# # Global Summary Rule
+# rule summary:
+#     input:
+#         # Cross-reference the expand to ensure all metrics exist
+#         metrics = expand(f"{RESULT_DIR}/dumux/solution_metrics_{{configuration}}.json", configuration=CONFIGS)
+#     output:
+#         json = f"{RESULT_DIR}/dumux/summary.json"
+#     shell:
+#         "python3 summarize.py --input {input.metrics} --output {output.json}"
