@@ -1,0 +1,13 @@
+{
+  "Grid": {
+    "Cells0": {
+      "x": "{cells0_x}",
+      "y": "{cells0_y}"
+    },
+    "Cells1": "{cells1}",
+    "Grading0": [1.1, -1.1],
+    "Grading1": 1.0,
+    "Radial0": [1.0, 1.5, 2.0],
+    "Angular1": [0.0, 360.0]
+  }
+}

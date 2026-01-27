@@ -1,0 +1,55 @@
+name: DuMux-CI
+on:
+  push:
+
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+  # Runs the workflow once per day at 3:15am
+  schedule:
+    - cron: '3 16 * * *'
+
+env:
+  CACHE_NUMBER: 1  # increase to reset cache manually
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v2
+
+      - name: Setup Mambaforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+            miniforge-version: latest
+            activate-environment: rc-dumux
+            use-mamba: true
+
+      - name: Set strict channel priority
+        run: conda config --set channel_priority strict
+        
+      - name: Setup Apptainer
+        uses: eWaterCycle/setup-apptainer@v2
+        with:
+          apptainer-version: 1.4.5
+
+      - name: Update environment
+        run: mamba env update -n rc-dumux -f $GITHUB_WORKSPACE/benchmarks/rotating-cylinders/environment_dumux.yaml
+
+      - name: generate-rc-config
+        shell: bash -l {0}
+        run: |
+          cd $GITHUB_WORKSPACE/benchmarks/rotating-cylinders
+          python3 generate_rc_config.py
+
+      - name: run-rotating-cylinders-snakemake
+        shell: bash -l {0}
+        run: |
+          cd $GITHUB_WORKSPACE/benchmarks/rotating-cylinders
+          # Note: --use-singularity is aliased to --use-apptainer in modern Snakemake
+          snakemake --use-apptainer --cores all --resources serial_run=1 --apptainer-args "--bind $(pwd):/dumux/shared"
