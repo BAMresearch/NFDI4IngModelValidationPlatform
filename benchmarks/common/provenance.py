@@ -148,10 +148,9 @@ class ProvenanceAnalyzer:
 
         # Final query
         query = f"""
-        PREFIX schema: <http://schema.org/>
+        PREFIX schema: <https://schema.org/>
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         PREFIX m4i: <http://w3id.org/nfdi4ing/metadata4ing#>
-        PREFIX ssn: <http://www.w3.org/ns/ssn/>
     
         SELECT {select_vars} ?tool_name
         WHERE {{
