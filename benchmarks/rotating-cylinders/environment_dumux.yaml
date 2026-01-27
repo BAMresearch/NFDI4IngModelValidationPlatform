@@ -1,0 +1,20 @@
+name: rc-dumux
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - bash
+  - coreutils
+  - pint
+  - pyvista
+  - rdflib
+  - matplotlib
+  - pandas
+  - numpy
+  - pip
+  - pip:
+      - snakemake
+      - meshio
+      - roc-validator
+      - rohub 

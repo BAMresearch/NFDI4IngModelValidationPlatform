@@ -1,2 +1,12 @@
-.snakemake
 site
+
+# macOS system files
+.DS_Store
+
+# Snakemake hidden folders
+.snakefile/
+.snakemake/
+
+# Sentinel / temporary files
+*.done
+.simulation_done

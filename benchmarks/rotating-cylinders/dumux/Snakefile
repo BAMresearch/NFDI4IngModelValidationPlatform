@@ -1,0 +1,49 @@
+import os
+
+# 1. Setup and Config
+tool = "dumux"
+
+# Use .get() to prevent crashes if config isn't fully loaded yet
+benchmark_name = config.get("benchmark", "rotating-cylinders")
+container_image = config.get("container_image", "git.iws.uni-stuttgart.de:4567/benchmarks/rotating-cylinders:3.0")
+
+# Rule 1: Simulation
+rule run_dumux_simulation:
+    input:
+        # Lambda prevents KeyError before the JSON is generated
+        params = lambda wildcards: f"{dumux_dir}/input_files/{config['configuration_to_parameter_file'][wildcards.configuration]}"
+    output:
+        vtu_files = [
+            f"{dumux_dir}/test_rotatingcylinders_{{configuration}}-00000.vtu",
+            f"{dumux_dir}/test_rotatingcylinders_{{configuration}}-00001.vtu"
+        ]
+    resources:
+        serial_run=1
+    singularity:
+        f"docker://{container_image}"
+    shell:
+        """
+        set -euo pipefail
+        cd /dumux/rotating-cylinders/build-cmake/test/freeflow/navierstokes/rotatingcylinders
+        ./test_ff_navierstokes_rotatingcylinders {input.params}
+        """
+
+# Rule 2: Post-processing
+rule postprocess_dumux:
+    input:
+        sim_data = [
+            f"{dumux_dir}/test_rotatingcylinders_{{configuration}}-00000.vtu",
+            f"{dumux_dir}/test_rotatingcylinders_{{configuration}}-00001.vtu"
+        ],
+        postprocess_script = f"{dumux_dir}/run_dumux_postprocessing.py"
+    output:
+        metrics = f"{result_dir}/{tool}/solution_metrics_{{configuration}}.json",
+        fields = f"{result_dir}/{tool}/solution_field_data_{{configuration}}.zip"
+    shell:
+        """
+        python3 {input.postprocess_script} \
+            --input_dumux_output_dir {dumux_dir} \
+            --input_configuration {wildcards.configuration} \
+            --output_solution_file_zip {output.fields} \
+            --output_metrics_file {output.metrics}
+        """
