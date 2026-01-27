@@ -13,3 +13,9 @@ dependencies:
   - pyvista
   - rdflib
   - matplotlib
+  - pandas
+  - numpy
+  - pip
+  - pip:
+      - roc-validator
+      - rohub 

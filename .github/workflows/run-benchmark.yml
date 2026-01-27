@@ -1,0 +1,162 @@
+name: CI
+on:
+  push:
+
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+  # Runs the workflow once per day at 3:15am
+  schedule:
+    - cron: '3 16 * * *'
+
+env:
+  CACHE_NUMBER: 1  # increase to reset cache manually
+  SNAKEMAKE_RESULT_FILE: metadata4ing_provenance
+  PROVENANACE_FILE_NAME: element_size_vs_max_mises_stress.pdf
+
+jobs:
+  run-simulation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v2
+
+      - name: Setup Mambaforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+            miniforge-version: latest
+            activate-environment: model-validation 
+            use-mamba: true
+
+      - name: Set strict channel priority
+        run: conda config --set channel_priority strict
+        
+      - name: Update environment
+        run: mamba env update -n model-validation -f environment_benchmarks.yml
+
+      - name: generate-config-files
+        shell: bash -l {0}
+        run: |
+          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
+          python generate_config.py
+
+      - name: run_linear-elastic-plate-with-hole-benchmarks_snakemake
+        shell: bash -l {0}
+        run: |
+          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
+          snakemake --use-conda --force --cores 'all'
+          snakemake --use-conda --force --cores all \
+            --reporter metadata4ing \
+            --report-metadata4ing-paramscript ../common/parameter_extractor.py \
+            --report-metadata4ing-config metadata4ing.config \
+            --report-metadata4ing-filename $SNAKEMAKE_RESULT_FILE
+
+      - name: run_linear-elastic-plate-with-hole-benchmarks_nextflow
+        shell: bash -l {0}
+        run: |
+          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
+          nextflow run main.nf -params-file workflow_config.json -c ../common/nextflow.config -plugins nf-prov@1.4.0
+
+      - name: Archive Linear Elastic plate with a hole benchmark data for snakemake
+        uses: actions/upload-artifact@v4
+        with:
+            name: snakemake_results_linear-elastic-plate-with-hole
+            path: |
+              benchmarks/linear-elastic-plate-with-hole/${{ env.SNAKEMAKE_RESULT_FILE }}.zip
+
+      - name: Archive Linear Elastic plate with a hole benchmark data for nextflow
+        uses: actions/upload-artifact@v4
+        with:
+            name: nextflow_results_linear-elastic-plate-with-hole
+            path: |
+              benchmarks/linear-elastic-plate-with-hole/nextflow_results/
+
+  process-artifacts:
+    runs-on: ubuntu-latest
+    needs: run-simulation
+    steps:
+      - name: Checkout repo content
+        uses: actions/checkout@v2
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: snakemake_results_linear-elastic-plate-with-hole
+          path: ./artifact_files
+
+      - name: Unzip Snakemake Result File
+        run: |
+          mkdir -p ./$SNAKEMAKE_RESULT_FILE
+          unzip -o ./artifact_files/$SNAKEMAKE_RESULT_FILE.zip -d ./$SNAKEMAKE_RESULT_FILE
+
+      - name: Setup Mambaforge with postprocessing env
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+            miniforge-version: latest
+            activate-environment: postprocessing 
+            use-mamba: true
+            environment-file: benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
+      
+      - name: Validate Snakemake Result File
+        shell: bash -l {0}
+        run: |
+          python benchmarks/common/validate_provenance.py \
+            --provenance_folderpath "./$SNAKEMAKE_RESULT_FILE" 
+
+      - name: Run plotting script
+        shell: bash -l {0}
+        run: |
+          python benchmarks/linear-elastic-plate-with-hole/plot_metrics.py \
+            --provenance_folderpath "./$SNAKEMAKE_RESULT_FILE" \
+            --output_file $PROVENANACE_FILE_NAME
+
+      - name: Upload snakemake results file as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: element-size-vs-stress-plot
+          path: ${{ env.PROVENANACE_FILE_NAME }}
+      
+      - name: Re-zip snakemake result folder
+        run: |
+          cd "./${SNAKEMAKE_RESULT_FILE}"
+          zip -r "../${SNAKEMAKE_RESULT_FILE}.zip" .
+
+      - name: Upload RoCrate Zip file onto RoHub
+        id: rohub_upload
+        shell: bash -l {0}
+        continue-on-error: true
+        run: |
+          LOG_FILE=rohub_upload_error.log
+
+          # Run Python and capture all stdout+stderr
+          python benchmarks/common/upload_provenance.py \
+            --provenance_folderpath "./${SNAKEMAKE_RESULT_FILE}.zip" \
+            --benchmark_name "linear-elastic-plate-with-hole" \
+            --username "${{ secrets.ROHUB_USERNAME }}" \
+            --password "${{ secrets.ROHUB_PASSWORD }}" \
+            2>&1 | tee "$LOG_FILE"
+
+          PYTHON_EXIT_CODE=${PIPESTATUS[0]}
+
+          # Check exit code: 0 = failure, 1 = success (per your convention)
+          if [ $PYTHON_EXIT_CODE -eq 0 ]; then
+            echo "=== RoHub upload failed — see log below ==="
+            cat "$LOG_FILE"
+          else
+            echo "✅ RoHub upload succeeded"
+            rm -f "$LOG_FILE"
+          fi
+
+          # Export exit code for subsequent steps if needed
+          echo "python_exit_code=$PYTHON_EXIT_CODE" >> $GITHUB_ENV
+      
+      - name: Upload RoHub error log
+        if: ${{ env.python_exit_code == '0' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: rohub-upload-error-log
+          path: rohub_upload_error.log
+
