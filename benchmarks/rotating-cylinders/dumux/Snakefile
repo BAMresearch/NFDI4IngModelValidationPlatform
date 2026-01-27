@@ -5,11 +5,7 @@ tool = "dumux"
 
 # Use .get() to prevent crashes if config isn't fully loaded yet
 benchmark_name = config.get("benchmark", "rotating-cylinders")
-result_dir = f"snakemake_results/{benchmark_name}/{tool}"
-
 container_image = config.get("container_image", "git.iws.uni-stuttgart.de:4567/benchmarks/rotating-cylinders:3.0")
-shared_dir = os.getcwd()
-dumux_dir = f"{shared_dir}/{tool}"
 
 # Rule 1: Simulation
 rule run_dumux_simulation:
@@ -41,8 +37,8 @@ rule postprocess_dumux:
         ],
         postprocess_script = f"{dumux_dir}/run_dumux_postprocessing.py"
     output:
-        metrics = f"{result_dir}/solution_metrics_{{configuration}}.json",
-        fields = f"{result_dir}/solution_field_data_{{configuration}}.zip"
+        metrics = f"{result_dir}/{tool}/solution_metrics_{{configuration}}.json",
+        fields = f"{result_dir}/{tool}/solution_field_data_{{configuration}}.zip"
     shell:
         """
         python3 {input.postprocess_script} \
