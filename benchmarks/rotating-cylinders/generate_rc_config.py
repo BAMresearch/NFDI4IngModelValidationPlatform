@@ -26,9 +26,8 @@ def write_benchmark_config():
         "benchmark": "rotating-cylinders",
         "benchmark_uri": "https://www.openfoam.com/documentation/guides/latest/doc/verification-validation-rotating-cylinders-2d.html",
         "tools": ["dumux"],
-        "configurations": configurations,
         "configuration_to_parameter_file": config_to_param,
-        "configuration_to_solution_vtu_files": config_to_vtu,
+        "configurations": configurations,
         "container_image": "git.iws.uni-stuttgart.de:4567/benchmarks/rotating-cylinders:3.0"
     }
 

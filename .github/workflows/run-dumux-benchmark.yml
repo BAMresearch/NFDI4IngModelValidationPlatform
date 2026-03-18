@@ -27,7 +27,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
             miniforge-version: latest
-            activate-environment: rc-dumux
+            activate-environment: model-validation
             use-mamba: true
 
       - name: Set strict channel priority
@@ -39,7 +39,7 @@ jobs:
           apptainer-version: 1.4.5
 
       - name: Update environment
-        run: mamba env update -n rc-dumux -f $GITHUB_WORKSPACE/benchmarks/rotating-cylinders/environment_dumux.yaml
+        run: mamba env update -n model-validation -f environment_benchmarks.yml
 
       - name: generate-rc-config
         shell: bash -l {0}

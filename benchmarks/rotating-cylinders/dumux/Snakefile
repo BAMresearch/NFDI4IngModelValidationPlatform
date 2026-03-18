@@ -1,13 +1,24 @@
+# benchmarks/rotating-cylinders/dumux/Snakefile
 import os
 
-# 1. Setup and Config
+# Setup and Config
 tool = "dumux"
+container_image = config["container_image"]
+dumux_dir = f"{shared_dir}/dumux"
 
-# Use .get() to prevent crashes if config isn't fully loaded yet
-benchmark_name = config.get("benchmark", "rotating-cylinders")
-container_image = config.get("container_image", "git.iws.uni-stuttgart.de:4567/benchmarks/rotating-cylinders:3.0")
+# Rule 1: Input generation
+rule generate_dumux_inputs:
+    input:
+        grid_t = f"{dumux_dir}/grid_files/grid_template.json",
+        dumux_t = f"{dumux_dir}/input_files/dumux_config.json",
+        input_gen_script = f"{dumux_dir}/dumux_input_gen.py"
+    output:
+        params = expand(f"{dumux_dir}/input_files/params_{{conf}}.input", conf=configs),
+        grids = expand(f"{dumux_dir}/grid_files/grid_{{conf}}.json", conf=configs)
+    shell:
+        "python3 {input.input_gen_script} --grid_template {input.grid_t} --dumux_template {input.dumux_t}"
 
-# Rule 1: Simulation
+# Rule 2: Simulation
 rule run_dumux_simulation:
     input:
         # Lambda prevents KeyError before the JSON is generated
@@ -28,7 +39,7 @@ rule run_dumux_simulation:
         ./test_ff_navierstokes_rotatingcylinders {input.params}
         """
 
-# Rule 2: Post-processing
+# Rule 3: Post-processing
 rule postprocess_dumux:
     input:
         sim_data = [
