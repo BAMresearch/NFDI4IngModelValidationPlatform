@@ -1,6 +1,8 @@
 {
   "Problem": {
-    "Name": "{problem_name}",
+    "Name": "test_rotatingcylinders",
+    "Omega1": 1e2,
+    "Omega2": 0,
     "EnableGravity": false,
     "EnableInertiaTerms": true
   },
@@ -14,17 +16,25 @@
     "LiquidDensity": 1,
     "LiquidDynamicViscosity": 1
   },
-  "Mass_Assembly_NumericDifference": {
-    "PriVarMagnitude": 0.01,
-    "BaseEpsilon": 0.01
+  "Mass": {
+    "Assembly": {
+      "NumericDifference": {
+        "PriVarMagnitude": "1e-2",
+        "BaseEpsilon": 0.01
+      }
+    }
   },
-  "Momentum_Assembly_NumericDifference": {
-    "PriVarMagnitude": [0.2, 0.2],
-    "BaseEpsilon": 0.01
+  "Momentum": {
+    "Assembly": {
+      "NumericDifference": {
+        "PriVarMagnitude": "0.2 0.2",
+        "BaseEpsilon": 0.01
+      }
+    }
   },
   "LinearSolver": {
     "MaxIterations": 500,
-    "ResidualReduction": 1e-10,
+    "ResidualReduction": "1e-10",
     "SymmetrizeDirichlet": true,
     "DirectSolverForVelocity": false,
     "GMResRestart": 500,
@@ -45,6 +55,6 @@
   "Newton": {
     "MinSteps": 1,
     "EnableAbsoluteResidualCriterion": true,
-    "MaxAbsoluteResidual": 4e-05
+    "MaxAbsoluteResidual": "4e-6"
   }
 }

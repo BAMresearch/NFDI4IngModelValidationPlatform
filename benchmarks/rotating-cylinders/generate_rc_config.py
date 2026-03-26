@@ -7,7 +7,6 @@ def write_benchmark_config():
     
     configurations = []
     config_to_param = {}
-    config_to_vtu = {}
 
     for i in range(num_files):
         cells0 = base_cells0 * (2 ** i)
@@ -15,20 +14,15 @@ def write_benchmark_config():
         config_name = f"{cells0}_{cells1}"
         
         configurations.append(config_name)
-        config_to_param[config_name] = f"params_{config_name}.input"
-        config_to_vtu[config_name] = [
-            f"dumux/test_rotatingcylinders_{config_name}-00000.vtu",
-            f"dumux/test_rotatingcylinders_{config_name}-00001.vtu"
-        ]
+        config_to_param[config_name] = f"params_{config_name}.json"
 
-    # Your hardcoded dictionary
     benchmark_json = {
         "benchmark": "rotating-cylinders",
         "benchmark_uri": "https://www.openfoam.com/documentation/guides/latest/doc/verification-validation-rotating-cylinders-2d.html",
         "tools": ["dumux"],
         "configuration_to_parameter_file": config_to_param,
         "configurations": configurations,
-        "container_image": "git.iws.uni-stuttgart.de:4567/benchmarks/rotating-cylinders:3.0"
+        "container_image": "git.iws.uni-stuttgart.de:4567/benchmarks/rotating-cylinders:3.1"
     }
 
     with open("rotating-cylinders_config.json", "w") as f:
