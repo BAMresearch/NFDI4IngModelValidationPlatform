@@ -1,8 +1,5 @@
 {
   "Problem": {
-    "Name": "test_rotatingcylinders",
-    "Omega1": 1e2,
-    "Omega2": 0,
     "EnableGravity": false,
     "EnableInertiaTerms": true
   },
@@ -12,33 +9,21 @@
   "Flux": {
     "UpwindWeight": 0.5
   },
-  "Component": {
-    "LiquidDensity": 1,
-    "LiquidDynamicViscosity": 1
+  "Mass.Assembly.NumericDifference": {
+    "PriVarMagnitude": "1e-2",
+    "BaseEpsilon": 0.01
   },
-  "Mass": {
-    "Assembly": {
-      "NumericDifference": {
-        "PriVarMagnitude": "1e-2",
-        "BaseEpsilon": 0.01
-      }
-    }
-  },
-  "Momentum": {
-    "Assembly": {
-      "NumericDifference": {
-        "PriVarMagnitude": "0.2 0.2",
-        "BaseEpsilon": 0.01
-      }
-    }
+  "Momentum.Assembly.NumericDifference": {
+    "PriVarMagnitude": "0.2 0.2",
+    "BaseEpsilon": 0.01
   },
   "LinearSolver": {
+    "Type": "gmres",
     "MaxIterations": 500,
     "ResidualReduction": "1e-10",
     "SymmetrizeDirichlet": true,
     "DirectSolverForVelocity": false,
     "GMResRestart": 500,
-    "Type": "gmres",
     "Verbosity": 1,
     "Preconditioner": {
       "Mode": "Triangular",

@@ -1,0 +1,14 @@
+{
+  "geometry": {
+    "type": "concentric_cylinders",
+    "radius_inner": 1.0,
+    "radius_outer": 2.0,
+    "angle_range": [0, 360]
+  },
+  "physics": {
+    "omega_inner": 100.0,
+    "omega_outer": 0.0,
+    "LiquidDensity": 1,
+    "LiquidDynamicViscosity": 1
+  }
+}
