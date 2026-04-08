@@ -1,4 +1,4 @@
-name: CI
+name: Examples-CI
 on:
   push:
 
@@ -18,7 +18,7 @@ env:
   PROVENANACE_FILE_NAME: element_size_vs_max_mises_stress.pdf
 
 jobs:
-  run-simulation:
+  run-examples:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo content
@@ -37,13 +37,13 @@ jobs:
       - name: Update environment
         run: mamba env update -n model-validation -f environment_benchmarks.yml
 
-      - name: Run Example linear-elastic-plate-with-hole_fenics using Benchmarking package
+      - name: Run linear-elastic-plate-with-hole using fenics
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/examples/linear-elastic-plate-with-hole/fenics/
           python run_benchmark.py
 
-      - name: Archive Linear Elastic plate with a hole benchmark data for snakemake
+      - name: Archive results of the fenics run of linear-elastic-plate-with-hole
         uses: actions/upload-artifact@v4
         with:
             name: snakemake_results_linear-elastic-plate-with-hole
