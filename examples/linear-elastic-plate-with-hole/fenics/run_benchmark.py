@@ -44,7 +44,6 @@ for file in root_unzipped_benchmark_dir.glob("parameters_*.json"):
     with open(file, "r") as f:
         data = json.load(f)
         if data.get("element-size").get("value") >= 0.025:
-        #if data.get("configuration") == "1":
             
             # Create output directory for the configuration
             output_dir = root_unzipped_benchmark_dir / "results" / data.get("configuration")
