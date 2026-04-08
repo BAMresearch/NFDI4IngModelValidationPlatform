@@ -1,0 +1,54 @@
+name: CI
+on:
+  push:
+
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+  # Runs the workflow once per day at 3:15am
+  schedule:
+    - cron: '3 16 * * *'
+
+env:
+  CACHE_NUMBER: 1  # increase to reset cache manually
+  SNAKEMAKE_RESULT_FILE: metadata4ing_provenance
+  PROVENANACE_FILE_NAME: element_size_vs_max_mises_stress.pdf
+
+jobs:
+  run-simulation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v2
+
+      - name: Setup Mambaforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+            miniforge-version: latest
+            activate-environment: model-validation 
+            use-mamba: true
+
+      - name: Set strict channel priority
+        run: conda config --set channel_priority strict
+        
+      - name: Update environment
+        run: mamba env update -n model-validation -f environment_benchmarks.yml
+
+      - name: Run Example linear-elastic-plate-with-hole_fenics using Benchmarking package
+        shell: bash -l {0}
+        run: |
+          cd $GITHUB_WORKSPACE/examples/linear-elastic-plate-with-hole/fenics/
+          python run_benchmark.py
+
+      - name: Archive Linear Elastic plate with a hole benchmark data for snakemake
+        uses: actions/upload-artifact@v4
+        with:
+            name: snakemake_results_linear-elastic-plate-with-hole
+            path: |
+              examples/linear-elastic-plate-with-hole/fenics/results/
+
+
+
