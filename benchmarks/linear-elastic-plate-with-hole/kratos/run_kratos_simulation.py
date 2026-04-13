@@ -36,6 +36,12 @@ if __name__ == "__main__":
         required=True,
         help="Path to the kratos input file (input)",
     )
+    parser.add_argument(
+        "--input_kratos_materialfile",
+        required=False,
+        default=None,
+        help="Optional path to the kratos material file (unused, kept for compatibility)",
+    )
     args, _ = parser.parse_known_args()
 
     with open(args.input_kratos_inputfile, "r") as kratos_input:

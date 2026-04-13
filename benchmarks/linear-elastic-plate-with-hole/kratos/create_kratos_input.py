@@ -14,7 +14,8 @@ def create_kratos_input(
     mdpa_file: str,
     kratos_input_template_file: str,
     kratos_material_template_file: str,
-    kratos_input_file: str
+    kratos_input_file: str,
+    kratos_material_file: str,
 ):
     ureg = UnitRegistry()
     with open(parameter_file) as f:
@@ -76,13 +77,16 @@ def create_kratos_input(
     material_string = material_string.replace(r'"{{YOUNG_MODULUS}}"', str(E))
     material_string = material_string.replace(r'"{{POISSON_RATIO}}"', str(nu))
 
+    with open(kratos_material_file, "w") as f:
+        f.write(material_string)
+
     with open(kratos_input_template_file) as f:
         project_parameters_string = f.read()
     project_parameters_string = project_parameters_string.replace(
         r"{{MESH_FILE}}", os.path.splitext(mdpa_file)[0]
     )
     project_parameters_string = project_parameters_string.replace(
-        r"{{MATERIAL_FILE}}", material_string
+        r"{{MATERIAL_FILE}}", kratos_material_file
     )
     project_parameters_string = project_parameters_string.replace(
         r"{{BOUNDARY_RIGHT_TRACTION_X}}", sxx_str
@@ -131,6 +135,11 @@ if __name__ == "__main__":
         required=True,
         help="Path to the kratos input file (output)",
     )
+    parser.add_argument(
+        "--output_kratos_materialfile",
+        required=True,
+        help="Path to the kratos material file (output)",
+    )
     args, _ = parser.parse_known_args()
 
     create_kratos_input(
@@ -138,5 +147,6 @@ if __name__ == "__main__":
         mdpa_file=args.input_mdpa_file,
         kratos_input_template_file=args.input_kratos_input_template,
         kratos_material_template_file=args.input_material_template,
-        kratos_input_file=args.output_kratos_inputfile
+        kratos_input_file=args.output_kratos_inputfile,
+        kratos_material_file=args.output_kratos_materialfile,
     )
