@@ -12,6 +12,7 @@
         "echo_level": 1,
         "domain_size": 2,
         "analysis_type": "linear",
+        "compute_reactions": true,
         "model_import_settings": {
             "input_type": "mdpa",
             "input_filename": "{{MESH_FILE}}"
@@ -68,21 +69,23 @@
                         "End"
                     ]
                 }
-            },
+            }
+        ],
+        "loads_process_list": [
             {
                 "python_module": "assign_vector_variable_process",
                 "kratos_module": "KratosMultiphysics",
                 "Parameters": {
                     "model_part_name": "Structure.boundary_right",
-                    "variable_name": "DISPLACEMENT",
+                    "variable_name": "POINT_LOAD",
                     "constrained": [
-                        true,
-                        true,
-                        true
+                        false,
+                        false,
+                        false
                     ],
                     "value": [
-                        "{{BOUNDARY_RIGHT_DISPLACEMENT_X}}",
-                        "{{BOUNDARY_RIGHT_DISPLACEMENT_Y}}",
+                        "{{BOUNDARY_RIGHT_TRACTION_X}}",
+                        "{{BOUNDARY_RIGHT_TRACTION_Y}}",
                         0.0
                     ],
                     "interval": [
@@ -96,15 +99,15 @@
                 "kratos_module": "KratosMultiphysics",
                 "Parameters": {
                     "model_part_name": "Structure.boundary_top",
-                    "variable_name": "DISPLACEMENT",
+                    "variable_name": "POINT_LOAD",
                     "constrained": [
-                        true,
-                        true,
-                        true
+                        false,
+                        false,
+                        false
                     ],
                     "value": [
-                        "{{BOUNDARY_TOP_DISPLACEMENT_X}}",
-                        "{{BOUNDARY_TOP_DISPLACEMENT_Y}}",
+                        "{{BOUNDARY_TOP_TRACTION_X}}",
+                        "{{BOUNDARY_TOP_TRACTION_Y}}",
                         0.0
                     ],
                     "interval": [
@@ -114,7 +117,6 @@
                 }
             }
         ],
-        "loads_process_list": [],
         "list_other_processes": []
     },
     "output_processes": {
@@ -129,7 +131,11 @@
                     "output_sub_model_parts": false,
                     "output_interval": 1,
                     "nodal_solution_step_data_variables": [
-                        "DISPLACEMENT"
+                        "DISPLACEMENT",
+                        "REACTION"
+                    ],
+                    "gauss_point_variables_in_elements": [
+                        "VON_MISES_STRESS"
                     ],
                     "gauss_point_variables_extrapolated_to_nodes": [
                         "CAUCHY_STRESS_VECTOR",

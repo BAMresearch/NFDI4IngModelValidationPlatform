@@ -23,7 +23,7 @@ from pathlib import Path
 if __name__ == "__main__":
     parser = ArgumentParser(
         description="Run FEniCS simulation for a plate with a hole.\n"
-        "Inputs: --input_parameter_file, --input_kratos_inputfile, --input_kratos_materialfile\n"
+        "Inputs: --input_parameter_file, --input_kratos_inputfile \n"
         "Outputs: --output_solution_file_zip, --output_metrics_file"
     )
     parser.add_argument(
@@ -35,11 +35,6 @@ if __name__ == "__main__":
         "--input_kratos_inputfile",
         required=True,
         help="Path to the kratos input file (input)",
-    )
-    parser.add_argument(
-        "--input_kratos_materialfile",
-        required=True,
-        help="Path to the kratos material file (input)",
     )
     args, _ = parser.parse_known_args()
 

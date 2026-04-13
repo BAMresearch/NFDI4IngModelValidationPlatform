@@ -4,6 +4,7 @@ from pint import UnitRegistry
 from argparse import ArgumentParser
 from pathlib import Path
 import sys
+import sympy as sp
 # Ensure the parent directory is in the path to import AnalyticalSolution
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from analytical_solution import AnalyticalSolution
@@ -13,8 +14,7 @@ def create_kratos_input(
     mdpa_file: str,
     kratos_input_template_file: str,
     kratos_material_template_file: str,
-    kratos_input_file: str,
-    kratos_material_file: str,
+    kratos_input_file: str
 ):
     ureg = UnitRegistry()
     with open(parameter_file) as f:
@@ -58,7 +58,17 @@ def create_kratos_input(
         load=load,
     )
 
-    bc = analytical_solution.displacement_symbolic_str("X", "Y")
+    # Build traction expressions t = sigma * n on right (n=[1,0]) and top (n=[0,1]) boundaries.
+    sxx_sym, sxy_sym, syy_sym = analytical_solution.stress_symbolic()
+    x, y = sp.symbols("x y")
+    X_sym = sp.Symbol("X")
+    Y_sym = sp.Symbol("Y")
+    E_sym, nu_sym, a_sym, T_sym = sp.symbols("E nu a T")
+    subs_vars = {x: X_sym, y: Y_sym}
+    subs_params = {E_sym: E, nu_sym: nu, a_sym: radius, T_sym: load}
+    sxx_str = sp.sstr(sxx_sym.subs(subs_vars).subs(subs_params))
+    sxy_str = sp.sstr(sxy_sym.subs(subs_vars).subs(subs_params))
+    syy_str = sp.sstr(syy_sym.subs(subs_vars).subs(subs_params))
     
     with open(kratos_material_template_file) as f:
         material_string = f.read()
@@ -66,28 +76,25 @@ def create_kratos_input(
     material_string = material_string.replace(r'"{{YOUNG_MODULUS}}"', str(E))
     material_string = material_string.replace(r'"{{POISSON_RATIO}}"', str(nu))
 
-    with open(kratos_material_file, "w") as f:
-        f.write(material_string)
-
     with open(kratos_input_template_file) as f:
         project_parameters_string = f.read()
     project_parameters_string = project_parameters_string.replace(
         r"{{MESH_FILE}}", os.path.splitext(mdpa_file)[0]
     )
     project_parameters_string = project_parameters_string.replace(
-        r"{{MATERIAL_FILE}}", kratos_material_file
+        r"{{MATERIAL_FILE}}", material_string
     )
     project_parameters_string = project_parameters_string.replace(
-        r"{{BOUNDARY_RIGHT_DISPLACEMENT_X}}", str(bc[0])
+        r"{{BOUNDARY_RIGHT_TRACTION_X}}", sxx_str
     )
     project_parameters_string = project_parameters_string.replace(
-        r"{{BOUNDARY_RIGHT_DISPLACEMENT_Y}}", str(bc[1])
+        r"{{BOUNDARY_RIGHT_TRACTION_Y}}", sxy_str
     )
     project_parameters_string = project_parameters_string.replace(
-        r"{{BOUNDARY_TOP_DISPLACEMENT_X}}", str(bc[0])
+        r"{{BOUNDARY_TOP_TRACTION_X}}", sxy_str
     )
     project_parameters_string = project_parameters_string.replace(
-        r"{{BOUNDARY_TOP_DISPLACEMENT_Y}}", str(bc[1])
+        r"{{BOUNDARY_TOP_TRACTION_Y}}", syy_str
     )
     config = parameters["configuration"]
     output_dir = os.path.join(os.path.dirname(os.path.abspath(kratos_input_file)), str(config))
@@ -124,11 +131,6 @@ if __name__ == "__main__":
         required=True,
         help="Path to the kratos input file (output)",
     )
-    parser.add_argument(
-        "--output_kratos_materialfile",
-        required=True,
-        help="Path to the kratos material file (output)",
-    )
     args, _ = parser.parse_known_args()
 
     create_kratos_input(
@@ -136,6 +138,5 @@ if __name__ == "__main__":
         mdpa_file=args.input_mdpa_file,
         kratos_input_template_file=args.input_kratos_input_template,
         kratos_material_template_file=args.input_material_template,
-        kratos_input_file=args.output_kratos_inputfile,
-        kratos_material_file=args.output_kratos_materialfile,
+        kratos_input_file=args.output_kratos_inputfile
     )
