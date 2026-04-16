@@ -548,6 +548,9 @@
     "evaluates": "m4i:evaluates",
     "extract": {
       "@id": "cr:extract"
+    },
+    "jsonPath": {
+      "@id": "cr:jsonPath"
     }
   },
   "@graph": [
@@ -606,6 +609,19 @@
       "label": "Publication"
     },
     {
+      "@id": "local:field_max_von_mises_stress_nodes",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Double"
+      },
+      "represents": {
+        "@id": "local:variable_max_von_mises_stress_nodes"
+      },
+      "source": {
+        "@id": "local:source_max_von_mises_stress_nodes"
+      }
+    },
+    {
       "@id": "local:metric_max_von_mises_stress_nodes",
       "@type": "numerical variable",
       "label": "max_von_mises_stress_nodes",
@@ -613,8 +629,23 @@
         "@id": "unit:BAR"
       },
       "has quantity kind": {
-        "@id": "qudt:http://qudt.org/vocab/quantitykind/Stress"
+        "@id": "http://qudt.org/vocab/quantitykind/Stress"
       }
+    },
+    {
+      "@id": "local:source_max_von_mises_stress_nodes",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_max_von_mises_stress_nodes"
+      },
+      "file object": {
+        "@id": "local:summary_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_max_von_mises_stress_nodes",
+      "@type": "cr:DataSource",
+      "jsonPath": "/max_von_mises_stress_nodes/"
     },
     {
       "@id": "local:simulation_run",
@@ -663,7 +694,7 @@
       "@id": "local:configuration_1",
       "@type": "m4i:ParameterSet",
       "label": "Configuration Element-Size 0.1",
-      "identifier": "0.1",
+      "identifier": "1",
       "has part": [
         {
           "@id": "local:variable_element_size_01"
@@ -701,7 +732,7 @@
       "@id": "local:configuration_2",
       "@type": "m4i:ParameterSet",
       "label": "Configuration element-size 0.05",
-      "identifier": "0.05",
+      "identifier": "05",
       "has part": [
         {
           "@id": "local:variable_element_size_05"
@@ -739,7 +770,7 @@
       "@id": "local:configuration_3",
       "@type": "m4i:ParameterSet",
       "label": "Configuration Element-Size 0.025",
-      "identifier": "0.025",
+      "identifier": "025",
       "has part": [
         {
           "@id": "local:variable_element_size_025"
@@ -777,7 +808,7 @@
       "@id": "local:configuration_4",
       "@type": "m4i:ParameterSet",
       "label": "Configuration Element-Size 0.0125",
-      "identifier": "0.0125",
+      "identifier": "0125",
       "has part": [
         {
           "@id": "local:variable_element_size_0125"
@@ -815,7 +846,7 @@
       "@id": "local:configuration_5",
       "@type": "m4i:ParameterSet",
       "label": "Configuration Element-Size 0.00625",
-      "identifier": "0.00625",
+      "identifier": "00625",
       "has part": [
         {
           "@id": "local:variable_element_size_00625"
@@ -853,7 +884,7 @@
       "@id": "local:configuration_6",
       "@type": "m4i:ParameterSet",
       "label": "Configuration Element-Size 0.003125",
-      "identifier": "0.003125",
+      "identifier": "003125",
       "has part": [
         {
           "@id": "local:variable_element_size_003125"
@@ -917,7 +948,7 @@
       "@id": "local:summary_file",
       "@type": "File",
       "encodingFormat": "application/json",
-      "name": "summary.json"
+      "name": "solution_metrics.json"
     },
     {
       "@id": "local:parameter_file_object",
@@ -927,7 +958,7 @@
     {
       "@id": "local:summary_file_object",
       "@type": "cr:FileObject",
-      "label": "summary.json"
+      "label": "solution_metrics.json"
     },
     {
       "@id": "local:variable_poisson_ratio",
