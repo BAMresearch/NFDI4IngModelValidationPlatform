@@ -403,10 +403,10 @@ def run_sparql_query(graph: Graph) -> None:
             SELECT ?elementSize ?metricValue
             WHERE {
               ?runAction a schema:CreateAction ;
-                         schema:object ?config ;
+                         schema:object ?object ;
                          schema:result ?metric .
             
-              ?config a schema:PropertyValue ;
+              ?object a schema:PropertyValue ;
                       schema:exampleOfWork ?param .
             
               ?param a <https://bioschemas.org/FormalParameter> ;
