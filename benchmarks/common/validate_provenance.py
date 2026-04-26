@@ -36,6 +36,12 @@ def parse_args():
         default="ro-crate-metadata.json",
         help="File name for the provenance graph",
     )
+    parser.add_argument(
+        "--profile_identifier",
+        type=str,
+        default="ro-crate-1.1",
+        help="Identifier for the profile to validate against",
+    )
     return parser.parse_args()
 
 
@@ -56,10 +62,10 @@ def run(args):
     """
     analyzer = ProvenanceAnalyzer(
         provenance_folderpath=args.provenance_folderpath,
-        provenance_filename=args.provenance_filename,
+        provenance_filename=args.provenance_filename
     )
 
-    analyzer.validate_provenance()
+    analyzer.validate_provenance(profile_identifier=args.profile_identifier)
 
 
 def main():
@@ -72,7 +78,7 @@ def main():
     Usage:
         python validate_provenance.py --provenance_folderpath /path/to/folder
         python validate_provenance.py --provenance_folderpath /path/to/folder \
-            --provenance_filename custom-metadata.json
+            --profile_identifier ro-crate-1.1
 
     Exits:
         The script will exit with a non-zero status code if validation fails

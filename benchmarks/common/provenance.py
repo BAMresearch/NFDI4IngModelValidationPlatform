@@ -246,12 +246,12 @@ class ProvenanceAnalyzer:
         else:
             plt.show()
 
-    def validate_provenance(self):
+    def validate_provenance(self, profile_identifier: str = "ro-crate-1.1"):
         """
-        Validates the RO-Crate against the RO-Crate 1.1 profile.
+        Validates the RO-Crate against the specified profile.
 
         Uses the rocrate-validator library to check if the RO-Crate metadata
-        conforms to the RO-Crate 1.1 specification with required severity level.
+        conforms to the specified profile with required severity level.
 
         Raises:
             AssertionError: If the RO-Crate has validation issues, with details
@@ -262,7 +262,7 @@ class ProvenanceAnalyzer:
         """
         settings = services.ValidationSettings(
             rocrate_uri=self.provenance_folderpath,
-            profile_identifier="ro-crate-1.1",
+            profile_identifier=profile_identifier,
             requirement_severity=models.Severity.REQUIRED,
         )
 

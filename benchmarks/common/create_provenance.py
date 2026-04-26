@@ -10,7 +10,6 @@ from typing import Any, TypedDict
 
 from rdflib import Graph
 from rocrate.rocrate import ROCrate
-
 import semantic_benchmark
 
 DEFAULT_BENCHMARK_FILE = (
@@ -20,6 +19,43 @@ DEFAULT_BENCHMARK_FILE = (
 DEFAULT_SIMULATION_RESULT_PATH = (
     "/Users/mahdi/Documents/GitHub/NFDI4IngModelValidationPlatform/examples/"
     "linear-elastic-plate-with-hole/fenics/results"
+)
+M4I_HAS_KIND_OF_QUANTITY = "http://w3id.org/nfdi4ing/metadata4ing#hasKindOfQuantity"
+ROCRATE_CONFORMS_TO = [
+    {"@id": "https://w3id.org/ro/crate/1.1"},
+    {"@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"},
+]
+ROOT_DATASET_CONFORMS_TO = [
+    {"@id": "https://w3id.org/ro/wfrun/process/0.4"},
+    {"@id": "https://w3id.org/ro/wfrun/workflow/0.4"},
+    {"@id": "https://w3id.org/ro/wfrun/provenance/0.4"},
+    {"@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"},
+]
+PROFILE_CREATIVE_WORKS = (
+    {
+        "@id": "https://w3id.org/ro/wfrun/process/0.4",
+        "@type": "CreativeWork",
+        "name": "Process Run Crate",
+        "version": "0.4",
+    },
+    {
+        "@id": "https://w3id.org/ro/wfrun/workflow/0.4",
+        "@type": "CreativeWork",
+        "name": "Workflow Run Crate",
+        "version": "0.4",
+    },
+    {
+        "@id": "https://w3id.org/ro/wfrun/provenance/0.4",
+        "@type": "CreativeWork",
+        "name": "Provenance Run Crate",
+        "version": "0.4",
+    },
+    {
+        "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0",
+        "@type": "CreativeWork",
+        "name": "Workflow RO-Crate",
+        "version": "1.0",
+    },
 )
 
 
@@ -89,9 +125,11 @@ def _formal_parameter_payload(
     }
 
     unit = getattr(part, "unit", None)
+    payload["additionalType"] = ""
+    
     if unit is not None:
-        payload["additionalType"] = unit
-
+        payload["m4i:hasKindOfQuantity"] = { "@id": unit}
+        
     if isinstance(part, semantic_benchmark.NumericalParameter):
         payload["defaultValue"] = part.numerical_value
     elif isinstance(part, semantic_benchmark.TextParameter):
@@ -311,6 +349,55 @@ def _run_results_by_name(
     return {entry["run_name"]: entry["result_ids"] for entry in run_results}
 
 
+def _add_run_actions(
+    crate: ROCrate,
+    subfolders: list[Path],
+    object_ids_by_run: dict[str, str],
+    configuration_entries: list[ConfigurationEntry],
+    run_results_by_name: dict[str, list[dict[str, str]]],
+    software_id: str,
+) -> None:
+    for run_folder in subfolders:
+        run_name = run_folder.name
+        run_object_id = object_ids_by_run.get(run_name)
+        if not run_object_id:
+            continue
+
+        run_parameters = _load_run_parameters(run_folder)
+        config_id = _configuration_id_for_run(
+            run_folder, run_parameters, configuration_entries
+        )
+        result_ids = run_results_by_name.get(run_name, [])
+
+        run_action: dict[str, Any] = {
+            "@id": f"{uuid.uuid4()}",
+            "@type": "CreateAction",
+            "name": f"Simulation Run {run_name}",
+            "object": [{"@id": run_object_id}],
+            "instrument": {"@id": software_id},
+        }
+        if config_id:
+            run_action["object"].append({"@id": config_id})
+        if result_ids:
+            run_action["result"] = result_ids
+        crate.add_jsonld(run_action)
+
+
+def _configure_crate_metadata(crate: ROCrate, snakemake_id: str) -> None:
+    crate.metadata.extra_terms = {"m4i:hasKindOfQuantity": M4I_HAS_KIND_OF_QUANTITY}
+    crate.mainEntity = {"@id": snakemake_id}
+    crate.license = "https://opensource.org/licenses/MIT"
+    crate.name = "NFDI4Ing Provenance"
+    crate.description = "Benchmark for linear-elastic plate with a hole"
+    crate.metadata["conformsTo"] = ROCRATE_CONFORMS_TO
+    crate.root_dataset.append_to("conformsTo", ROOT_DATASET_CONFORMS_TO)
+
+
+def _add_profile_creative_works(crate: ROCrate) -> None:
+    for creative_work in PROFILE_CREATIVE_WORKS:
+        crate.add_jsonld(creative_work)
+
+
 def create_main_ro(
     path: str, benchmark_object: semantic_benchmark.BenchmarkSemantic
 ) -> None:
@@ -329,35 +416,35 @@ def create_main_ro(
         )
 
     _add_subcrates_to_main(crate, subcrates, input_path)
+
     object_ids_by_run = _create_action_object_ids(input_path, subfolders)
     configuration_entries = _add_configuration_nodes(crate, benchmark_object)
     run_results = _add_evaluates_nodes(crate, benchmark_object, subfolders)
     run_results_by_name = _run_results_by_name(run_results)
 
-    for run_folder in subfolders:
-        run_name = run_folder.name
-        run_object_id = object_ids_by_run.get(run_name)
-        if not run_object_id:
-            continue
+    snakemake_id = "Snakefile"
+    software_id = str(uuid.uuid4())
 
-        run_parameters = _load_run_parameters(run_folder)
-        config_id = _configuration_id_for_run(
-            run_folder, run_parameters, configuration_entries
-        )
-        result_ids = run_results_by_name.get(run_name, [])
+    _add_run_actions(
+        crate=crate,
+        subfolders=subfolders,
+        object_ids_by_run=object_ids_by_run,
+        configuration_entries=configuration_entries,
+        run_results_by_name=run_results_by_name,
+        software_id=software_id,
+    )
+    _configure_crate_metadata(crate, snakemake_id)
 
-        run_action: dict[str, Any] = {
-            "@id": f"#{uuid.uuid4()}",
-            "@type": "CreateAction",
-            "name": f"Simulation Run {run_name}",
-            "object": [{"@id": run_object_id}],
-        }
-        if config_id:
-            run_action["object"].append({"@id": config_id})
-        if result_ids:
-            run_action["result"] = result_ids
-        crate.add_jsonld(run_action)
+    crate.add_jsonld(
+        {"@id": software_id, "@type": "SoftwareApplication", "name": "FENICS"}
+    )
+    _add_profile_creative_works(crate)
 
+    crate.add_workflow(
+        source=str(subcrates[0].parent / "Snakefile"),
+        lang="snakemake",
+        properties={"hasPart": {"@id": software_id}},
+    )
     crate.write_zip("RO.zip")
 
 
@@ -432,37 +519,6 @@ def run_sparql_query(graph: Graph) -> None:
     print(f"\nRows: {row_count}")
 
 
-def merge_all_rocrates_as_subcrates(
-    input_folder: str,
-    output_zip: str,
-    parent_name: str = "Merged RO-Crate",
-    parent_description: str = "This RO-Crate contains multiple nested RO-Crates as subcrates.",
-) -> None:
-    """
-    Merge all zipped RO-Crates in a folder into a single RO-Crate
-    using the Subcrate mechanism.
-    """
-    input_path = Path(input_folder)
-    if not input_path.is_dir():
-        raise NotADirectoryError(f"{input_folder} is not a valid directory")
-
-    merged = ROCrate()
-    merged.name = parent_name
-    merged.description = parent_description
-
-    zip_files = sorted(input_path.glob("*.zip"))
-    if not zip_files:
-        raise ValueError("No .zip files found in the specified folder")
-
-    for zip_path in zip_files:
-        subcrate_name = zip_path.stem
-        print(f"Adding subcrate: {zip_path.name} -> {subcrate_name}/")
-        merged.add_subcrate(source=str(zip_path), dest_path=subcrate_name)
-
-    merged.write_zip(output_zip)
-    print(f"Merged RO-Crate written to: {output_zip}")
-    print(f"Total subcrates added: {len(zip_files)}")
-
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Create RO-Crate and run SPARQL queries on ro-crate-metadata.json"
@@ -497,7 +553,6 @@ def main() -> None:
     extracted_dir = unzip_rocrate(args.ro_zip, args.extract_dir)
     metadata_path = extracted_dir / "ro-crate-metadata.json"
     graph = parse_rocrate_metadata_graph(metadata_path)
-    print(f"Loaded RDF graph with {len(graph)} triples from {metadata_path}")
 
     run_sparql_query(graph)
 
