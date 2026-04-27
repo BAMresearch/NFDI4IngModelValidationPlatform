@@ -106,7 +106,7 @@ After successfully uploading or creating a research object, api gives back its `
 
 ## Accessing Research Objects
 
-You can access research objects via code (API) or SPARQL endpoint. There are two endpoints, [Production](https://rohub2020-api-virtuoso-route-rohub2020.apps.paas.psnc.pl/sparql) and [Development](https://rohub2020-api-virtuoso-route-rohub.apps.paas-dev.psnc.pl/sparql/%22).
+You can access research objects via code (API) or SPARQL endpoint. There are two endpoints, [Production](https://virtuoso-rohub2020-production.apps.bst2.paas.psnc.pl/sparql) and [Development](https://virtuoso-rohub2020-devel.apps.bst2.paas.psnc.pl/sparql%22).
 
 You can query object properties by id as:
 
@@ -197,7 +197,7 @@ WHERE {
 It is possible upload the snakemake research object artificated which was created by snakemake-metadat4ing-reporter-plugin onto the Rohub, and query the workflow input and output parameters.
 
 After uploading the artifact, the api gives back an id, in our case suppose that it is 
-`a1485323-9904-438d-b188-794a71e58ea3`. We can run the following query on the [Development](https://rohub2020-api-virtuoso-route-rohub.apps.paas-dev.psnc.pl/sparql/%22), and see the results:
+`a1485323-9904-438d-b188-794a71e58ea3`. We can run the following query on the [Development](https://virtuoso-rohub2020-devel.apps.bst2.paas.psnc.pl/sparql%22), and see the results:
 
 ```sparql
 PREFIX schema: <http://schema.org/>
