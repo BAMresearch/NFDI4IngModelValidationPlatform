@@ -61,15 +61,10 @@ for file in root_unzipped_benchmark_dir.glob("parameters_*.json"):
                     else:
                         shutil.copy(item, output_dir / item.name)
                             
-            # Run the Snakemake workflow for the configuration
-            subprocess.run(["snakemake", "--use-conda", "--force", "--cores", "all", "--conda-prefix", str(shared_env_dir)], check=True, cwd=output_dir)
-            print("Workflow executed successfully.")
+            # Run the Snakemake workflow from the benchmark to create the mesh for the configuration
+            subprocess.run(["snakemake", "--snakefile", "Snakefile", "--use-conda", "--force", "--cores", "all", "--conda-prefix", str(shared_env_dir), "--until", "create_mesh"], check=True, cwd=output_dir)
             
-            # For the scenario where the snakemake workflow doesn't exist, one can directly run the simulation script using the subprocess module, e.g.:
-            #subprocess.run(["python", "run_fenics_simulation.py" \
-                            #"--input_parameter_file" "parameters.json" \
-                            #"--input_mesh_file" "mesh.msh" \
-                            #"--output_solution_file_zip" "solution_field_data.zip" \
-                            #"--output_metrics_file" "solution_metrics.json"], check=True, cwd=output_dir)
-                            
-            #Assuming the mesh.msh and parameters.json files are present/copied to the output_dir.
+            # Run the Snakemake workflow to run the simulation and postprocess results for the configuration
+            subprocess.run(["snakemake", "--snakefile", "Snakefile_kratos.smk", "--use-conda", "--force", "--cores", "all", "--conda-prefix", str(shared_env_dir)], check=True, cwd=output_dir)
+            print("Workflow executed successfully.")            
+        

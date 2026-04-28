@@ -43,12 +43,25 @@ jobs:
           cd $GITHUB_WORKSPACE/examples/linear-elastic-plate-with-hole/fenics/
           python run_benchmark.py
 
+      - name: Run linear-elastic-plate-with-hole using kratos
+        shell: bash -l {0}
+        run: |
+          cd $GITHUB_WORKSPACE/examples/linear-elastic-plate-with-hole/kratos/
+          python run_benchmark.py
+
       - name: Archive results of the fenics run of linear-elastic-plate-with-hole
         uses: actions/upload-artifact@v4
         with:
             name: snakemake_results_linear-elastic-plate-with-hole
             path: |
               examples/linear-elastic-plate-with-hole/fenics/results/
+
+      - name: Archive results of the kratos run of linear-elastic-plate-with-hole
+        uses: actions/upload-artifact@v4
+        with:
+            name: snakemake_results_linear-elastic-plate-with-hole
+            path: |
+              examples/linear-elastic-plate-with-hole/kratos/results/
 
 
 

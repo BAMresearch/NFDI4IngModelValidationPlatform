@@ -23,10 +23,10 @@ class ParameterExtractor(ParameterExtractorInterface):
             with open(file_path) as f:
                 data = json.load(f)
             for key, val in data.items():
-                if isinstance(val, dict) and "value" in val:
+                if isinstance(val, dict):
                     results[rule_name]["has parameter"].append({key: {
                         "value": val["value"],
-                        "unit": f"{val['unit']}" if "unit" in val else None,
+                        "unit": f"{val["unit"]}" if "unit" in val else None,
                         "json-path": f"/{key}/value",
                         "data-type": self._get_type(val["value"]),
                     }})

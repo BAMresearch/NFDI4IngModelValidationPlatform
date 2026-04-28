@@ -59,7 +59,7 @@ rule create_kratos_input_and_run_simulation:
         python3 {input.script_run_kratos_simulation} \
             --input_parameter_file {input.parameters} \
             --input_kratos_inputfile {output.kratos_inputfile} \
-            --input_kratos_materialfile {output.kratos_materialfile} \
+            --input_kratos_materialfile {output.kratos_materialfile}
         """
 
 rule postprocess_kratos_results:

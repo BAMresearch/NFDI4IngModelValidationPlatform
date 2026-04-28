@@ -169,8 +169,8 @@ def run_fenics_simulation(
     # Support reaction on the left boundary
     n = ufl.FacetNormal(mesh)
     traction = ufl.dot(sigma(u), n)
-    reaction_left_x_local = df.fem.assemble_scalar(df.fem.form(-traction[0] * ds(1)))
-    reaction_left_y_local = df.fem.assemble_scalar(df.fem.form(-traction[1] * ds(1)))
+    reaction_left_x_local = df.fem.assemble_scalar(df.fem.form(traction[0] * ds(1)))
+    reaction_left_y_local = df.fem.assemble_scalar(df.fem.form(traction[1] * ds(1)))
     reaction_left_x = MPI.COMM_WORLD.allreduce(reaction_left_x_local, op=MPI.SUM)
     reaction_left_y = MPI.COMM_WORLD.allreduce(reaction_left_y_local, op=MPI.SUM)
 

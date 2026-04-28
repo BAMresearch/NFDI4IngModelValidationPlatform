@@ -8,16 +8,6 @@
         "value": 1.0,
         "unit": "m"
     },
-    "displacement-evaluation-point": {
-        "x": {
-            "value":  1.0,
-            "unit": "m"
-        },
-        "y": {
-            "value":  1.0,
-            "unit": "m"
-        }
-    },
     "load": {
         "value": 100.0,
         "unit": "MPa"
