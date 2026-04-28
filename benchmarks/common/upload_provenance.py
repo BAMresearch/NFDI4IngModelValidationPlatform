@@ -109,7 +109,7 @@ def run(args):
         rohub.settings.KEYCLOAK_CLIENT_SECRET = "714617a7-87bc-4a88-8682-5f9c2f60337d"
         rohub.settings.KEYCLOAK_URL = "https://keycloak-dev.apps.paas-dev.psnc.pl/auth/realms/rohub/protocol/openid-connect/token"
         rohub.settings.SPARQL_ENDPOINT = (
-            "https://rohub2020-api-virtuoso-route-rohub.apps.paas-dev.psnc.pl/sparql/"
+            "https://virtuoso-rohub2020-devel.apps.bst2.paas.psnc.pl/sparql"
         )
 
     # Authenticate with RoHub
