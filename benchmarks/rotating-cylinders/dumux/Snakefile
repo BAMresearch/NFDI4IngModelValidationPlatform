@@ -1,60 +1,63 @@
-# benchmarks/rotating-cylinders/dumux/Snakefile
+import json
 import os
+from pathlib import Path
 
-# Setup and Config
-tool = "dumux"
-container_image = config["container_image"]
-dumux_dir = f"{shared_dir}/dumux"
+# Use workflow.basedir to find the root relative to the Snakefile
+shared_dir = Path(workflow.basedir).parent
+container_image = "git.iws.uni-stuttgart.de:4567/benchmarks/rotating-cylinders:3.1"
+container_shared_dir = "/dumux/shared"
 
-# Rule 1: Input generation
-rule generate_dumux_inputs:
+rule all:
     input:
-        grid_t = f"{dumux_dir}/grid_files/grid_template.json",
-        dumux_t = f"{dumux_dir}/dumux_input_files/dumux_config.json",
-        input_gen_script = f"{dumux_dir}/dumux_input_gen.py"
-    output:
-        params = expand(f"{dumux_dir}/dumux_input_files/params_{{conf}}.json", conf=configs),
-        grids = expand(f"{dumux_dir}/grid_files/grid_{{conf}}.json", conf=configs)
-    shell:
-        "python3 {input.input_gen_script} --grid_template {input.grid_t} --dumux_template {input.dumux_t}"
+        # "solution_metrics.json",
+        # "test_rotatingcylinders.zip"
+        "test_rotatingcylinders-00000.vtu"
 
-# Rule 2: Simulation
-rule run_dumux_simulation:
+rule run_simulation:
     input:
-        # Lambda prevents KeyError before the JSON is generated
-        params = lambda wildcards: f"{dumux_dir}/dumux_input_files/{config['configuration_to_parameter_file'][wildcards.configuration]}"
+        rc_parameters_file = "parameters.json"
     output:
-        vtu_files = [
-            f"{dumux_dir}/test_rotatingcylinders_{{configuration}}-00000.vtu",
-            f"{dumux_dir}/test_rotatingcylinders_{{configuration}}-00001.vtu"
-        ]
+        # zip = "test_rotatingcylinders.zip",
+        # metrics = "solution_metrics.json",
+        "test_rotatingcylinders-00000.vtu"
     resources:
         serial_run=1
     singularity:
         f"docker://{container_image}"
-    shell:
-        """
-        set -euo pipefail
-        cd /dumux/rotating-cylinders/build-cmake/test/freeflow/navierstokes/rotatingcylinders
-        ./test_ff_navierstokes_rotatingcylinders JsonParameterFile={input.params}
-        """
+    run:
+        # Read parameters from the local JSON
+        with open(input.rc_parameters_file, 'r') as f:
+            data = json.load(f)
 
-# Rule 3: Post-processing
-rule postprocess_dumux:
-    input:
-        sim_data = [
-            f"{dumux_dir}/test_rotatingcylinders_{{configuration}}-00000.vtu",
-            f"{dumux_dir}/test_rotatingcylinders_{{configuration}}-00001.vtu"
-        ],
-        postprocess_script = f"{dumux_dir}/run_dumux_postprocessing.py"
-    output:
-        metrics = f"{result_dir}/{tool}/solution_metrics_{{configuration}}.json",
-        fields = f"{result_dir}/{tool}/solution_field_data_{{configuration}}.zip"
-    shell:
-        """
-        python3 {input.postprocess_script} \
-            --input_dumux_output_dir {dumux_dir} \
-            --input_configuration {wildcards.configuration} \
-            --output_solution_file_zip {output.fields} \
-            --output_metrics_file {output.metrics}
-        """
+        conf_name = data['configuration']
+        r1, r2 = data['domain']['r1'], data['domain']['r2']
+        c_radial = data['grid']['cells_radial']
+        c_angular = data['grid']['cells_angular']
+        grading = data['grid']['grading']
+        omega1 = data['problem']['omega1']
+        omega2 = data['problem']['omega2']
+        
+        midpoint = 0.5 * (r1 + r2)
+        half_radial = int(c_radial / 2)
+
+        shell(
+            f"""
+            set -euo pipefail
+            cd /dumux/rotating-cylinders/test/freeflow/navierstokes/rotatingcylinders
+            cat main.cc
+            
+            # 1. Move to the directory where the binary is located
+            cd /dumux/rotating-cylinders/build-cmake/test/freeflow/navierstokes/rotatingcylinders
+            
+            # 2. Run simulation
+            # We use the container_shared_dir mount point to save results back to the host
+            ./test_ff_navierstokes_rotatingcylinders \
+                -Grid.Cells0 "{half_radial} {half_radial}" \
+                -Grid.Cells1 "{c_angular}" \
+                -Grid.Grading0 "{grading} -{grading}" \
+                -Grid.Radial0 "{r1} {midpoint} {r2}" \
+                -Problem.Omega1 "{omega1}" \
+                -Problem.Omega2 "{omega2}" \
+                -Problem.Name "{container_shared_dir}/results/{conf_name}/test_rotatingcylinders"
+            """
+        )
