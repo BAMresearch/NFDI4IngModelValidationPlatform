@@ -5,12 +5,7 @@ on:
   pull_request:
     branches: [ main ]
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-
-  # Runs the workflow once per day at 3:15am
-  schedule:
-    - cron: '3 16 * * *'
 
 env:
   CACHE_NUMBER: 1  # increase to reset cache manually
@@ -41,15 +36,16 @@ jobs:
       - name: Update environment
         run: mamba env update -n model-validation -f environment_benchmarks.yml
 
-      - name: generate-rc-config
+      - name: Simulate rotating cylinders using dumux & validate convergence
         shell: bash -l {0}
         run: |
-          cd $GITHUB_WORKSPACE/benchmarks/rotating-cylinders
-          python3 generate_rc_config.py
+          cd $GITHUB_WORKSPACE/benchmarks/rotating-cylinders/dumux
+          python3 run_benchmark.py
+          python3 convergence_test.py
 
-      - name: run-rotating-cylinders-snakemake
-        shell: bash -l {0}
-        run: |
-          cd $GITHUB_WORKSPACE/benchmarks/rotating-cylinders
-          # Note: --use-singularity is aliased to --use-apptainer in modern Snakemake
-          snakemake --use-apptainer --cores all --resources serial_run=1 --apptainer-args "--bind $(pwd):/dumux/shared"
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: convergence-results
+          path: benchmarks/rotating-cylinders/dumux/rotating-cylinders/results
+          retention-days: 5

@@ -59,5 +59,17 @@ for param_file in benchmark_dir.glob("parameters_*.json"):
         ], check=True, cwd=output_dir)
         print(f"Workflow executed successfully for {config_name}.")
         
-
 print("\nAll configurations processed.")
+
+# --- CLEANUP SECTION ---
+print("\nStarting cleanup...")
+
+# Find all JSON files starting with 'parameters_' in the benchmark directory
+for param_file in benchmark_dir.glob("parameters_*.json"):
+    try:
+        os.remove(param_file)
+        print(f"Deleted: {param_file.name}")
+    except Exception as e:
+        print(f"Error deleting {param_file.name}: {e}")
+
+print("Cleanup complete.")

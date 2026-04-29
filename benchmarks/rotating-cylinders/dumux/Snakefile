@@ -9,17 +9,17 @@ container_shared_dir = "/dumux/shared"
 
 rule all:
     input:
-        # "solution_metrics.json",
-        # "test_rotatingcylinders.zip"
-        "test_rotatingcylinders-00000.vtu"
+        "solution_metrics.json",
+        "test_rotatingcylinders.zip"
+        # "test_rotatingcylinders-00000.vtu"
 
 rule run_simulation:
     input:
         rc_parameters_file = "parameters.json"
     output:
-        # zip = "test_rotatingcylinders.zip",
-        # metrics = "solution_metrics.json",
-        "test_rotatingcylinders-00000.vtu"
+        zip = "test_rotatingcylinders.zip",
+        metrics = "solution_metrics.json",
+        # "test_rotatingcylinders-00000.vtu"
     resources:
         serial_run=1
     singularity:
@@ -43,14 +43,9 @@ rule run_simulation:
         shell(
             f"""
             set -euo pipefail
-            cd /dumux/rotating-cylinders/test/freeflow/navierstokes/rotatingcylinders
-            cat main.cc
-            
-            # 1. Move to the directory where the binary is located
             cd /dumux/rotating-cylinders/build-cmake/test/freeflow/navierstokes/rotatingcylinders
             
-            # 2. Run simulation
-            # We use the container_shared_dir mount point to save results back to the host
+            # Run simulation. We use the container_shared_dir mount point to save results back to the host
             ./test_ff_navierstokes_rotatingcylinders \
                 -Grid.Cells0 "{half_radial} {half_radial}" \
                 -Grid.Cells1 "{c_angular}" \

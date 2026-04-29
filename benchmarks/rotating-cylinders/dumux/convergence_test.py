@@ -37,7 +37,7 @@ for conf_dir in results_base_dir.iterdir():
                 
                 data.append({
                     "conf": conf_dir.name,
-                    "pressure_error": metrics.get("l2_error_pressure_rel"),
+                    # "pressure_error": metrics.get("l2_error_pressure_rel"),
                     "velocity_error": metrics.get("l2_error_velocity_rel")
                 })
             except (json.JSONDecodeError, IOError) as e:
@@ -58,8 +58,8 @@ except ValueError:
     df = df.sort_values('conf')
 
 plt.figure(figsize=(10, 6))
-plt.plot(df['conf'], df['pressure_error'], marker='o', label='$L^2$ Rel. Pressure Error')
-plt.plot(df['conf'], df['velocity_error'], marker='s', label='$L^2$ Rel. Velocity Error')
+# plt.plot(df['conf'], df['pressure_error'], marker='o', label='$L^2$ Rel. Pressure Error')
+plt.plot(df['conf'], df['velocity_error'], marker='s', label='Relative $L^2$ Error for Velocity')
 
 plt.yscale('log')
 plt.xlabel('Configuration')
