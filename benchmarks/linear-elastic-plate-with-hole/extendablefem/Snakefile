@@ -10,7 +10,7 @@ configurations = config["configurations"]
 rule setup_julia_environment:
     input: f"{tool}/Project.toml"
     output: manifest=f"{tool}/Manifest.toml"
-    singularity: "docker://julia:1.12.2-bookworm"
+    singularity: f"{tool}/julia.sif"
     shell: 
         """
         julia --project={tool} -e 'using Pkg;Pkg.instantiate()'
@@ -24,7 +24,7 @@ rule run_extendablefem_simulation:
     output:
         zip = f"{result_dir}/{{tool}}/solution_field_data_{{configuration}}.zip",
         metrics = f"{result_dir}/{{tool}}/solution_metrics_{{configuration}}.json",
-    singularity: "docker://julia:1.12.2-bookworm"
+    singularity: f"{tool}/julia.sif"
     shell:
         """
         julia --project={tool} {tool}/run_extendablefem_simulation.jl --configfile {input.parameters} --meshfile {input.mesh} --outputzip {output.zip} --outputmetrics {output.metrics}

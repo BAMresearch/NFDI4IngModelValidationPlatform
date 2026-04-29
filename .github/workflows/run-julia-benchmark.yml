@@ -43,7 +43,8 @@ jobs:
         
       - name: Update environment
         run: mamba env update -n model-validation -f environment_benchmarks.yml
-
+      - name: namespaces tests
+        run: unshare -U -r sh -c 'echo "inside:"; id; echo "can mount ns?"; unshare -m true && echo yes || echo no'
       - name: generate-config-files
         shell: bash -l {0}
         run: |
