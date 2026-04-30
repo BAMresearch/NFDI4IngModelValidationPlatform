@@ -14,8 +14,26 @@ on:
 
 env:
   CACHE_NUMBER: 1  # increase to reset cache manually
+  APPTAINER_SIF_FILE: $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/julia.sif
 
 jobs:
+  build-sif:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v2
+      
+      - name: Setup Apptainer
+        uses: eWaterCycle/setup-apptainer@v2
+        with:
+          apptainer-version: 1.4.5
+      - name: build sif
+        shell: bash -l {0}
+        run: |
+          apptainer build APPTAINER_SIF_FILE docker://julia:1.12.2-bookworm
+
+
   tests:
     runs-on: ubuntu-latest
 
@@ -31,8 +49,8 @@ jobs:
             miniforge-version: latest
             activate-environment: model-validation 
             use-mamba: true
-      - name: Install fuse2fs
-        run: sudo apt-get update && sudo apt-get install -y fuse2fs
+      # - name: Install fuse2fs
+      #   run: sudo apt-get update && sudo apt-get install -y fuse2fs
       
       # - name: Setup Apptainer
       #   uses: eWaterCycle/setup-apptainer@v2
