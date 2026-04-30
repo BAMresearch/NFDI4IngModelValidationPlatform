@@ -8,7 +8,6 @@ import basix.ufl
 import numpy as np
 import ufl
 from dolfinx.fem.petsc import LinearProblem
-from petsc4py.PETSc import ScalarType
 from mpi4py import MPI
 from pint import UnitRegistry
 
@@ -40,8 +39,6 @@ def run_fenics_simulation(
     # Boundary conditions
     dofs_left = df.fem.locate_dofs_topological(V.sub(0), 1, tags_left)
     dofs_bottom = df.fem.locate_dofs_topological(V.sub(1), 1, tags_bottom)
-    dofs_right = df.fem.locate_dofs_topological(V, 1, tags_right)
-    dofs_top = df.fem.locate_dofs_topological(V, 1, tags_top)
 
     bc_left = df.fem.dirichletbc(0.0, dofs_left, V.sub(0))
     bc_bottom = df.fem.dirichletbc(0.0, dofs_bottom, V.sub(1))
@@ -128,29 +125,38 @@ def run_fenics_simulation(
         domain=mesh,
         subdomain_data=facet_tags,
     )
-    stress_space = df.fem.functionspace(
-        mesh, ("CG", parameters["element-degree"], (2, 2))
-    )
-    stress_function = df.fem.Function(stress_space)
 
     u = df.fem.Function(V, name="u")
-    u_prescribed = df.fem.Function(V, name="u_prescribed")
-    u_prescribed.interpolate(lambda x: analytical_solution.displacement(x))
-    u_prescribed.x.scatter_forward()
 
     u_ = ufl.TestFunction(V)
     v_ = ufl.TrialFunction(V)
     a = df.fem.form(ufl.inner(sigma(u_), eps(v_)) * dx)
 
-    # set rhs to zero
-    f = df.fem.form(ufl.inner(df.fem.Constant(mesh, np.array([0.0, 0.0])), u_) * ufl.ds)
+    # Apply Neumann tractions on right and top boundaries from analytical stress.
+    traction_right = df.fem.Function(V, name="traction_right")
+    traction_top = df.fem.Function(V, name="traction_top")
 
-    bc_right = df.fem.dirichletbc(u_prescribed, dofs_right)
-    bc_top = df.fem.dirichletbc(u_prescribed, dofs_top)
+    def traction_right_expr(x: np.ndarray) -> np.ndarray:
+        sxx, sxy, _ = analytical_solution.stress(x)
+        return np.vstack((np.asarray(sxx), np.asarray(sxy)))
+
+    def traction_top_expr(x: np.ndarray) -> np.ndarray:
+        _, sxy, syy = analytical_solution.stress(x)
+        return np.vstack((np.asarray(sxy), np.asarray(syy)))
+
+    traction_right.interpolate(traction_right_expr)
+    traction_top.interpolate(traction_top_expr)
+    traction_right.x.scatter_forward()
+    traction_top.x.scatter_forward()
+
+    f = df.fem.form(
+        ufl.inner(traction_right, u_) * ds(3) + ufl.inner(traction_top, u_) * ds(4)
+    )
+
     solver = LinearProblem(
         a,
         f,
-        bcs=[bc_left, bc_bottom, bc_right, bc_top],
+        bcs=[bc_left, bc_bottom],
         u=u,
         petsc_options={
             "ksp_type": "gmres",
@@ -159,6 +165,30 @@ def run_fenics_simulation(
         },
     )
     solver.solve()
+
+    # Support reaction on the left boundary
+    n = ufl.FacetNormal(mesh)
+    traction = ufl.dot(sigma(u), n)
+    reaction_left_x_local = df.fem.assemble_scalar(df.fem.form(traction[0] * ds(1)))
+    reaction_left_y_local = df.fem.assemble_scalar(df.fem.form(traction[1] * ds(1)))
+    reaction_left_x = MPI.COMM_WORLD.allreduce(reaction_left_x_local, op=MPI.SUM)
+    reaction_left_y = MPI.COMM_WORLD.allreduce(reaction_left_y_local, op=MPI.SUM)
+
+
+    # Compute L2 error norm between FE displacement and analytical displacement.
+    u_analytical = df.fem.Function(V, name="u_analytical")
+
+    def analytical_displacement_expr(x: np.ndarray) -> np.ndarray:
+        ux, uy = analytical_solution.displacement(x)
+        return np.vstack((np.asarray(ux), np.asarray(uy)))
+
+    u_analytical.interpolate(analytical_displacement_expr)
+    u_analytical.x.scatter_forward()
+
+    l2_error_form = df.fem.form(ufl.inner(u - u_analytical, u - u_analytical) * dx)
+    l2_error_sq_local = df.fem.assemble_scalar(l2_error_form)
+    l2_error_sq_global = MPI.COMM_WORLD.allreduce(l2_error_sq_local, op=MPI.SUM)
+    l2_error_displacement = np.sqrt(l2_error_sq_global)
 
     # Evaluate displacement at the specified evaluation point
     displacement_eval_point = np.array(
@@ -293,6 +323,9 @@ def run_fenics_simulation(
     metrics = {
         "max_von_mises_stress_nodes": max_mises_stress_nodes,
         "max_von_mises_stress_gauss_points": max_mises_stress_gauss_points,
+        "l2_error_displacement": l2_error_displacement,
+        "reaction_force_left_boundary_x": reaction_left_x,
+        "reaction_force_left_boundary_y": reaction_left_y,
         f"displacement_x_at_evaluation_point (x={displacement_evaluation_x}, y={displacement_evaluation_y})": displacement_x_at_evaluation_point,
     }
 
@@ -355,3 +388,5 @@ if __name__ == "__main__":
         args.output_solution_file_zip,
         args.output_metrics_file,
     )
+#python3 run_fenics_simulation.py --input_parameter_file parameters_1.json --input_mesh_file mesh_1.msh --output_solution_file_zip results/solution_field_data.zip --output_metrics_file results/solution_metrics.json
+#conda activate /home/dtyagi/NFDI4IngModelValidationPlatform/examples/linear-elastic-plate-with-hole/fenics/conda_envs/68782c9259a7e25569f1ab0241a766c5_

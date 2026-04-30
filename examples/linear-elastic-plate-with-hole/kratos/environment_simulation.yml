@@ -1,0 +1,15 @@
+name: kratos_simulation
+# Environment file for kratos simulation scripts. Called by kratos tool workflow.
+
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - meshio
+  - python-gmsh
+  - pint
+  - pyvista
+  - pip
+  - pip:
+    - KratosMultiphysics-all
+  - sympy

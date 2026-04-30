@@ -14,8 +14,6 @@ on:
 
 env:
   CACHE_NUMBER: 1  # increase to reset cache manually
-  SNAKEMAKE_RESULT_FILE: metadata4ing_provenance
-  PROVENANACE_FILE_NAME: element_size_vs_max_mises_stress.pdf
 
 jobs:
   run-examples:
@@ -43,12 +41,25 @@ jobs:
           cd $GITHUB_WORKSPACE/examples/linear-elastic-plate-with-hole/fenics/
           python run_benchmark.py
 
+      - name: Run linear-elastic-plate-with-hole using kratos
+        shell: bash -l {0}
+        run: |
+          cd $GITHUB_WORKSPACE/examples/linear-elastic-plate-with-hole/kratos/
+          python run_benchmark.py
+
       - name: Archive results of the fenics run of linear-elastic-plate-with-hole
         uses: actions/upload-artifact@v4
         with:
-            name: snakemake_results_linear-elastic-plate-with-hole
+            name: fenics_results_linear-elastic-plate-with-hole
             path: |
               examples/linear-elastic-plate-with-hole/fenics/results/
+
+      - name: Archive results of the kratos run of linear-elastic-plate-with-hole
+        uses: actions/upload-artifact@v4
+        with:
+            name: kratos_results_linear-elastic-plate-with-hole
+            path: |
+              examples/linear-elastic-plate-with-hole/kratos/results/
 
 
 

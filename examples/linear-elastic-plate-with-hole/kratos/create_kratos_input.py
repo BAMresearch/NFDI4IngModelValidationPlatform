@@ -1,0 +1,166 @@
+import json
+import os
+from pint import UnitRegistry
+from argparse import ArgumentParser
+from pathlib import Path
+import sys
+import sympy as sp
+# Ensure the parent directory is in the path to import AnalyticalSolution
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from analytical_solution import AnalyticalSolution
+
+
+def _to_kratos_expression(expr: str) -> str:
+    """Convert trig(atan2) patterns to algebraic forms supported by Kratos expressions."""
+    replacements = {
+        "cos(2*atan2(Y, X))": "((X**2 - Y**2)/(X**2 + Y**2))",
+        "sin(2*atan2(Y, X))": "((2*X*Y)/(X**2 + Y**2))",
+        "cos(4*atan2(Y, X))": "((X**4 - 6*X**2*Y**2 + Y**4)/(X**2 + Y**2)**2)",
+        "sin(4*atan2(Y, X))": "((4*X*Y*(X**2 - Y**2)/(X**2 + Y**2)**2))",
+    }
+    for old, new in replacements.items():
+        expr = expr.replace(old, new)
+    expr = expr.replace("**", "^")
+    return expr
+
+def create_kratos_input(
+    parameter_file: str,
+    mdpa_file: str,
+    kratos_input_template_file: str,
+    kratos_material_template_file: str,
+    kratos_input_file: str,
+    kratos_material_file: str,
+):
+    ureg = UnitRegistry()
+    with open(parameter_file) as f:
+        parameters = json.load(f)
+
+    E = (
+        ureg.Quantity(
+            parameters["young-modulus"]["value"], parameters["young-modulus"]["unit"]
+        )
+        .to_base_units()
+        .magnitude
+    )
+    nu = (
+        ureg.Quantity(
+            parameters["poisson-ratio"]["value"], parameters["poisson-ratio"]["unit"]
+        )
+        .to_base_units()
+        .magnitude
+    )
+    radius = (
+        ureg.Quantity(parameters["radius"]["value"], parameters["radius"]["unit"])
+        .to_base_units()
+        .magnitude
+    )
+    L = (
+        ureg.Quantity(parameters["length"]["value"], parameters["length"]["unit"])
+        .to_base_units()
+        .magnitude
+    )
+    load = (
+        ureg.Quantity(parameters["load"]["value"], parameters["load"]["unit"])
+        .to_base_units()
+        .magnitude
+    )
+
+    analytical_solution = AnalyticalSolution(
+        E=E,
+        nu=nu,
+        radius=radius,
+        L=L,
+        load=load,
+    )
+
+    # Build traction expressions t = sigma * n on right (n=[1,0]) and top (n=[0,1]) boundaries.
+    sxx_sym, sxy_sym, syy_sym = analytical_solution.stress_symbolic()
+    x, y = sp.symbols("x y")
+    X_sym = sp.Symbol("x")
+    Y_sym = sp.Symbol("y")
+    E_sym, nu_sym, a_sym, T_sym = sp.symbols("E nu a T")
+    subs_vars = {x: X_sym, y: Y_sym}
+    subs_params = {E_sym: E, nu_sym: nu, a_sym: radius, T_sym: load}
+    sxx_str = _to_kratos_expression(sp.sstr(sxx_sym.subs(subs_vars).subs(subs_params)))
+    sxy_str = _to_kratos_expression(sp.sstr(sxy_sym.subs(subs_vars).subs(subs_params)))
+    syy_str = _to_kratos_expression(sp.sstr(syy_sym.subs(subs_vars).subs(subs_params)))
+    
+    with open(kratos_material_template_file) as f:
+        material_string = f.read()
+
+    material_string = material_string.replace(r'"{{YOUNG_MODULUS}}"', str(E))
+    material_string = material_string.replace(r'"{{POISSON_RATIO}}"', str(nu))
+
+    with open(kratos_material_file, "w") as f:
+        f.write(material_string)
+
+    with open(kratos_input_template_file) as f:
+        project_parameters_string = f.read()
+    project_parameters_string = project_parameters_string.replace(
+        r"{{MESH_FILE}}", os.path.splitext(mdpa_file)[0]
+    )
+    project_parameters_string = project_parameters_string.replace(
+        r"{{MATERIAL_FILE}}", kratos_material_file
+    )
+    project_parameters_string = project_parameters_string.replace(
+        r"{{BOUNDARY_RIGHT_TRACTION_X}}", sxx_str
+    )
+    project_parameters_string = project_parameters_string.replace(
+        r"{{BOUNDARY_RIGHT_TRACTION_Y}}", sxy_str
+    )
+    project_parameters_string = project_parameters_string.replace(
+        r"{{BOUNDARY_TOP_TRACTION_X}}", sxy_str
+    )
+    project_parameters_string = project_parameters_string.replace(
+        r"{{BOUNDARY_TOP_TRACTION_Y}}", syy_str
+    )
+
+    output_dir = os.path.join(os.path.dirname(os.path.abspath(kratos_input_file)),"vtk")
+    os.makedirs(output_dir, exist_ok=True)
+    project_parameters_string = project_parameters_string.replace(r"{{OUTPUT_PATH}}", output_dir)
+
+    with open(kratos_input_file, "w") as f:
+        f.write(project_parameters_string)
+
+if __name__ == "__main__":
+    parser = ArgumentParser(
+        description="Create Kratos input and material files from templates and parameters."
+    )
+    parser.add_argument(
+        "--input_parameter_file",
+        required=True,
+        help="JSON file containing simulation parameters (input)",
+    )
+    parser.add_argument(
+        "--input_mdpa_file", required=True, help="Path to the MDPA mesh file (input)"
+    )
+    parser.add_argument(
+        "--input_kratos_input_template",
+        required=True,
+        help="Path to the kratos input template file (input)",
+    )
+    parser.add_argument(
+        "--input_material_template",
+        required=True,
+        help="Path to the kratos material template file (input)",
+    )
+    parser.add_argument(
+        "--output_kratos_inputfile",
+        required=True,
+        help="Path to the kratos input file (output)",
+    )
+    parser.add_argument(
+        "--output_kratos_materialfile",
+        required=True,
+        help="Path to the kratos material file (output)",
+    )
+    args, _ = parser.parse_known_args()
+
+    create_kratos_input(
+        parameter_file=args.input_parameter_file,
+        mdpa_file=args.input_mdpa_file,
+        kratos_input_template_file=args.input_kratos_input_template,
+        kratos_material_template_file=args.input_material_template,
+        kratos_input_file=args.output_kratos_inputfile,
+        kratos_material_file=args.output_kratos_materialfile,
+    )
