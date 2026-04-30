@@ -3,7 +3,7 @@ from rocrate.rocrate import ROCrate
 import semantic_benchmark
 import uuid
 
-def create_main_ro(path: str, benchmark_object: semantic_benchmark.BenchmarkSemantic):
+def create_main_ro(path: str, benchmark_object: semantic_benchmark.SemanticBenchmark):
     crate = ROCrate()
     input_path = Path(path)
 

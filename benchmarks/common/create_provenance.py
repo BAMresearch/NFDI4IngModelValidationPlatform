@@ -63,6 +63,7 @@ class ConfigurationEntry(TypedDict):
     index: int
     config: semantic_benchmark.ParameterSet
     config_id: str
+    processing_step_id: str
 
 
 class RunResultEntry(TypedDict):
@@ -145,7 +146,7 @@ def _formal_parameter_payload(
 
 def _add_configuration_nodes(
     crate: ROCrate,
-    benchmark_object: semantic_benchmark.BenchmarkSemantic,
+    benchmark_object: semantic_benchmark.SemanticBenchmark,
 ) -> list[ConfigurationEntry]:
     if not benchmark_object.processing_steps:
         raise ValueError("Benchmark has no processing steps.")
@@ -153,38 +154,38 @@ def _add_configuration_nodes(
     formal_param_registry: dict[tuple[Any, ...], str] = {}
     configuration_entries: list[ConfigurationEntry] = []
 
-    for index, config in enumerate(
-        benchmark_object.processing_steps[0].configurations, start=1
-    ):
-        config_id = f"#{uuid.uuid4()}"
-        formal_parameter_ids: list[dict[str, str]] = []
+    for processing_step in benchmark_object.processing_steps:
+        for index, config in enumerate(processing_step.configurations, start=1):
+            config_id = f"#{uuid.uuid4()}"
+            formal_parameter_ids: list[dict[str, str]] = []
 
-        for part in config.parts:
-            key = _formal_parameter_key(part)
-            part_id = formal_param_registry.get(key)
+            for part in config.parts:
+                key = _formal_parameter_key(part)
+                part_id = formal_param_registry.get(key)
 
-            if part_id is None:
-                part_id = f"#{uuid.uuid4()}"
-                formal_param_registry[key] = part_id
-                crate.add_jsonld(_formal_parameter_payload(part_id, part))
+                if part_id is None:
+                    part_id = f"#{uuid.uuid4()}"
+                    formal_param_registry[key] = part_id
+                    crate.add_jsonld(_formal_parameter_payload(part_id, part))
 
-            formal_parameter_ids.append({"@id": part_id})
+                formal_parameter_ids.append({"@id": part_id})
 
-        crate.add_jsonld(
-            {
-                "@id": config_id,
-                "@type": "PropertyValue",
-                "name": config.label,
-                "exampleOfWork": formal_parameter_ids,
-            }
-        )
-        configuration_entries.append(
-            {
-                "index": index,
-                "config": config,
-                "config_id": config_id,
-            }
-        )
+            crate.add_jsonld(
+                {
+                    "@id": config_id,
+                    "@type": "PropertyValue",
+                    "name": config.label,
+                    "exampleOfWork": formal_parameter_ids,
+                }
+            )
+            configuration_entries.append(
+                {
+                    "index": index,
+                    "config": config,
+                    "config_id": config_id,
+                    "processing_step_id": processing_step.id,
+                }
+            )
 
     return configuration_entries
 
@@ -308,7 +309,7 @@ def _extract_evaluated_value(
 
 def _add_evaluates_nodes(
     crate: ROCrate,
-    benchmark_object: semantic_benchmark.BenchmarkSemantic,
+    benchmark_object: semantic_benchmark.SemanticBenchmark,
     subfolders: list[Path],
 ) -> list[RunResultEntry]:
     run_results: list[RunResultEntry] = []
@@ -349,10 +350,22 @@ def _run_results_by_name(
     return {entry["run_name"]: entry["result_ids"] for entry in run_results}
 
 
+def _configuration_entries_for_step(
+    configuration_entries: list[ConfigurationEntry],
+    processing_step: semantic_benchmark.ProcessingStep,
+) -> list[ConfigurationEntry]:
+    return [
+        entry
+        for entry in configuration_entries
+        if entry["processing_step_id"] == processing_step.id
+    ]
+
+
 def _add_run_actions(
     crate: ROCrate,
     subfolders: list[Path],
     object_ids_by_run: dict[str, str],
+    processing_steps: list[semantic_benchmark.ProcessingStep],
     configuration_entries: list[ConfigurationEntry],
     run_results_by_name: dict[str, list[dict[str, str]]],
     software_id: str,
@@ -364,23 +377,29 @@ def _add_run_actions(
             continue
 
         run_parameters = _load_run_parameters(run_folder)
-        config_id = _configuration_id_for_run(
-            run_folder, run_parameters, configuration_entries
-        )
         result_ids = run_results_by_name.get(run_name, [])
 
-        run_action: dict[str, Any] = {
-            "@id": f"{uuid.uuid4()}",
-            "@type": "CreateAction",
-            "name": f"Simulation Run {run_name}",
-            "object": [{"@id": run_object_id}],
-            "instrument": {"@id": software_id},
-        }
-        if config_id:
-            run_action["object"].append({"@id": config_id})
-        if result_ids:
-            run_action["result"] = result_ids
-        crate.add_jsonld(run_action)
+        for processing_step in processing_steps:
+            step_configuration_entries = _configuration_entries_for_step(
+                configuration_entries, processing_step
+            )
+            config_id = _configuration_id_for_run(
+                run_folder, run_parameters, step_configuration_entries
+            )
+
+            step_name = processing_step.label or processing_step.id
+            run_action: dict[str, Any] = {
+                "@id": f"{uuid.uuid4()}",
+                "@type": "CreateAction",
+                "name": f"{step_name} {run_name}",
+                "object": [{"@id": run_object_id}],
+                "instrument": {"@id": software_id},
+            }
+            if config_id:
+                run_action["object"].append({"@id": config_id})
+            if result_ids:
+                run_action["result"] = result_ids
+            crate.add_jsonld(run_action)
 
 
 def _configure_crate_metadata(crate: ROCrate, snakemake_id: str) -> None:
@@ -399,7 +418,7 @@ def _add_profile_creative_works(crate: ROCrate) -> None:
 
 
 def create_main_ro(
-    path: str, benchmark_object: semantic_benchmark.BenchmarkSemantic
+    path: str, benchmark_object: semantic_benchmark.SemanticBenchmark
 ) -> None:
     crate = ROCrate(version="1.1")
     input_path = Path(path)
@@ -429,6 +448,7 @@ def create_main_ro(
         crate=crate,
         subfolders=subfolders,
         object_ids_by_run=object_ids_by_run,
+        processing_steps=benchmark_object.processing_steps,
         configuration_entries=configuration_entries,
         run_results_by_name=run_results_by_name,
         software_id=software_id,

@@ -119,7 +119,7 @@ class ProcessingStep(KGNode):
 
 
 @dataclass
-class BenchmarkSemantic(KGNode):
+class SemanticBenchmark(KGNode):
     investigates: Optional[ResearchProblem] = None
     uses: Optional[MathematicalModel] = None
     evaluates: list[NumericalVariable] = field(default_factory=list)
@@ -264,7 +264,7 @@ class BenchmarkLoader:
             ],
         )
 
-    def load(self) -> BenchmarkSemantic:
+    def load(self) -> SemanticBenchmark:
         benchmark_uri = next(self.graph.subjects(RDF.type, T_BENCHMARK), None)
         if benchmark_uri is None:
             raise ValueError("No m4i:Benchmark node found.")
@@ -273,7 +273,7 @@ class BenchmarkLoader:
         model_uri = self.graph.value(benchmark_uri, USES)
         publication_uri = self.graph.value(benchmark_uri, DESCRIBED_BY)
 
-        return BenchmarkSemantic(
+        return SemanticBenchmark(
             id=self._str(benchmark_uri),
             label=self._label(benchmark_uri),
             investigates=(
