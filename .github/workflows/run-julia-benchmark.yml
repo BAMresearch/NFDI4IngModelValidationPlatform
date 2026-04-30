@@ -74,4 +74,4 @@ jobs:
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
-          snakemake --use-conda --use-apptainer --cores=all --config tools=[extendablefem] configurations=["1","05","025","0125","00625","003125"]
+          snakemake --use-conda --use-apptainer --cores=all --config container="APPTAINER_SIF_FILE" tools=[extendablefem] configurations=["1","05","025","0125","00625","003125"]

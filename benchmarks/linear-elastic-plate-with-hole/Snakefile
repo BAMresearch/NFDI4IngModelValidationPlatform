@@ -8,6 +8,8 @@ tools = config["tools"]
 benchmark = config["benchmark"]
 benchmark_uri = config["benchmark_uri"]
 
+container_sif = config["container"]
+
 
 rule all:
     input:

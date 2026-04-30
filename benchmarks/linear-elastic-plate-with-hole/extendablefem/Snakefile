@@ -7,10 +7,12 @@ result_dir = "snakemake_results/" + config["benchmark"]
 configuration_to_parameter_file = config["configuration_to_parameter_file"]
 configurations = config["configurations"]
 
+container_sif = config["container"]
+
 rule setup_julia_environment:
     input: f"{tool}/Project.toml"
     output: manifest=f"{tool}/Manifest.toml"
-    singularity: f"{tool}/julia.sif"
+    singularity: f"{container_sif}"
     shell: 
         """
         julia --project={tool} -e 'using Pkg;Pkg.instantiate()'
@@ -24,7 +26,7 @@ rule run_extendablefem_simulation:
     output:
         zip = f"{result_dir}/{{tool}}/solution_field_data_{{configuration}}.zip",
         metrics = f"{result_dir}/{{tool}}/solution_metrics_{{configuration}}.json",
-    singularity: f"{tool}/julia.sif"
+    singularity: f"{container_sif}"
     shell:
         """
         julia --project={tool} {tool}/run_extendablefem_simulation.jl --configfile {input.parameters} --meshfile {input.mesh} --outputzip {output.zip} --outputmetrics {output.metrics}
