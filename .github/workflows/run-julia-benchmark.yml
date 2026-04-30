@@ -31,6 +31,13 @@ jobs:
         shell: bash -l {0}
         run: |
           apptainer build "$APPTAINER_SIF_FILE" docker://julia:1.12.2-bookworm
+      
+      - name: Upload SIF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: julia-sif
+          path: ${{ env.APPTAINER_SIF_FILE }}
+          retention-days: 1
 
 
   tests:
@@ -42,7 +49,16 @@ jobs:
     steps:
       - name: checkout repo content
         uses: actions/checkout@v2
+      - name: Download SIF artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: julia-sif
+          path: ${{ github.workspace }}/benchmarks/linear-elastic-plate-with-hole
 
+      - name: Verify SIF exists
+        run: |
+          ls -lh "${{ github.workspace }}/benchmarks/linear-elastic-plate-with-hole/julia.sif"
+      
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v3
         with:
