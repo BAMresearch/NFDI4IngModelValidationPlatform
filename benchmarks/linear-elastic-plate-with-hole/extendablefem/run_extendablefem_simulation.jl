@@ -53,6 +53,17 @@ function sigma!(result,∇u,qpinfo)
     σ.= ((1.0-ν).*ε + ν*tr(ε).*II)*E/(1-ν^2)
 end
 
+function vonMises!(result,∇u,qpinfo)
+    sig = zeros(4) 
+    sv = zeros(4)
+    sigma!(sig,∇u,qpinfo)
+    σ = tensor_view(sig,1,TDMatrix(2))    
+    s = tensor_view(sv,1,TDMatrix(2))
+    p = tr(σ)/3.0
+    s .= σ - p.*II
+    result[1] = sqrt(1.5)*sqrt(dot(sv,sv)+p*p)/qpinfo.volume
+end
+
 
 function u_ex_kernel!(result,qpinfo)
     x = qpinfo.x[1]
@@ -118,15 +129,18 @@ function solve_plate_with_hole(config::PlateConfig,grid::ExtendableGrid,outputzi
     u_mag = sqrt.(u_x.*u_x.+u_y.*u_y)
     uex_mag = sqrt.(u_exx.*u_exx.+u_exy.*u_exy)
 
-    # TODO: Stress calculations
 
-    metrics = Metrics(0.)
-    # TODO: L2 error, see Example301
     ErrorIntegrationExact = ItemIntegrator(exact_error!, [id(u)]; quadorder = 8,params = [config.radius,config.F,config.E,config.ν])
 
     error = evaluate(ErrorIntegrationExact, sol)
 
     L2error = sqrt(sum(error))
+
+    vonMisesIntegration = ItemIntegrator(vonMises!, [grad(u)];quadorder=3,params=[config.E,config.ν])
+    vonMises_stresses = evaluate(vonMisesIntegration,sol)
+
+
+    metrics = Metrics(maximum(vonMises_stresses))
 
     outputvtk = splitdir(outputzip)[1]*"/results_"*config.id*".vtu";
     writeVTK(outputvtk,grid;compress=false, u_x=u_x,u_y=u_y,u_mag=u_mag,uexx=u_exx,uexy=u_exy,uex=uex_mag)
