@@ -11,10 +11,9 @@ on:
   # Runs the workflow once per day at 3:15am
   schedule:
     - cron: '3 16 * * *'
-
 env:
-  CACHE_NUMBER: 1  # increase to reset cache manually
-  APPTAINER_SIF_FILE: $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/julia.sif
+  CACHE_NUMBER: 1
+  APPTAINER_SIF_FILE: ${{ github.workspace }}/benchmarks/linear-elastic-plate-with-hole/julia.sif
 
 jobs:
   build-sif:
@@ -31,7 +30,7 @@ jobs:
       - name: build sif
         shell: bash -l {0}
         run: |
-          apptainer build APPTAINER_SIF_FILE docker://julia:1.12.2-bookworm
+          apptainer build "$APPTAINER_SIF_FILE" docker://julia:1.12.2-bookworm
 
 
   tests:
@@ -74,4 +73,4 @@ jobs:
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
-          snakemake --use-conda --use-apptainer --cores=all --config container=APPTAINER_SIF_FILE tools=[extendablefem] configurations=["1","05","025","0125","00625","003125"]
+          snakemake --use-conda --use-apptainer --cores=all --config container="$APPTAINER_SIF_FILE" tools=[extendablefem] configurations=["1","05","025","0125","00625","003125"]
