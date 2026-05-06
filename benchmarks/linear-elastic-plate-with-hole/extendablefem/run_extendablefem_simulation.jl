@@ -20,6 +20,7 @@ end
 
 struct Metrics
     max_von_mises_stress_nodes::Float64
+    L2_error::Float64
 end
 
 function value_with_unit(json::JSON.Object{String,Any})
@@ -179,7 +180,7 @@ function solve_plate_with_hole(config::PlateConfig,grid::ExtendableGrid,outputzi
     vonMises_stresses = evaluate(vonMisesIntegration,sol)
 
 
-    metrics = Metrics(maximum(vonMises_stresses))
+    metrics = Metrics(maximum(vonMises_stresses),L2error)
 
     outputvtk = splitdir(outputzip)[1]*"/results_"*config.id*".vtu";
     writeVTK(outputvtk,grid;compress=false, u_x=u_x,u_y=u_y,u_mag=u_mag,uexx=u_exx,uexy=u_exy,uex=uex_mag)
