@@ -64,6 +64,42 @@ function vonMises!(result,∇u,qpinfo)
     result[1] = sqrt(1.5)*sqrt(dot(sv,sv)+p*p)/qpinfo.volume
 end
 
+function sigma_exact(r,θ,a,T)
+    cos2t = cos(2*θ)
+    cos4t = cos(4*θ)
+    sin2t = sin(2*θ)
+    sin4t = sin(4*θ)
+
+    fac1 = a^2/(r^2)
+    fac2 = T*1.5 * fac1*fac1
+
+    sxx = T - T*fac1 *(1.5*cos2t+cos4t) + fac2 *cos4t
+    syy = -T *fac1 * (0.5*cos2t-cos4t) - fac2*cos4t
+    sxy = -T *fac1 * (0.5*sin2t+sin4t) + fac2*sin4t
+    
+    return sxx,sxy,syy;
+end
+
+function traction_right_kernel!(result,qpinfo)
+    x = qpinfo.x[1]
+    y = qpinfo.x[2]
+    r = sqrt(x^2+y^2)
+    θ = atan(y,x)
+    sxx,sxy,_ = sigma_exact(r,θ,qpinfo.params[1],qpinfo.params[2])
+    result[1] = sxx
+    result[2] = sxy
+end
+
+
+function traction_top_kernel!(result,qpinfo)
+    x = qpinfo.x[1]
+    y = qpinfo.x[2]
+    r = sqrt(x^2+y^2)
+    θ = atan(y,x)
+    _,sxy,syy = sigma_exact(r,θ,qpinfo.params[1],qpinfo.params[2])
+    result[1] = sxy
+    result[2] = syy
+end
 
 function u_ex_kernel!(result,qpinfo)
     x = qpinfo.x[1]
@@ -111,7 +147,10 @@ function solve_plate_with_hole(config::PlateConfig,grid::ExtendableGrid,outputzi
     assign_unknown!(PD, u)
     
     assign_operator!(PD, BilinearOperator(sigma!, [grad(u)];params=[config.E,config.ν]))
-    assign_operator!(PD, InterpolateBoundaryData(u, u_ex_kernel!; regions = [3,4], params = [config.radius,config.F,config.E,config.ν]))
+    assign_operator!(PD, LinearOperator(traction_right_kernel!,[id(u)];entities = ON_BFACES, regions = [3], params = [config.radius,config.F]))
+    assign_operator!(PD, LinearOperator(traction_top_kernel!,[id(u)];entities = ON_BFACES, regions = [4], params = [config.radius,config.F]))
+    # Dirichlet BC version
+    # assign_operator!(PD, InterpolateBoundaryData(u, u_ex_kernel!; regions = [3,4], params = [config.radius,config.F,config.E,config.ν]))
     assign_operator!(PD, HomogeneousBoundaryData(u; regions = [1], mask = [1,0]))
     assign_operator!(PD, HomogeneousBoundaryData(u; regions = [2], mask = [0,1]))
 
