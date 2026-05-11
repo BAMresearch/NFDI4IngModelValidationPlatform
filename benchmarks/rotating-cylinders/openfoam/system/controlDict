@@ -47,26 +47,12 @@ runTimeModifiable true;
 
 functions
 {
-    transform1
-    {
-        type            fieldCoordinateSystemTransform;
-        libs            (fieldFunctionObjects);
-        writeControl    writeTime;
-
-        fields          (U);
-        coordinateSystem
-        {
-            origin      (0 0 0);
-            rotation    none;
-        }
-    }
-
     sample1
     {
         type            sets;
         libs            (sampling);
         writeControl    writeTime;
-        fields          (U p U:Transformed);
+        fields          (U p);
         interpolationScheme cellPoint;
         setFormat       raw;
 

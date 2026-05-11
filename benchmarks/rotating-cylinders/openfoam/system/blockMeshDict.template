@@ -16,7 +16,7 @@ FoamFile
 
 scale 1;
 
-g
+geom
 {
     r0          1;
     r1          2;
