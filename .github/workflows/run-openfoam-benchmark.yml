@@ -46,5 +46,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: openfoam-results
-          path: benchmarks/rotating-cylinders/openfoam/cases
+          path: benchmarks/rotating-cylinders/openfoam/rotating-cylinders/results
           retention-days: 5

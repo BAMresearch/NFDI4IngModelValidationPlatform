@@ -18,13 +18,13 @@ scale 1;
 
 geom
 {
-    r0          1;
-    r1          2;
+    r0          {r0};
+    r1          {r1};
 
-    nr          {meshN}; // 40;
-    ntheta      {meshN}; // 40;
+    nr          {nr};
+    ntheta      {ntheta};
 
-    g           10;
+    g           {g};
 
     mr0         #eval{ - $r0 };
     mr1         #eval{ - $r1 };

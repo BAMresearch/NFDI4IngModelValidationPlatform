@@ -1,35 +1,45 @@
-# Define the parameter space
-# 40 is default
-meshNs = [10, 20, 40]
+import json
+from pathlib import Path
+
+with open("parameters.json") as f:
+    config = json.load(f)
 
 rule all:
-    input:
-        expand("cases/meshN_{meshN}/postprocessing/done", meshN=meshNs)
+    input: "postprocessing/done"
 
 
 rule run_simulation_container:
     input:
-        template="system/blockMeshDict.template",
-        scripts="Allrun"
-    output: 
-        directory("cases/meshN_{meshN}/1000"),
-        touch("cases/meshN_{meshN}/postprocessing/done")
+        template="system/blockMeshDict.template"
+    output:
+        directory("1000"),
+        touch("postprocessing/done")
+    params:
+        r0=config["domain"]["r1"],
+        r1=config["domain"]["r2"],
+        nr=config["grid"]["cells_radial"],
+        ntheta=config["grid"]["cells_angular"],
+        g=config["grid"]["grading"],
+        omega=config["problem"]["omega1"]
+    resources:
+        serial_run=1
     container: "docker://opencfd/openfoam-run:2412"
     shell:
         """
         set -euo pipefail
 
-        echo "Setting up simulation {wildcards.meshN}."
-        mkdir -p cases/meshN_{wildcards.meshN}
-        cp -r 0 system constant Allclean Allrun plot cases/meshN_{wildcards.meshN}/
-        cd cases/meshN_{wildcards.meshN}
-        sed "s/{{meshN}}/{wildcards.meshN}/g" {input.template} > system/blockMeshDict
-        
-        echo "Starting simulation."
+        sed -e "s/{{r0}}/{params.r0}/g" \
+            -e "s/{{r1}}/{params.r1}/g" \
+            -e "s/{{nr}}/{params.nr}/g" \
+            -e "s/{{ntheta}}/{params.ntheta}/g" \
+            -e "s/{{g}}/{params.g}/g" \
+            {input.template} > system/blockMeshDict
+        sed -i "s/{{omega}}/{params.omega}/g" constant/MRFProperties
+
         set +u && source /usr/lib/openfoam/openfoam2412/etc/bashrc && set -u
         chmod +x Allrun
         ./Allrun
-        
+
         ls -la
         tail log.simpleFoam
 
