@@ -26,6 +26,7 @@ rule run_simulation_container:
         sed "s/{{meshN}}/{wildcards.meshN}/g" {input.template} > system/blockMeshDict
         
         echo "Starting simulation."
+        set +u && source /usr/lib/openfoam/openfoam2412/etc/bashrc && set -u
         chmod +x Allrun
         ./Allrun
         
