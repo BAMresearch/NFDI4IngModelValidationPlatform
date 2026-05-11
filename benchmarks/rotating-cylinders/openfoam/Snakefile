@@ -18,7 +18,7 @@ rule run_simulation_container:
         r0=config["domain"]["r1"],
         r1=config["domain"]["r2"],
         nr=config["grid"]["cells_radial"],
-        ntheta=config["grid"]["cells_angular"],
+        ntheta=config["grid"]["cells_angular"] // 4,
         g=config["grid"]["grading"],
         omega=config["problem"]["omega1"]
     resources:
