@@ -12,7 +12,7 @@ rule run_simulation_container:
     input:
         template="system/blockMeshDict.template"
     output:
-        directory("1000"),
+        directory("10000"),
         touch("postProcessing/done")
     params:
         r0=config["domain"]["r1"],

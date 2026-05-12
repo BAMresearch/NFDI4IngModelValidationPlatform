@@ -28,7 +28,7 @@ gnuplot<<EOF
     C = 0.5*A*A*R1*R1 + 2.*A*B*log(R1) - 0.5*B*B/R1/R1
     analytical_p(r) = 0.5*A*A*r*r + 2.*A*B*log(r) - 0.5*B*B/r/r - C
 
-    samples="postProcessing/sample1/1000/centreLine_p_U.xy"
+    samples="postProcessing/sample1/10000/centreLine_p_U.xy"
 
     set ylabel "Pressure, p"
     set samples 20
