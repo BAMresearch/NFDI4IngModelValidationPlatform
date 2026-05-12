@@ -5,7 +5,7 @@ with open("parameters.json") as f:
     config = json.load(f)
 
 rule all:
-    input: "postprocessing/done"
+    input: "postProcessing/done"
 
 
 rule run_simulation_container:
@@ -13,7 +13,7 @@ rule run_simulation_container:
         template="system/blockMeshDict.template"
     output:
         directory("1000"),
-        touch("postprocessing/done")
+        touch("postProcessing/done")
     params:
         r0=config["domain"]["r1"],
         r1=config["domain"]["r2"],
@@ -43,5 +43,5 @@ rule run_simulation_container:
         ls -la
         tail log.simpleFoam
 
-        touch postprocessing/done
+        touch postProcessing/done
         """
