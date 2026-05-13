@@ -30,7 +30,7 @@ for param_file in benchmark_dir.glob("parameters_*.json"):
             continue
 
         # Create output directory for the configuration
-        output_dir = benchmark_dir / "results" / config_name
+        output_dir = root_dir / "results" / config_name
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Copy the selected parameter file to the output directory with a standardised name
