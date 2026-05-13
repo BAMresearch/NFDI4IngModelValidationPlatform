@@ -1,0 +1,47 @@
+import json
+from pathlib import Path
+
+with open("parameters.json") as f:
+    config = json.load(f)
+
+rule all:
+    input: "postProcessing/done"
+
+
+rule run_simulation_container:
+    input:
+        template="system/blockMeshDict.template"
+    output:
+        directory("10000"),
+        touch("postProcessing/done")
+    params:
+        r0=config["domain"]["r1"],
+        r1=config["domain"]["r2"],
+        nr=config["grid"]["cells_radial"],
+        ntheta=config["grid"]["cells_angular"] // 4,
+        g=config["grid"]["grading"],
+        omega=config["problem"]["omega1"]
+    resources:
+        serial_run=1
+    container: "docker://opencfd/openfoam-run:2412"
+    shell:
+        """
+        set -euo pipefail
+
+        sed -e "s/{{r0}}/{params.r0}/g" \
+            -e "s/{{r1}}/{params.r1}/g" \
+            -e "s/{{nr}}/{params.nr}/g" \
+            -e "s/{{ntheta}}/{params.ntheta}/g" \
+            -e "s/{{g}}/{params.g}/g" \
+            {input.template} > system/blockMeshDict
+        sed -i "s/{{omega}}/{params.omega}/g" constant/MRFProperties
+
+        set +u && source /usr/lib/openfoam/openfoam2412/etc/bashrc && set -u
+        chmod +x Allrun
+        ./Allrun
+
+        ls -la
+        tail log.simpleFoam
+
+        touch postProcessing/done
+        """
