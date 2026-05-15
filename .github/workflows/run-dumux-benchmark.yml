@@ -50,9 +50,14 @@ jobs:
           path: benchmarks/rotating-cylinders/dumux/rotating-cylinders/results
           retention-days: 5
 
-      - name: Upload RoCrate artifacts
+      - name: Archive all outputs (including .snakemake)
+        run: |
+          cd benchmarks/rotating-cylinders/dumux
+          tar -czf dumux-run-artifacts.tar.gz .
+
+      - name: Upload full run artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dumux-zip-files
-          path: benchmarks/rotating-cylinders/dumux/
-          retention-days: 5
+          name: dumux-full-run
+          path: benchmarks/rotating-cylinders/dumux/dumux-run-artifacts.tar.gz
+          retention-days: 5    
