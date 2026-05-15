@@ -68,10 +68,13 @@ for param_file in benchmark_dir.glob("parameters_*.json"):
             "--resources", "serial_run=1",
             "--singularity-args", f"--bind {benchmark_dir}:/dumux/shared",
             "--config", f'conf_name="{config_name}"',
+            "--force",
             "--reporter", "metadata4ing",
-            "--report-metadata4ing-config", str(reporter_config_path),
             "--report-metadata4ing-filename", f"dumux_rocrate_{config_name}.zip",
-            "--force"
+            "--report-metadata4ing-name", "NFDI4Ing Provenance", \
+            "--report-metadata4ing-description", "Benchmark for rotating cylinders", \
+            "--report-metadata4ing-license", "https://opensource.org/licenses/MIT", \
+            "--report-metadata4ing-profile", "provenance-run-crate-0.5", \
         ], check=True, cwd=output_dir)
         
         print(f"Workflow executed successfully for {config_name}.")

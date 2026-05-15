@@ -74,10 +74,13 @@ for param_file in benchmark_dir.glob("parameters_*.json"):
             "--use-singularity",
             "--cores", "all",
             "--resources", "serial_run=1",
+            "--force",
             "--reporter", "metadata4ing",
-            "--report-metadata4ing-config", str(reporter_config_path),
             "--report-metadata4ing-filename", f"openfoam_rocrate_{config_name}.zip",
-            "--force"
+            "--report-metadata4ing-name", "NFDI4Ing Provenance", \
+            "--report-metadata4ing-description", "Benchmark for rotating cylinders", \
+            "--report-metadata4ing-license", "https://opensource.org/licenses/MIT", \
+            "--report-metadata4ing-profile", "provenance-run-crate-0.5", \
         ], check=True, cwd=output_dir)
         
         print(f"Workflow executed successfully for {config_name}.")
