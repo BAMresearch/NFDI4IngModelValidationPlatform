@@ -53,7 +53,7 @@ jobs:
       - name: Archive all outputs (including .snakemake)
         run: |
           cd benchmarks/rotating-cylinders/dumux
-          tar -czf dumux-run-artifacts.tar.gz .
+          tar --exclude='.snakemake/conda' -czf dumux-run-artifacts.tar.gz .
 
       - name: Upload full run artifacts
         uses: actions/upload-artifact@v4
