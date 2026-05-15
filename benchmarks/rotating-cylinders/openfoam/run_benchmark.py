@@ -9,6 +9,7 @@ root_dir = Path(__file__).resolve().parent
 zip_path = root_dir.parent / "rotating-cylinders.zip"
 benchmark_dir = root_dir / "rotating-cylinders"
 snakefile_path = root_dir / "Snakefile"
+reporter_config_path = root_dir / "metadata4ing.config"
 
 # Extraction
 if zip_path.exists():
@@ -74,7 +75,7 @@ for param_file in benchmark_dir.glob("parameters_*.json"):
             "--cores", "all",
             "--resources", "serial_run=1",
             "--reporter", "metadata4ing",
-            "--report-metadata4ing-config", "metadata4ing.config",
+            "--report-metadata4ing-config", str(reporter_config_path),
             "--report-metadata4ing-filename", f"openfoam_rocrate_{config_name}.zip",
             "--force"
         ], check=True, cwd=output_dir)
