@@ -57,6 +57,22 @@ for param_file in benchmark_dir.glob("parameters_*.json"):
             "--config", f'conf_name="{config_name}"',
             "--force"
         ], check=True, cwd=output_dir)
+        
+        # Run the Snakemake reporter for the configuration
+        subprocess.run([
+            "snakemake",
+            "-s", str(snakefile_path),
+            "--use-singularity",
+            "--cores", "all",
+            "--resources", "serial_run=1",
+            "--singularity-args", f"--bind {benchmark_dir}:/dumux/shared",
+            "--config", f'conf_name="{config_name}"',
+            "--reporter", "metadata4ing",
+            "--report-metadata4ing-config", "metadata4ing.config",
+            "--report-metadata4ing-filename", f"dumux_rocrate_{config_name}.zip",
+            "--force"
+        ], check=True, cwd=output_dir)
+        
         print(f"Workflow executed successfully for {config_name}.")
         
 print("\nAll configurations processed.")

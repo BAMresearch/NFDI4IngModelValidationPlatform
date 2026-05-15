@@ -49,3 +49,10 @@ jobs:
           name: convergence-results
           path: benchmarks/rotating-cylinders/dumux/rotating-cylinders/results
           retention-days: 5
+
+      - name: Upload RoCrate artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dumux-zip-files
+          path: benchmarks/rotating-cylinders/dumux/**/dumux_rocrate_*.zip
+          retention-days: 5

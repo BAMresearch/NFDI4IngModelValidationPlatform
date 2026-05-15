@@ -65,6 +65,20 @@ for param_file in benchmark_dir.glob("parameters_*.json"):
             "--resources", "serial_run=1",
             "--force"
         ], check=True, cwd=output_dir)
+        
+        # Run the Snakemake reporter for the configuration
+        subprocess.run([
+            "snakemake",
+            "-s", str(snakefile_path),
+            "--use-singularity",
+            "--cores", "all",
+            "--resources", "serial_run=1",
+            "--reporter", "metadata4ing",
+            "--report-metadata4ing-config", "metadata4ing.config",
+            "--report-metadata4ing-filename", f"openfoam_rocrate_{config_name}.zip",
+            "--force"
+        ], check=True, cwd=output_dir)
+        
         print(f"Workflow executed successfully for {config_name}.")
 
 print("\nAll configurations processed.")
