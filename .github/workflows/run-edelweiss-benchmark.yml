@@ -1,4 +1,4 @@
-name: Examples-CI
+name: Julia-CI
 on:
   push:
 
@@ -16,8 +16,11 @@ env:
   CACHE_NUMBER: 1  # increase to reset cache manually
 
 jobs:
-  run-examples:
+  tests:
     runs-on: ubuntu-latest
+
+
+
     steps:
       - name: checkout repo content
         uses: actions/checkout@v2
@@ -29,37 +32,26 @@ jobs:
             activate-environment: model-validation 
             use-mamba: true
 
+      - name: Setup Apptainer
+        uses: eWaterCycle/setup-apptainer@v2
+        with:
+          apptainer-version: 1.4.5
+          
       - name: Set strict channel priority
         run: conda config --set channel_priority strict
         
       - name: Update environment
         run: mamba env update -n model-validation -f environment_benchmarks.yml
 
-      - name: Run linear-elastic-plate-with-hole using fenics
+      - name: Run linear-elastic-plate-with-hole using edelweiss
         shell: bash -l {0}
         run: |
-          cd $GITHUB_WORKSPACE/examples/linear-elastic-plate-with-hole/fenics/
-          python run_benchmark.py
+          cd $GITHUB_WORKSPACE/examples/linear-elastic-plate-with-hole/edelweiss/
+          snakemake --use-conda --force --cores 'all' --use-apptainer
 
-      - name: Run linear-elastic-plate-with-hole using kratos
-        shell: bash -l {0}
-        run: |
-          cd $GITHUB_WORKSPACE/examples/linear-elastic-plate-with-hole/kratos/
-          python run_benchmark.py
-
-      - name: Archive results of the fenics run of linear-elastic-plate-with-hole
+      - name: Archive results of the edelweiss run of linear-elastic-plate-with-hole
         uses: actions/upload-artifact@v4
         with:
-            name: fenics_results_linear-elastic-plate-with-hole
+            name: edelweiss_results_linear-elastic-plate-with-hole
             path: |
-              examples/linear-elastic-plate-with-hole/fenics/results/
-
-      - name: Archive results of the kratos run of linear-elastic-plate-with-hole
-        uses: actions/upload-artifact@v4
-        with:
-            name: kratos_results_linear-elastic-plate-with-hole
-            path: |
-              examples/linear-elastic-plate-with-hole/kratos/results/
-
-
-
+              examples/linear-elastic-plate-with-hole/edelweiss/solution_metrics.json

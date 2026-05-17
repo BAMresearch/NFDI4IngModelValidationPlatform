@@ -1,0 +1,74 @@
+import json
+
+rule all:
+    input:
+        "esExport.case",
+        "solution_metrics.json"
+        
+rule get_EdelweissFE:
+    params:
+        target =  "https://github.com/Edelweiss-Numerics/EdelweissFE-Apptainer/releases/download/v26.03/edelweissfe-debian-13.sif",
+    output:
+        container = "edelweiss.sif",
+    shell:
+        """
+        curl -L -o {output.container} {params.target} 
+        """
+
+rule create_mesh:    
+    input:
+        parameters = "parameters.json",
+    output:
+        mesh_temp = "mesh.msh",
+        mesh = "mesh.inp",
+    conda: "environment_mesh.yml"
+    shell:
+        """
+        python3 "create_mesh.py" --input_parameter_file {input.parameters} --output_mesh_file {output.mesh_temp}
+        # create {output.mesh} from {output.mesh_temp}
+        python3 convert_mesh.py
+        # meshio c {output.mesh_temp} {output.mesh}
+        # remove heading
+        sed -i '1,3d' {output.mesh}
+        # change element type to CPE4
+        sed -i 's/CAX4P/CPE4/' {output.mesh}
+        """
+
+rule prepare_simulation:
+    input:
+        "parameters.json",
+        "analytical_solution.py",
+        "input_template.inp"
+    output:
+        "input.inp",
+        "boundaryFields.inp"
+    conda: "environment_preProcessing.yml"
+    shell:
+        """
+        python3 create_BCsFromAnalyticalSolution.py
+        python3 create_inputFromInputTemplate.py
+        """
+
+rule run_edelweiss:
+    input:
+        "edelweiss.sif",
+        "input.inp",
+        "mesh.inp",
+        "boundaryFields.inp"
+    output:
+        "esExport.case"
+    shell:
+        """
+        apptainer exec --bind $(pwd) edelweiss.sif edelweissfe input.inp
+        """
+
+rule get_results:
+    input:
+        ensight = "esExport.case"
+    output:
+        metrics = "solution_metrics.json",
+    conda: "environment_postProcessing.yml"
+    shell:
+        """
+        python3 create_metrics.py {input.ensight} {output.metrics}
+        """
