@@ -77,10 +77,8 @@ def postprocess_results(input_parameter_file, input_result_vtk, output_metrics_f
         L=L,
         load=load,
     )
-    # Compute maximum von Mises stress at nodes and Gauss points.
-    max_von_mises_stress_nodes = float(np.max(mesh.point_data["VON_MISES_STRESS"]))
-
-    max_von_mises_stress_gauss_points = max_von_mises_stress_nodes
+    # Compute maximum von Mises stress at Gauss points.
+    max_von_mises_stress_gauss_points = 0
     for key, values in mesh.cell_data.items():
         if "VON_MISES_STRESS" in key:
             max_von_mises_stress_gauss_points = float(np.max(values))
@@ -123,10 +121,18 @@ def postprocess_results(input_parameter_file, input_result_vtk, output_metrics_f
     else:
         displacement_x_at_evaluation_point = float(displacement_sampled[0, 0])
 
+    # Compute nodal displacement error (Euclidean norm of error vector at each node)
+    nodal_displacement_error = np.linalg.norm(displacement - u_ref, axis=1)
+    max_displacement_error_nodes = float(np.max(nodal_displacement_error))
+    
+    # Compute the number of dofs
+    num_dofs = int(mesh.n_points * 2)
+
     metrics = {
-        "max_von_mises_stress_nodes[Pa]": max_von_mises_stress_nodes,
-        "max_von_mises_stress_gauss_points[Pa]": max_von_mises_stress_gauss_points,
+        "number_of_dofs[-]": num_dofs,
+        "max_von_mises_stress[Pa]": max_von_mises_stress_gauss_points,
         "l2_error_displacement[m]": l2_error_displacement,
+        "max_displacement_error[m]": max_displacement_error_nodes,
         "reaction_force_left_boundary_x[N]": reaction_force_left_boundary_x,
         "reaction_force_left_boundary_y[N]": reaction_force_left_boundary_y,
         f"displacement_x_at_evaluation_point (x={displacement_evaluation_x}, y={displacement_evaluation_y})[m]": displacement_x_at_evaluation_point,

@@ -96,31 +96,40 @@ $$
 
 In order to solve the weak formulation, the finite-element method (FEM) can be used. This method discretizes the domain $\Omega$ into so called finite elements that can for example be triangles or quadrilaterals in 2D. On these elements, ansatz functions are defined such that they are continous on the boundaries between elements. These functions form a basis for the solution space for an approximate solution $\boldsymbol{u}_h$ of the problem.
 
-## Comparison of approximate solution with analytical solution
+## Solution metrics
 
-The approxiamte solution and the analytical solution can be compared with the $L_2$ norm which is defined as
-
-$$
-\Vert \boldsymbol{u}\Vert_{L_2} = \sqrt{\int_\Omega \Vert\boldsymbol{u}(\boldsymbol{x})\Vert_2^2 \mathrm d \boldsymbol x}
-$$
-
-and the error in the $L_2$ norm
+The approximate solution is compared with the analytical solution using the $L_2$ norm which is defined as
 
 $$
-e_{L_2} = \Vert \boldsymbol{u}-\boldsymbol{u}_h\Vert_{L_2}.
+\Vert \boldsymbol{f}\Vert_{L_2} = \sqrt{\int_\Omega \left|\boldsymbol{f}(\boldsymbol{x})\right|^2 \mathrm d \boldsymbol x}
 $$
 
-Alternatively, the sup norm can be used which is defined as
+This norm is computed for the error between the finite element solution and the analytical solution of displacements i.e., $\Vert \boldsymbol{u}-\boldsymbol{u}_h\Vert_{L_2}$.
+
+The maximum displacement error is computed at the nodes of the finite element mesh with respect to the analytical solution.
 
 $$
-\Vert \boldsymbol{u}\Vert_{\inf} = \sup_{\boldsymbol x} \Vert \boldsymbol{u}(\boldsymbol{x}) \Vert
+e_{\max}
+=
+\max_{i \in \mathcal{N}}
+\left\|
+\mathbf{u}(\mathbf{x}_i)
+-
+\mathbf{u}_h(\mathbf{x}_i)
+\right\|
 $$
 
-and the error in the sup norm
+where $\mathcal{N}$ denotes the set of nodes of the finite element mesh.
 
-$$
-e_{\inf} = \Vert \boldsymbol{u}-\boldsymbol{u}_h\Vert_{\inf}.
-$$
+Max Von-Mises stress
+
+Displacement at the top-right corner of the plate.
+
+The reaction force at the left boundary.
+
+Number of Degrees of Freedom which supports in comparing the outputs between different meshes.
+
+
 
 
 With these metrices, we can perform a convergence analysis for different approximations $\boldsymbol{u}_h$ which differ in the element size $h$. Plotting the error over the used element-size in a log-log plot lets us determine the convergence order of the approximation.

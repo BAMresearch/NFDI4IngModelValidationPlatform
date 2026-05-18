@@ -170,6 +170,7 @@ def run_fenics_simulation(
     reaction_left_y_local = df.fem.assemble_scalar(df.fem.form(traction[1] * ds(1)))
     reaction_left_x = MPI.COMM_WORLD.allreduce(reaction_left_x_local, op=MPI.SUM)
     reaction_left_y = MPI.COMM_WORLD.allreduce(reaction_left_y_local, op=MPI.SUM)
+    num_dofs = V.dofmap.index_map.size_global * V.dofmap.index_map_bs
 
 
     # Compute L2 error norm between FE displacement and analytical displacement.
@@ -186,6 +187,14 @@ def run_fenics_simulation(
     l2_error_sq_local = df.fem.assemble_scalar(l2_error_form)
     l2_error_sq_global = MPI.COMM_WORLD.allreduce(l2_error_sq_local, op=MPI.SUM)
     l2_error_displacement = np.sqrt(l2_error_sq_global)
+
+    # Compute max nodal displacement error magnitude (global across MPI)
+    block_size = V.dofmap.index_map_bs
+    nodal_error = (u.x.array - u_analytical.x.array).reshape(-1, block_size)
+    max_displacement_error_nodes_local = np.max(np.linalg.norm(nodal_error, axis=1))
+    max_displacement_error_nodes = MPI.COMM_WORLD.allreduce(
+        max_displacement_error_nodes_local, op=MPI.MAX
+    )
 
     # Evaluate displacement at the specified evaluation point
     displacement_eval_point = np.array(
@@ -281,8 +290,6 @@ def run_fenics_simulation(
     ) as vtk:
         vtk.write_function(mises_stress_nodes, 0.0)
 
-    # extract maximum von Mises stress
-    max_mises_stress_nodes = np.max(mises_stress_nodes.x.array)
 
     # Compute von Mises stress at quadrature (Gauss) points and extract maximum (global across MPI)
     quad_element = basix.ufl.quadrature_element(
@@ -319,9 +326,10 @@ def run_fenics_simulation(
 
     # Save metrics
     metrics = {
-        "max_von_mises_stress_nodes[Pa]": max_mises_stress_nodes,
-        "max_von_mises_stress_gauss_points[Pa]": max_mises_stress_gauss_points,
+        "number_of_dofs[-]": num_dofs,
+        "max_von_mises_stress[Pa]": max_mises_stress_gauss_points,
         "l2_error_displacement[m]": l2_error_displacement,
+        "max_displacement_error[m]": max_displacement_error_nodes,
         "reaction_force_left_boundary_x[N]": reaction_left_x,
         "reaction_force_left_boundary_y[N]": reaction_left_y,
         f"displacement_x_at_evaluation_point (x={displacement_evaluation_x}, y={displacement_evaluation_y})[m]": displacement_x_at_evaluation_point,
