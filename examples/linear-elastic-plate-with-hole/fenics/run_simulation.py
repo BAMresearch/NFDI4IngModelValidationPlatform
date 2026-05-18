@@ -10,6 +10,7 @@ import ufl
 from dolfinx.fem.petsc import LinearProblem
 from mpi4py import MPI
 from pint import UnitRegistry
+from ufl.algorithms import estimate_total_polynomial_degree
 
 # Add parent directory to sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -29,7 +30,7 @@ def run_fenics_simulation(
         gdim=2,
     )
 
-    V = df.fem.functionspace(mesh, ("CG", parameters["element-degree"], (2,)))
+    V = df.fem.functionspace(mesh, ("CG", parameters["isoparametric_element_degree"], (2,)))
 
     tags_left = facet_tags.find(1)
     tags_bottom = facet_tags.find(2)
@@ -45,46 +46,46 @@ def run_fenics_simulation(
 
     E = (
         ureg.Quantity(
-            parameters["young-modulus"]["value"], parameters["young-modulus"]["unit"]
+            parameters["young_modulus[Pa]"], "Pa"
         )
         .to_base_units()
         .magnitude
     )
     nu = (
         ureg.Quantity(
-            parameters["poisson-ratio"]["value"], parameters["poisson-ratio"]["unit"]
+            parameters["poisson_ratio"], ""
         )
         .to_base_units()
         .magnitude
     )
     radius = (
-        ureg.Quantity(parameters["radius"]["value"], parameters["radius"]["unit"])
+        ureg.Quantity(parameters["radius[m]"], "m")
         .to_base_units()
         .magnitude
     )
     L = (
-        ureg.Quantity(parameters["length"]["value"], parameters["length"]["unit"])
+        ureg.Quantity(parameters["length[m]"], "m")
         .to_base_units()
         .magnitude
     )
     load = (
-        ureg.Quantity(parameters["load"]["value"], parameters["load"]["unit"])
+        ureg.Quantity(parameters["load[MPa]"], "MPa")
         .to_base_units()
         .magnitude
     )
-    displacement_evaluation_point = parameters["displacement-evaluation-point"]
+    displacement_evaluation_point = parameters["displacement_evaluation_point[m]"]
     displacement_evaluation_x = (
         ureg.Quantity(
-            displacement_evaluation_point["x"]["value"],
-            displacement_evaluation_point["x"]["unit"],
+            displacement_evaluation_point[0],
+            "m",
         )
         .to_base_units()
         .magnitude
     )
     displacement_evaluation_y = (
         ureg.Quantity(
-            displacement_evaluation_point["y"]["value"],
-            displacement_evaluation_point["y"]["unit"],
+            displacement_evaluation_point[1],
+            "m",
         )
         .to_base_units()
         .magnitude
@@ -115,10 +116,6 @@ def run_fenics_simulation(
 
     dx = ufl.Measure(
         "dx",
-        metadata={
-            "quadrature_degree": parameters["quadrature-degree"],
-            "quadrature_scheme": parameters["quadrature-rule"],
-        },
     )
     ds = ufl.Measure(
         "ds",
@@ -238,10 +235,10 @@ def run_fenics_simulation(
         return uh
 
     plot_space_stress = df.fem.functionspace(
-        mesh, ("DG", parameters["element-degree"] - 1, (2, 2))
+       mesh, ("DG", parameters["isoparametric_element_degree"] - 1, (2, 2))
     )
     plot_space_mises = df.fem.functionspace(
-        mesh, ("DG", parameters["element-degree"] - 1, (1,))
+        mesh, ("DG", parameters["isoparametric_element_degree"] - 1, (1,))
     )
     stress_nodes_red = project(sigma(u), plot_space_stress, dx)
     stress_nodes_red.name = "stress"
@@ -291,7 +288,8 @@ def run_fenics_simulation(
     quad_element = basix.ufl.quadrature_element(
         mesh.topology.cell_name(),
         value_shape=(1,),
-        degree=parameters["quadrature-degree"],
+        scheme="default",
+        degree=estimate_total_polynomial_degree(u_),
     )
 
     Q_mises = df.fem.functionspace(mesh, quad_element)
@@ -321,12 +319,12 @@ def run_fenics_simulation(
 
     # Save metrics
     metrics = {
-        "max_von_mises_stress_nodes": max_mises_stress_nodes,
-        "max_von_mises_stress_gauss_points": max_mises_stress_gauss_points,
-        "l2_error_displacement": l2_error_displacement,
-        "reaction_force_left_boundary_x": reaction_left_x,
-        "reaction_force_left_boundary_y": reaction_left_y,
-        f"displacement_x_at_evaluation_point (x={displacement_evaluation_x}, y={displacement_evaluation_y})": displacement_x_at_evaluation_point,
+        "max_von_mises_stress_nodes[Pa]": max_mises_stress_nodes,
+        "max_von_mises_stress_gauss_points[Pa]": max_mises_stress_gauss_points,
+        "l2_error_displacement[m]": l2_error_displacement,
+        "reaction_force_left_boundary_x[N]": reaction_left_x,
+        "reaction_force_left_boundary_y[N]": reaction_left_y,
+        f"displacement_x_at_evaluation_point (x={displacement_evaluation_x}, y={displacement_evaluation_y})[m]": displacement_x_at_evaluation_point,
     }
 
     if MPI.COMM_WORLD.rank == 0:

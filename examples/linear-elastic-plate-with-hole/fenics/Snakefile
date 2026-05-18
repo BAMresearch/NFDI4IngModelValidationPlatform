@@ -1,0 +1,33 @@
+import json
+
+rule all:
+    input:
+        "solution_metrics.json",
+        "solution_field_data.zip"
+        
+rule create_mesh:    
+    input:
+        script = "create_mesh.py",
+        parameters = "parameters.json",
+    output:
+        mesh = "mesh.msh",
+    conda: "environment_mesh.yml"
+    shell:
+        """
+        python3 {input.script} --input_parameter_file {input.parameters} --output_mesh_file {output.mesh}
+        """
+
+rule run_simulation:
+    input: 
+        script = "run_simulation.py",
+        parameters = "parameters.json",
+        mesh = "mesh.msh",
+    output:
+        zip = "solution_field_data.zip",
+        metrics = "solution_metrics.json",
+    conda:
+        "environment_simulation.yml"
+    shell:
+        """
+        python3 {input.script} --input_parameter_file {input.parameters} --input_mesh_file {input.mesh} --output_solution_file_zip {output.zip} --output_metrics_file {output.metrics}
+        """
