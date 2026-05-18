@@ -43,8 +43,8 @@ shared_env_dir.mkdir(parents=True, exist_ok=True)
 for file in root_unzipped_benchmark_dir.glob("parameters_*.json"):
     with open(file, "r") as f:
         data = json.load(f)
-        #if data.get("element_size[m]") >= 0.025:
-        if 1==1:
+        if data.get("element_size[m]") >= 0.025:
+
             # Create output directory for the configuration
             output_dir = root_unzipped_benchmark_dir / "results" / data.get("configuration")
             output_dir.mkdir(parents=True, exist_ok=True) 
