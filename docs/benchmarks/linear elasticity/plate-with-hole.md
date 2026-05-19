@@ -94,45 +94,40 @@ B(\boldsymbol u,\boldsymbol v) &= \int_{\Omega} \boldsymbol\varepsilon(\boldsymb
 $$
 
 
-In order to solve the weak formulation, the finite-element method (FEM) can be used. This method discretizes the domain $\Omega$ into so called finite elements that can for example be triangles or quadrilaterals in 2D. On these elements, ansatz functions are defined such that they are continous on the boundaries between elements. These functions form a basis for the solution space for an approximate solution $\boldsymbol{u}_h$ of the problem.
+In order to solve the weak formulation, the finite-element method (FEM) can be used. This method discretizes the domain $\Omega$ into so called finite elements that can for example be triangles or quadrilaterals in 2D. On these elements, ansatz functions are defined such that they are continuous on the boundaries between elements. These functions form a basis for the solution space for an approximate solution $\boldsymbol{u}_h$ of the problem.
 
-## Solution metrics
+## Output metrics
 
-The approximate solution is compared with the analytical solution using the $L_2$ norm which is defined as
+- The approximate solution is compared with the analytical solution using the $L_2$ norm which is defined as
 
-$$
-\Vert \boldsymbol{f}\Vert_{L_2} = \sqrt{\int_\Omega \left|\boldsymbol{f}(\boldsymbol{x})\right|^2 \mathrm d \boldsymbol x}
-$$
+    $$
+    \Vert \boldsymbol{f}\Vert_{L_2} = \sqrt{\int_\Omega \left|\boldsymbol{f}(\boldsymbol{x})\right|^2 \mathrm d \boldsymbol x}
+    $$
 
-This norm is computed for the error between the finite element solution and the analytical solution of displacements i.e., $\Vert \boldsymbol{u}-\boldsymbol{u}_h\Vert_{L_2}$.
+    This norm is computed for the error between the finite element solution and the analytical solution of displacements i.e., $\Vert \boldsymbol{u}-\boldsymbol{u}_h\Vert_{L_2}$.
 
-The maximum displacement error is computed at the nodes of the finite element mesh with respect to the analytical solution.
+- The maximum displacement error is computed at the nodes of the finite element mesh with respect to the analytical solution.
 
-$$
-e_{\max}
-=
-\max_{i \in \mathcal{N}}
-\left\|
-\mathbf{u}(\mathbf{x}_i)
--
-\mathbf{u}_h(\mathbf{x}_i)
-\right\|
-$$
+    $$
+    e_{\max}
+    =
+    \max_{i \in \mathcal{N}}
+    \left\|
+    \mathbf{u}(\mathbf{x}_i)
+    -
+    \mathbf{u}_h(\mathbf{x}_i)
+    \right\|
+    $$
 
-where $\mathcal{N}$ denotes the set of nodes of the finite element mesh.
+    where $\mathcal{N}$ denotes the set of nodes of the finite element mesh.
 
-Max Von-Mises stress
+- Max Von-Mises stress
 
-Displacement at the top-right corner of the plate.
+- Displacement at the top-right corner of the plate.
 
-The reaction force at the left boundary.
+- The reaction force at the left boundary.
 
-Number of Degrees of Freedom which supports in comparing the outputs between different meshes.
-
-
-
-
-With these metrices, we can perform a convergence analysis for different approximations $\boldsymbol{u}_h$ which differ in the element size $h$. Plotting the error over the used element-size in a log-log plot lets us determine the convergence order of the approximation.
+- The number of Degrees of Freedom in the finite element mesh.
 
 ## Table of parameters
 
