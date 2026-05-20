@@ -197,7 +197,7 @@ def run_fenics_simulation(
         # u.eval returns a 2D array: shape (num_points, value_size)
         local_displacement = u.eval(
             displacement_eval_point, np.array([cell], dtype=np.int32)
-        )[0].tolist()  # [ux, uy]
+        ).tolist()  # [ux, uy]
 
 
     def project(
