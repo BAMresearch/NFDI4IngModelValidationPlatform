@@ -61,10 +61,34 @@ for file in root_unzipped_benchmark_dir.glob("parameters_*.json"):
                     else:
                         shutil.copy(item, output_dir / item.name)
                             
-            # Run the Snakemake workflow from the benchmark to create the mesh for the configuration
-            subprocess.run(["snakemake", "--snakefile", "Snakefile", "--use-conda", "--force", "--cores", "all", "--conda-prefix", str(shared_env_dir), "--until", "create_mesh"], check=True, cwd=output_dir)
+            base_cmd = [
+                "snakemake",
+                "--snakefile", "Snakefile",
+                "--use-conda",
+                "--force",
+                "--cores", "all",
+                "--conda-prefix", str(shared_env_dir),
+                "--until", "create_mesh",
+            ]
             
-            # Run the Snakemake workflow to run the simulation and postprocess results for the configuration
-            subprocess.run(["snakemake", "--snakefile", "Snakefile_kratos.smk", "--use-conda", "--force", "--cores", "all", "--conda-prefix", str(shared_env_dir)], check=True, cwd=output_dir)
-            print("Workflow executed successfully.")            
+            reporter_args = [
+                "--reporter", "metadata4ing",
+                "--report-metadata4ing-filename", f"Kratos-{data.get("configuration")}.zip",
+                "--report-metadata4ing-name", "NFDI4Ing Provenance",
+                "--report-metadata4ing-description", "Benchmark for linear-elastic plate with a hole",
+                "--report-metadata4ing-license", "https://opensource.org/licenses/MIT",
+                "--report-metadata4ing-profile", "provenance-run-crate-0.5",
+            ]
+
+            # Run the Snakemake workflow from the benchmark to create the mesh for the configuration
+            subprocess.run(base_cmd, check=True, cwd=output_dir)
+
+            # Second run: with provenance reporter
+            subprocess.run(
+                base_cmd + reporter_args,
+                check=True,
+                cwd=output_dir,
+            )
+            
+            print("Workflow executed successfully.")
         

@@ -1,0 +1,1414 @@
+{
+  "@context": {
+    "local": "https://github.com/BAMresearch/NFDI4IngModelValidationPlatform/",
+    "@vocab": "http://w3id.org/nfdi4ing/metadata4ing#",
+    "brick": "https://brickschema.org/schema/Brick#",
+    "csvw": "http://www.w3.org/ns/csvw#",
+    "dc": "http://purl.org/dc/elements/1.1/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dcmitype": "http://purl.org/dc/dcmitype/",
+    "dcterms": "http://purl.org/dc/terms/",
+    "dcam": "http://purl.org/dc/dcam/",
+    "doap": "http://usefulinc.com/ns/doap#",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "geo": "http://www.opengis.net/ont/geosparql#",
+    "odrl": "http://www.w3.org/ns/odrl/2/",
+    "org": "http://www.w3.org/ns/org#",
+    "prof": "http://www.w3.org/ns/dx/prof/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "qb": "http://purl.org/linked-data/cube#",
+    "schema": "https://schema.org/",
+    "sh": "http://www.w3.org/ns/shacl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "ssn": "http://www.w3.org/ns/ssn/",
+    "time": "http://www.w3.org/2006/time#",
+    "vann": "http://purl.org/vocab/vann/",
+    "void": "http://rdfs.org/ns/void#",
+    "wgs": "https://www.w3.org/2003/01/geo/wgs84_pos#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "xml": "http://www.w3.org/XML/1998/namespace",
+    "m4i": "http://w3id.org/nfdi4ing/metadata4ing#",
+    "bibo": "http://purl.org/ontology/bibo/",
+    "biro": "http://purl.org/spar/biro/",
+    "cr": "http://mlcommons.org/croissant/",
+    "dcc": "https://ptb.de/dcc/",
+    "emmo": "http://emmo.info/emmo#",
+    "gnd": "http://d-nb.info/gnd/",
+    "mod": "https://w3id.org/mod#",
+    "obo": "http://purl.obolibrary.org/obo/",
+    "orcid": "https://orcid.org/",
+    "pims-ii": "http://www.molmod.info/semantics/pims-ii.ttl#",
+    "premis": "http://www.loc.gov/premis/rdf/v3/",
+    "qudt": "http://qudt.org/schema/qudt/",
+    "ror": "https://ror.org/",
+    "sio": "http://semanticscience.org/resource/",
+    "voaf": "http://purl.org/vocommons/voaf#",
+    "sirp": "http://si-digital-framework.org/SI#",
+    "units": "http://si-digital-framework.org/SI/units/",
+    "sis": "https://ptb.de/sis/",
+    "six": "https://ptb.de/si/",
+    "label": {
+      "@id": "rdfs:label"
+    },
+    "comment": {
+      "@id": "rdfs:comment"
+    },
+    "Field": {
+      "@id": "cr:Field"
+    },
+    "file object": {
+      "@id": "cr:FileObject"
+    },
+    "file set": {
+      "@id": "cr:FileSet"
+    },
+    "record set": {
+      "@id": "cr:RecordSet"
+    },
+    "process": {
+      "@id": "obo:BFO_0000015"
+    },
+    "realizable entity": {
+      "@id": "obo:BFO_0000017"
+    },
+    "bibliographic record": {
+      "@id": "biro:BibliographicRecord"
+    },
+    "quantity kind": {
+      "@id": "qudt:QuantityKind"
+    },
+    "boolean variable": {
+      "@id": "m4i:BooleanVariable"
+    },
+    "method": {
+      "@id": "m4i:Method"
+    },
+    "numerical assignment": {
+      "@id": "m4i:NumericalAssignment"
+    },
+    "numerical variable": {
+      "@id": "m4i:NumericalVariable"
+    },
+    "processing step": {
+      "@id": "m4i:ProcessingStep"
+    },
+    "configuration": {
+      "@id": "m4i:Configuration"
+    },
+    "text variable": {
+      "@id": "m4i:TextVariable"
+    },
+    "tool": {
+      "@id": "m4i:Tool"
+    },
+    "variable set": {
+      "@id": "m4i:VariableSet"
+    },
+    "assignment": {
+      "@id": "pims-ii:Assignment"
+    },
+    "property": {
+      "@id": "pims-ii:Property"
+    },
+    "quantity value": {
+      "@id": "pims-ii:QuantityValue"
+    },
+    "value": {
+      "@id": "pims-ii:Value"
+    },
+    "variable": {
+      "@id": "pims-ii:Variable"
+    },
+    "dataset": {
+      "@id": "dcat:Dataset"
+    },
+    "dataset series": {
+      "@id": "dcat:DatasetSeries"
+    },
+    "distribution": {
+      "@id": "dcat:Distribution"
+    },
+    "activity": {
+      "@id": "prov:Activity"
+    },
+    "agent": {
+      "@id": "prov:Agent"
+    },
+    "association": {
+      "@id": "prov:Association"
+    },
+    "organization": {
+      "@id": "prov:Organization"
+    },
+    "person": {
+      "@id": "prov:Person"
+    },
+    "role": {
+      "@id": "prov:Role"
+    },
+    "software agent": {
+      "@id": "prov:SoftwareAgent"
+    },
+    "intangible": {
+      "@id": "schema:Intangible"
+    },
+    "project": {
+      "@id": "schema:Project"
+    },
+    "research project": {
+      "@id": "schema:ResearchProject"
+    },
+    "term replaced by": {
+      "@id": "obo:IAO_0100001"
+    },
+    "has obsolescence reason": {
+      "@id": "obo:IAO_0100001"
+    },
+    "description": {
+      "@id": "dcterms:description"
+    },
+    "is referenced by": {
+      "@id": "dcterms:isReferencedBy"
+    },
+    "references": {
+      "@id": "dcterms:references"
+    },
+    "title": {
+      "@id": "dcterms:title"
+    },
+    "formula": {
+      "@id": "dcc:formulaType"
+    },
+    "date with time": {
+      "@id": "schema:DateTime"
+    },
+    "part of": {
+      "@id": "obo:BFO_0000050"
+    },
+    "has part": {
+      "@id": "obo:BFO_0000051"
+    },
+    "realized in": {
+      "@id": "obo:BFO_0000054"
+    },
+    "realizes": {
+      "@id": "obo:BFO_0000055"
+    },
+    "precedes": {
+      "@id": "obo:BFO_0000063"
+    },
+    "participates in": {
+      "@id": "obo:RO_0000056"
+    },
+    "has participant": {
+      "@id": "obo:RO_0000057"
+    },
+    "immediately precedes": {
+      "@id": "obo:RO_0002090"
+    },
+    "starts with": {
+      "@id": "obo:RO_0002224"
+    },
+    "ends with": {
+      "@id": "obo:RO_0002230"
+    },
+    "has input": {
+      "@id": "obo:RO_0002233"
+    },
+    "has output": {
+      "@id": "obo:RO_0002234"
+    },
+    "input of": {
+      "@id": "obo:RO_0002352"
+    },
+    "output of": {
+      "@id": "obo:RO_0002353"
+    },
+    "configures": {
+      "@id": "m4i:configures"
+    },
+    "has admissible value": {
+      "@id": "m4i:hasAdmissibleValue"
+    },
+    "has assigned parameter": {
+      "@id": "m4i:hasAssignedParameter"
+    },
+    "has assigned parameter set": {
+      "@id": "m4i:hasAssignedParameterSet"
+    },
+    "has assigned value": {
+      "@id": "m4i:hasAssignedValue"
+    },
+    "has employed tool": {
+      "@id": "m4i:hasEmployedTool"
+    },
+    "has fixed parameter": {
+      "@id": "m4i:hasFixedParameter"
+    },
+    "has fixed parameter set": {
+      "@id": "m4i:hasFixedParameterSet"
+    },
+    "has kind of quantity": {
+      "@id": "m4i:hasKindOfQuantity"
+    },
+    "has parameter": {
+      "@id": "m4i:hasParameter"
+    },
+    "has parameter set": {
+      "@id": "m4i:hasParameterSet"
+    },
+    "has runtime assignment": {
+      "@id": "m4i:hasRuntimeAssignment"
+    },
+    "has uncertainty declaration": {
+      "@id": "m4i:hasUncertaintyDeclaration"
+    },
+    "has unit": {
+      "@id": "m4i:hasUnit"
+    },
+    "has variable": {
+      "@id": "m4i:hasVariable"
+    },
+    "implemented by": {
+      "@id": "m4i:implementedByTool"
+    },
+    "implements": {
+      "@id": "m4i:implementsMethod"
+    },
+    "associated to project": {
+      "@id": "m4i:inProject"
+    },
+    "investigates": {
+      "@id": "m4i:investigates"
+    },
+    "investigates property": {
+      "@id": "m4i:investigatesProperty"
+    },
+    "is employed tool": {
+      "@id": "m4i:isEmployedToolIn"
+    },
+    "project participant": {
+      "@id": "m4i:projectParticipant"
+    },
+    "realizes method": {
+      "@id": "m4i:realizesMethod"
+    },
+    "represents variable": {
+      "@id": "m4i:representsVariable"
+    },
+    "uses configuration": {
+      "@id": "m4i:usesConfiguration"
+    },
+    "is related to": {
+      "@id": "sio:SIO_000001"
+    },
+    "represents": {
+      "@id": "sio:SIO_000210"
+    },
+    "refers to": {
+      "@id": "sio:SIO_000628"
+    },
+    "is admissible value for": {
+      "@id": "pims-ii:isAdmissibleValueFor"
+    },
+    "is assignment for": {
+      "@id": "pims-ii:isAssignmentFor"
+    },
+    "is value in assignment": {
+      "@id": "pims-ii:isValueInAssignment"
+    },
+    "is variable in assignment": {
+      "@id": "pims-ii:isVariableInAssignment"
+    },
+    "source": {
+      "@id": "cr:source"
+    },
+    "has field": {
+      "@id": "cr:field"
+    },
+    "compression format": {
+      "@id": "dcat:compressFormat"
+    },
+    "has distribution": {
+      "@id": "dcat:distribution"
+    },
+    "download URL": {
+      "@id": "dcat:downloadURL"
+    },
+    "in series": {
+      "@id": "dcat:inSeries"
+    },
+    "media type": {
+      "@id": "dcat:mediaType"
+    },
+    "packaging format": {
+      "@id": "dcat:packageFormat"
+    },
+    "has agent": {
+      "@id": "prov:agent"
+    },
+    "had role": {
+      "@id": "prov:hadRole"
+    },
+    "has qualified association": {
+      "@id": "prov:qualifiedAssociation"
+    },
+    "was role in": {
+      "@id": "prov:wasRoleIn"
+    },
+    "has property": {
+      "@id": "ssn:hasProperty"
+    },
+    "is property of": {
+      "@id": "ssn:isPropertyOf"
+    },
+    "personal mailbox": {
+      "@id": "foaf:mbox"
+    },
+    "affiliation": {
+      "@id": "schema:affiliation"
+    },
+    "citation": {
+      "@id": "schema:citation"
+    },
+    "funder": {
+      "@id": "schema:funder"
+    },
+    "uses instrument": {
+      "@id": "schema:instrument"
+    },
+    "logo": {
+      "@id": "schema:logo"
+    },
+    "usage instruction": {
+      "@id": "m4i:UsageInstruction"
+    },
+    "project end date": {
+      "@id": "m4i:endOfProject"
+    },
+    "has assignment timestamp": {
+      "@id": "m4i:hasAssignmentTimestamp"
+    },
+    "has boolean value": {
+      "@id": "m4i:hasBooleanValue"
+    },
+    "has date assignment created": {
+      "@id": "m4i:hasDateAssignmentCreated"
+    },
+    "has date assignment deleted": {
+      "@id": "m4i:hasDateAssignmentDeleted"
+    },
+    "has date assignment modified": {
+      "@id": "m4i:hasDateAssignmentModified"
+    },
+    "has date assignment valid from": {
+      "@id": "m4i:hasDateAssignmentValidFrom"
+    },
+    "has date assignment valid until": {
+      "@id": "m4i:hasDateAssignmentValidUntil"
+    },
+    "has maximum value": {
+      "@id": "m4i:hasMaximumValue"
+    },
+    "has minimum value": {
+      "@id": "m4i:hasMinimumValue"
+    },
+    "has numerical value": {
+      "@id": "m4i:hasNumericalValue"
+    },
+    "has ROR ID": {
+      "@id": "m4i:hasRorId"
+    },
+    "has step size": {
+      "@id": "m4i:hasStepSize"
+    },
+    "has string value": {
+      "@id": "m4i:hasStringValue"
+    },
+    "has symbol": {
+      "@id": "m4i:hasSymbol"
+    },
+    "has value": {
+      "@id": "m4i:hasValue"
+    },
+    "has variable description": {
+      "@id": "m4i:hasVariableDescription"
+    },
+    "has identifier": {
+      "@id": "m4i:identifier"
+    },
+    "has ORCID ID": {
+      "@id": "m4i:orcidId"
+    },
+    "has project ID": {
+      "@id": "m4i:projectReferenceID"
+    },
+    "project start date": {
+      "@id": "m4i:startOfProject"
+    },
+    "file size (in bytes)": {
+      "@id": "dcat:byteSize"
+    },
+    "spatial resolution (in metres)": {
+      "@id": "dcat:spatialResolutionInMeters"
+    },
+    "temporal resolution": {
+      "@id": "dcat:temporalResolution"
+    },
+    "first name": {
+      "@id": "foaf:firstName"
+    },
+    "last name": {
+      "@id": "foaf:lastName"
+    },
+    "salutation": {
+      "@id": "foaf:title"
+    },
+    "end time": {
+      "@id": "schema:endTime"
+    },
+    "start time": {
+      "@id": "schema:startTime"
+    },
+    "has timestamp": {
+      "@id": "schema:temporal"
+    },
+    "contact person": {
+      "@id": "m4i:ContactPerson"
+    },
+    "data collector": {
+      "@id": "m4i:DataCollector"
+    },
+    "data curator": {
+      "@id": "m4i:DataCurator"
+    },
+    "data manager": {
+      "@id": "m4i:DataManager"
+    },
+    "distributor": {
+      "@id": "m4i:Distributor"
+    },
+    "editor": {
+      "@id": "m4i:Editor"
+    },
+    "hosting institution": {
+      "@id": "m4i:HostingInstitution"
+    },
+    "other person": {
+      "@id": "m4i:Other"
+    },
+    "producer": {
+      "@id": "m4i:Producer"
+    },
+    "project leader": {
+      "@id": "m4i:ProjectLeader"
+    },
+    "project manager": {
+      "@id": "m4i:ProjectManager"
+    },
+    "project member": {
+      "@id": "m4i:ProjectMember"
+    },
+    "registration agency": {
+      "@id": "m4i:RegistrationAgency"
+    },
+    "registration authority": {
+      "@id": "m4i:RegistrationAuthority"
+    },
+    "related person": {
+      "@id": "m4i:RelatedPerson"
+    },
+    "research group": {
+      "@id": "m4i:ResearchGroup"
+    },
+    "researcher": {
+      "@id": "m4i:Researcher"
+    },
+    "rights holder": {
+      "@id": "m4i:RightsHolder"
+    },
+    "sponsor": {
+      "@id": "m4i:Sponsor"
+    },
+    "supervisor": {
+      "@id": "m4i:Supervisor"
+    },
+    "work package leader": {
+      "@id": "m4i:WorkPackageLeader"
+    },
+    "mathmod": "https://mardi4nfdi.de/mathmoddb#",
+    "uses": "mathmod:uses",
+    "describedAsDocumentedBy": "mathmod:describedAsDocumentedBy",
+    "has configuration": "m4i:usesConfiguration",
+    "has quantity kind": "m4i:hasKindOfQuantity",
+    "evaluates": "m4i:evaluates",
+    "extract": {
+      "@id": "cr:extract"
+    },
+    "jsonPath": {
+      "@id": "cr:jsonPath"
+    }
+  },
+  "@graph": [
+    {
+      "@id": "local:bm-linear-elastic-plate",
+      "@type": "m4i:Benchmark",
+      "label": "linear-elastic plate with hole",
+      "investigates": {
+        "@id": "https://portal.mardi4nfdi.de/entity/Q6775295"
+      },
+      "uses": {
+        "@id": "https://portal.mardi4nfdi.de/entity/Q6775296"
+      },
+      "evaluates": [
+        {
+          "@id": "local:metric_max_von_mises_stress_nodes"
+        }
+      ],
+      "has parameter set": [
+        {
+          "@id": "local:configuration_1"
+        },
+        {
+          "@id": "local:configuration_2"
+        },
+        {
+          "@id": "local:configuration_3"
+        },
+        {
+          "@id": "local:configuration_4"
+        },
+        {
+          "@id": "local:configuration_5"
+        },
+        {
+          "@id": "local:configuration_6"
+        }
+      ],
+      "describedAsDocumentedBy": {
+        "@id": "local:publication"
+      }
+    },
+    {
+      "@id": "https://portal.mardi4nfdi.de/entity/Q6775295",
+      "@type": "mathmod:ResearchProblem",
+      "label": "Plate with a hole"
+    },
+    {
+      "@id": "https://portal.mardi4nfdi.de/entity/Q6775296",
+      "@type": "mathmod:MathematicalModel",
+      "label": "plate with a hole: linear elasticity model"
+    },
+    {
+      "@id": "local:publication",
+      "@type": "mathmod:Publication",
+      "label": "Publication"
+    },
+    {
+      "@id": "local:field_max_von_mises_stress_nodes",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Double"
+      },
+      "represents": {
+        "@id": "local:variable_max_von_mises_stress_nodes"
+      },
+      "source": {
+        "@id": "local:source_max_von_mises_stress_nodes"
+      }
+    },
+    {
+      "@id": "local:metric_max_von_mises_stress_nodes",
+      "@type": "numerical variable",
+      "label": "max_von_mises_stress_nodes",
+      "has unit": {
+        "@id": "unit:BAR"
+      },
+      "has quantity kind": {
+        "@id": "http://qudt.org/vocab/quantitykind/Stress"
+      }
+    },
+    {
+      "@id": "local:source_max_von_mises_stress_nodes",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_max_von_mises_stress_nodes"
+      },
+      "file object": {
+        "@id": "local:summary_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_max_von_mises_stress_nodes",
+      "@type": "cr:DataSource",
+      "jsonPath": "/max_von_mises_stress_nodes/"
+    },
+    {
+      "@id": "local:simulation_run",
+      "@type": "processing step",
+      "label": "Simulation run",
+      "has input": [
+        {
+          "@id": "local:parameter_file_object"
+        }
+      ],
+      "has output": [
+        {
+          "@id": "local:summary_file_object"
+        }
+      ],
+      "has configuration": [
+        {
+          "@id": "local:configuration_1"
+        },
+        {
+          "@id": "local:configuration_2"
+        },
+        {
+          "@id": "local:configuration_3"
+        },
+        {
+          "@id": "local:configuration_4"
+        },
+        {
+          "@id": "local:configuration_5"
+        },
+        {
+          "@id": "local:configuration_6"
+        }
+      ],
+      "has employed tool": [
+        {
+          "@id": "local:software"
+        },
+        {
+          "@id": "local:ComputingSystem"
+        }
+      ]
+    },
+    {
+      "@id": "local:configuration_1",
+      "@type": "m4i:ParameterSet",
+      "label": "Configuration Element-Size 0.1",
+      "identifier": "1",
+      "has part": [
+        {
+          "@id": "local:variable_element_size_01"
+        },
+        {
+          "@id": "local:variable_radius"
+        },
+        {
+          "@id": "local:variable_length"
+        },
+        {
+          "@id": "local:variable_load"
+        },
+        {
+          "@id": "local:variable_element_order"
+        },
+        {
+          "@id": "local:variable_element_degree"
+        },
+        {
+          "@id": "local:variable_quadrature_rule"
+        },
+        {
+          "@id": "local:variable_quadrature_degree"
+        },
+        {
+          "@id": "local:variable_young_modulus"
+        },
+        {
+          "@id": "local:variable_poisson_ratio"
+        }
+      ]
+    },
+    {
+      "@id": "local:configuration_2",
+      "@type": "m4i:ParameterSet",
+      "label": "Configuration element-size 0.05",
+      "identifier": "05",
+      "has part": [
+        {
+          "@id": "local:variable_element_size_05"
+        },
+        {
+          "@id": "local:variable_radius"
+        },
+        {
+          "@id": "local:variable_length"
+        },
+        {
+          "@id": "local:variable_load"
+        },
+        {
+          "@id": "local:variable_element_order"
+        },
+        {
+          "@id": "local:variable_element_degree"
+        },
+        {
+          "@id": "local:variable_quadrature_rule"
+        },
+        {
+          "@id": "local:variable_quadrature_degree"
+        },
+        {
+          "@id": "local:variable_young_modulus"
+        },
+        {
+          "@id": "local:variable_poisson_ratio"
+        }
+      ]
+    },
+    {
+      "@id": "local:configuration_3",
+      "@type": "m4i:ParameterSet",
+      "label": "Configuration Element-Size 0.025",
+      "identifier": "025",
+      "has part": [
+        {
+          "@id": "local:variable_element_size_025"
+        },
+        {
+          "@id": "local:variable_radius"
+        },
+        {
+          "@id": "local:variable_length"
+        },
+        {
+          "@id": "local:variable_load"
+        },
+        {
+          "@id": "local:variable_element_order"
+        },
+        {
+          "@id": "local:variable_element_degree"
+        },
+        {
+          "@id": "local:variable_quadrature_rule"
+        },
+        {
+          "@id": "local:variable_quadrature_degree"
+        },
+        {
+          "@id": "local:variable_young_modulus"
+        },
+        {
+          "@id": "local:variable_poisson_ratio"
+        }
+      ]
+    },
+    {
+      "@id": "local:configuration_4",
+      "@type": "m4i:ParameterSet",
+      "label": "Configuration Element-Size 0.0125",
+      "identifier": "0125",
+      "has part": [
+        {
+          "@id": "local:variable_element_size_0125"
+        },
+        {
+          "@id": "local:variable_radius"
+        },
+        {
+          "@id": "local:variable_length"
+        },
+        {
+          "@id": "local:variable_load"
+        },
+        {
+          "@id": "local:variable_element_order"
+        },
+        {
+          "@id": "local:variable_element_degree"
+        },
+        {
+          "@id": "local:variable_quadrature_rule"
+        },
+        {
+          "@id": "local:variable_quadrature_degree"
+        },
+        {
+          "@id": "local:variable_young_modulus"
+        },
+        {
+          "@id": "local:variable_poisson_ratio"
+        }
+      ]
+    },
+    {
+      "@id": "local:configuration_5",
+      "@type": "m4i:ParameterSet",
+      "label": "Configuration Element-Size 0.00625",
+      "identifier": "00625",
+      "has part": [
+        {
+          "@id": "local:variable_element_size_00625"
+        },
+        {
+          "@id": "local:variable_radius"
+        },
+        {
+          "@id": "local:variable_length"
+        },
+        {
+          "@id": "local:variable_load"
+        },
+        {
+          "@id": "local:variable_element_order"
+        },
+        {
+          "@id": "local:variable_element_degree"
+        },
+        {
+          "@id": "local:variable_quadrature_rule"
+        },
+        {
+          "@id": "local:variable_quadrature_degree"
+        },
+        {
+          "@id": "local:variable_young_modulus"
+        },
+        {
+          "@id": "local:variable_poisson_ratio"
+        }
+      ]
+    },
+    {
+      "@id": "local:configuration_6",
+      "@type": "m4i:ParameterSet",
+      "label": "Configuration Element-Size 0.003125",
+      "identifier": "003125",
+      "has part": [
+        {
+          "@id": "local:variable_element_size_003125"
+        },
+        {
+          "@id": "local:variable_radius"
+        },
+        {
+          "@id": "local:variable_length"
+        },
+        {
+          "@id": "local:variable_load"
+        },
+        {
+          "@id": "local:variable_element_order"
+        },
+        {
+          "@id": "local:variable_element_degree"
+        },
+        {
+          "@id": "local:variable_quadrature_rule"
+        },
+        {
+          "@id": "local:variable_quadrature_degree"
+        },
+        {
+          "@id": "local:variable_young_modulus"
+        },
+        {
+          "@id": "local:variable_poisson_ratio"
+        }
+      ]
+    },
+    {
+      "@id": "local:variable_quadrature_rule",
+      "has string value": "gauss",
+      "label": "quadrature-rule"
+    },
+    {
+      "@id": "local:software",
+      "@type": "tool",
+      "label": "Fenics"
+    },
+    {
+      "@id": "local:ComputingSystem",
+      "@type": "tool",
+      "label": "Computing System"
+    },
+    {
+      "@id": "local:ComputeEnvironment",
+      "@type": "tool",
+      "label": "Compute Environment"
+    },
+    {
+      "@id": "local:parameter_file",
+      "@type": "File",
+      "encodingFormat": "application/json",
+      "name": "parameter.json"
+    },
+    {
+      "@id": "local:summary_file",
+      "@type": "File",
+      "encodingFormat": "application/json",
+      "name": "solution_metrics.json"
+    },
+    {
+      "@id": "local:parameter_file_object",
+      "@type": "cr:FileObject",
+      "label": "parameter.json"
+    },
+    {
+      "@id": "local:summary_file_object",
+      "@type": "cr:FileObject",
+      "label": "solution_metrics.json"
+    },
+    {
+      "@id": "local:variable_poisson_ratio",
+      "has numerical value": 0.3,
+      "label": "poisson-ratio"
+    },
+    {
+      "@id": "local:field_poisson_ratio",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_poisson_ratio"
+      },
+      "source": {
+        "@id": "local:source_poisson_ratio"
+      }
+    },
+    {
+      "@id": "local:source_poisson_ratio",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_poisson_ratio"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_poisson_ratio",
+      "@type": "cr:DataSource",
+      "jsonPath": "/poisson-ratio/value"
+    },
+    {
+      "@id": "local:field_young_modulus",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_young_modulus"
+      },
+      "source": {
+        "@id": "local:source_young_modulus"
+      }
+    },
+    {
+      "@id": "local:variable_young_modulus",
+      "has numerical value": 210000000000.0,
+      "has unit": {
+        "@id": "unit:PA"
+      },
+      "label": "young-modulus"
+    },
+    {
+      "@id": "local:source_young_modulus",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_young_modulus"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_young_modulus",
+      "@type": "cr:DataSource",
+      "jsonPath": "/young-modulus/value"
+    },
+    {
+      "@id": "local:field_quadrature_degree",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Integer"
+      },
+      "represents": {
+        "@id": "local:variable_quadrature_degree"
+      },
+      "source": {
+        "@id": "local:source_quadrature_degree"
+      }
+    },
+    {
+      "@id": "local:variable_quadrature_degree",
+      "has numerical value": 1,
+      "label": "quadrature-degree"
+    },
+    {
+      "@id": "local:source_quadrature_degree",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_quadrature_degree"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_quadrature_degree",
+      "@type": "cr:DataSource",
+      "jsonPath": "/quadrature-degree/value"
+    },
+    {
+      "@id": "local:field_quadrature_rule",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Text"
+      },
+      "represents": {
+        "@id": "local:variable_quadrature_rule"
+      },
+      "source": {
+        "@id": "local:source_quadrature_rule"
+      }
+    },
+    {
+      "@id": "local:variable_quadrature_rule",
+      "has string value": "gauss",
+      "label": "quadrature-rule"
+    },
+    {
+      "@id": "local:source_quadrature_rule",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_quadrature_rule"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_quadrature_rule",
+      "@type": "cr:DataSource",
+      "jsonPath": "/quadrature-rule/value"
+    },
+    {
+      "@id": "local:field_element_degree",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Integer"
+      },
+      "represents": {
+        "@id": "local:variable_element_degree"
+      },
+      "source": {
+        "@id": "local:source_element_degree"
+      }
+    },
+    {
+      "@id": "local:variable_element_degree",
+      "has numerical value": 1,
+      "label": "element-degree"
+    },
+    {
+      "@id": "local:source_element_degree",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_element_degree"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_element_degree",
+      "@type": "cr:DataSource",
+      "jsonPath": "/element-degree/value"
+    },
+    {
+      "@id": "local:field_element_order",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Integer"
+      },
+      "represents": {
+        "@id": "local:variable_element_order"
+      },
+      "source": {
+        "@id": "local:source_element_order"
+      }
+    },
+    {
+      "@id": "local:variable_element_order",
+      "has numerical value": 1,
+      "label": "element-order"
+    },
+    {
+      "@id": "local:source_element_order",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_element_order"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_element_order",
+      "@type": "cr:DataSource",
+      "jsonPath": "/element-order/value"
+    },
+    {
+      "@id": "local:field_load",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_load"
+      },
+      "source": {
+        "@id": "local:source_load"
+      }
+    },
+    {
+      "@id": "local:variable_load",
+      "has numerical value": 100.0,
+      "has unit": {
+        "@id": "unit:MegaPA"
+      },
+      "label": "load"
+    },
+    {
+      "@id": "local:source_load",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_load"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_load",
+      "@type": "cr:DataSource",
+      "jsonPath": "/load/value"
+    },
+    {
+      "@id": "local:field_length",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_length"
+      },
+      "source": {
+        "@id": "local:source_length"
+      }
+    },
+    {
+      "@id": "local:variable_length",
+      "has numerical value": 1.0,
+      "has unit": {
+        "@id": "unit:M"
+      },
+      "label": "length"
+    },
+    {
+      "@id": "local:source_length",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_length"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_length",
+      "@type": "cr:DataSource",
+      "jsonPath": "/length/value"
+    },
+    {
+      "@id": "local:field_radius",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_radius"
+      },
+      "source": {
+        "@id": "local:source_radius"
+      }
+    },
+    {
+      "@id": "local:variable_radius",
+      "has numerical value": 0.33,
+      "has unit": {
+        "@id": "unit:M"
+      },
+      "label": "radius"
+    },
+    {
+      "@id": "local:source_radius",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_radius"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_radius",
+      "@type": "cr:DataSource",
+      "jsonPath": "/radius/value"
+    },
+    {
+      "@id": "local:field_element_size_01",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_element_size_01"
+      },
+      "source": {
+        "@id": "local:source_element_size"
+      }
+    },
+    {
+      "@id": "local:field_element_size_05",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_element_size_05"
+      },
+      "source": {
+        "@id": "local:source_element_size"
+      }
+    },
+    {
+      "@id": "local:field_element_size_025",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_element_size_025"
+      },
+      "source": {
+        "@id": "local:source_element_size"
+      }
+    },
+    {
+      "@id": "local:field_element_size_0125",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_element_size_0125"
+      },
+      "source": {
+        "@id": "local:source_element_size"
+      }
+    },
+    {
+      "@id": "local:field_element_size_00625",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_element_size_00625"
+      },
+      "source": {
+        "@id": "local:source_element_size"
+      }
+    },
+    {
+      "@id": "local:field_element_size_003125",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_element_size_003125"
+      },
+      "source": {
+        "@id": "local:source_element_size"
+      }
+    },
+    {
+      "@id": "local:variable_element_size_01",
+      "has numerical value": 0.1,
+      "has unit": {
+        "@id": "unit:M"
+      },
+      "label": "element-size"
+    },
+    {
+      "@id": "local:variable_element_size_05",
+      "has numerical value": 0.05,
+      "has unit": {
+        "@id": "unit:M"
+      },
+      "label": "element-size"
+    },
+    {
+      "@id": "local:variable_element_size_025",
+      "has numerical value": 0.025,
+      "has unit": {
+        "@id": "unit:M"
+      },
+      "label": "element-size"
+    },
+    {
+      "@id": "local:variable_element_size_0125",
+      "has numerical value": 0.0125,
+      "has unit": {
+        "@id": "unit:M"
+      },
+      "label": "element-size"
+    },
+    {
+      "@id": "local:variable_element_size_00625",
+      "has numerical value": 0.00625,
+      "has unit": {
+        "@id": "unit:M"
+      },
+      "label": "element-size"
+    },
+    {
+      "@id": "local:variable_element_size_003125",
+      "has numerical value": 0.003125,
+      "has unit": {
+        "@id": "unit:M"
+      },
+      "label": "element-size"
+    },
+    {
+      "@id": "local:source_element_size",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_element_size"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_element_size",
+      "@type": "cr:DataSource",
+      "jsonPath": "/element-size/value"
+    }
+  ]
+}
