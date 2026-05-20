@@ -37,14 +37,14 @@ def create_kratos_input(
 
     E = (
         ureg.Quantity(
-            parameters["young_modulus[Pa]"], "Pa"
+            parameters["youngs_modulus[Pa]"], "Pa"
         )
         .to_base_units()
         .magnitude
     )
     nu = (
         ureg.Quantity(
-            parameters["poisson_ratio"], ""
+            parameters["poissons_ratio"], ""
         )
         .to_base_units()
         .magnitude
@@ -60,7 +60,7 @@ def create_kratos_input(
         .magnitude
     )
     load = (
-        ureg.Quantity(parameters["load[MPa]"], "MPa")
+        ureg.Quantity(parameters["load[Pa]"], "Pa")
         .to_base_units()
         .magnitude
     )

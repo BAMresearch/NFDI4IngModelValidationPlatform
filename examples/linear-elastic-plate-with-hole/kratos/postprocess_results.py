@@ -24,14 +24,14 @@ def postprocess_results(input_parameter_file, input_result_vtk, output_metrics_f
 
     E = (
         ureg.Quantity(
-            parameters["young_modulus[Pa]"], "Pa"
+            parameters["youngs_modulus[Pa]"], "Pa"
         )
         .to_base_units()
         .magnitude
     )
     nu = (
         ureg.Quantity(
-            parameters["poisson_ratio"], ""
+            parameters["poissons_ratio"], ""
         )
         .to_base_units()
         .magnitude
@@ -47,25 +47,7 @@ def postprocess_results(input_parameter_file, input_result_vtk, output_metrics_f
         .magnitude
     )
     load = (
-        ureg.Quantity(parameters["load[MPa]"], "MPa")
-        .to_base_units()
-        .magnitude
-    )
-
-    displacement_evaluation_point = parameters["displacement_evaluation_point[m]"]
-    displacement_evaluation_x = (
-        ureg.Quantity(
-            displacement_evaluation_point[0],
-            "m",
-        )
-        .to_base_units()
-        .magnitude
-    )
-    displacement_evaluation_y = (
-        ureg.Quantity(
-            displacement_evaluation_point[1],
-            "m",
-        )
+        ureg.Quantity(parameters["load[Pa]"], "Pa")
         .to_base_units()
         .magnitude
     )
@@ -110,16 +92,17 @@ def postprocess_results(input_parameter_file, input_result_vtk, output_metrics_f
     reaction_force_left_boundary_x = float(np.sum(reaction[left_boundary_mask, 0]))
     reaction_force_left_boundary_y = float(np.sum(reaction[left_boundary_mask, 1]))
 
+    # Compute displacement at the top-right corner
     probe_points = pyvista.PolyData(
-        np.array([[displacement_evaluation_x, displacement_evaluation_y, 0.0]], dtype=float)
+        np.array([[1.0, 1.0, 0.0]], dtype=float)
     )
     sampled = probe_points.sample(mesh)
     displacement_sampled = sampled.point_data.get("DISPLACEMENT")
     if displacement_sampled is None:
-        closest_id = mesh.find_closest_point([displacement_evaluation_x, displacement_evaluation_y, 0.0])
-        displacement_x_at_evaluation_point = float(displacement[closest_id, 0])
+        closest_id = mesh.find_closest_point([1.0, 1.0, 0.0])
+        displacement_at_evaluation_point = [float(displacement[closest_id, 0]), float(displacement[closest_id, 1])]
     else:
-        displacement_x_at_evaluation_point = float(displacement_sampled[0, 0])
+        displacement_at_evaluation_point = [float(displacement_sampled[0, 0]), float(displacement_sampled[0, 1])]
 
     # Compute nodal displacement error (Euclidean norm of error vector at each node)
     nodal_displacement_error = np.linalg.norm(displacement - u_ref, axis=1)
@@ -135,7 +118,7 @@ def postprocess_results(input_parameter_file, input_result_vtk, output_metrics_f
         "max_displacement_error[m]": max_displacement_error_nodes,
         "reaction_force_left_boundary_x[N]": reaction_force_left_boundary_x,
         "reaction_force_left_boundary_y[N]": reaction_force_left_boundary_y,
-        f"displacement_x_at_evaluation_point (x={displacement_evaluation_x}, y={displacement_evaluation_y})[m]": displacement_x_at_evaluation_point,
+        "displacement_top_right_corner[m]": displacement_at_evaluation_point,  # [ux, uy]
     }
     with open(output_metrics_file, "w") as f:
         json.dump(metrics, f, indent=4)

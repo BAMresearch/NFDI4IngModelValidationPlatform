@@ -46,14 +46,14 @@ def run_fenics_simulation(
 
     E = (
         ureg.Quantity(
-            parameters["young_modulus[Pa]"], "Pa"
+            parameters["youngs_modulus[Pa]"], "Pa"
         )
         .to_base_units()
         .magnitude
     )
     nu = (
         ureg.Quantity(
-            parameters["poisson_ratio"], ""
+            parameters["poissons_ratio"], ""
         )
         .to_base_units()
         .magnitude
@@ -69,24 +69,7 @@ def run_fenics_simulation(
         .magnitude
     )
     load = (
-        ureg.Quantity(parameters["load[MPa]"], "MPa")
-        .to_base_units()
-        .magnitude
-    )
-    displacement_evaluation_point = parameters["displacement_evaluation_point[m]"]
-    displacement_evaluation_x = (
-        ureg.Quantity(
-            displacement_evaluation_point[0],
-            "m",
-        )
-        .to_base_units()
-        .magnitude
-    )
-    displacement_evaluation_y = (
-        ureg.Quantity(
-            displacement_evaluation_point[1],
-            "m",
-        )
+        ureg.Quantity(parameters["load[Pa]"], "Pa")
         .to_base_units()
         .magnitude
     )
@@ -198,7 +181,7 @@ def run_fenics_simulation(
 
     # Evaluate displacement at the specified evaluation point
     displacement_eval_point = np.array(
-        [[displacement_evaluation_x, displacement_evaluation_y, 0.0]],
+        [[1.0, 1.0, 0.0]],
         dtype=np.float64,
     )
     tree = df.geometry.bb_tree(mesh, mesh.topology.dim)
@@ -208,12 +191,13 @@ def run_fenics_simulation(
     colliding_cells = df.geometry.compute_colliding_cells(
         mesh, cell_candidates, displacement_eval_point
     )
-    local_displacement_x = None
+    local_displacement = None
     if len(colliding_cells.links(0)) > 0:
         cell = colliding_cells.links(0)[0]
-        local_displacement_x = u.eval(
+        # u.eval returns a 2D array: shape (num_points, value_size)
+        local_displacement = u.eval(
             displacement_eval_point, np.array([cell], dtype=np.int32)
-        )[0]
+        )[0].tolist()  # [ux, uy]
 
 
     def project(
@@ -307,22 +291,22 @@ def run_fenics_simulation(
         np.max(mises_qp.x.array), op=MPI.MAX
     )
     
-    displacement_x_at_evaluation_point = None
+    displacement_at_evaluation_point = None
     if MPI.COMM_WORLD.rank == 0:
-        displacement_x_candidates = (
-            MPI.COMM_WORLD.gather(local_displacement_x, root=0) or []
+        displacement_candidates = (
+            MPI.COMM_WORLD.gather(local_displacement, root=0) or []
         )
-        for value in displacement_x_candidates:
+        for value in displacement_candidates:
             if value is not None:
-                displacement_x_at_evaluation_point = value
+                displacement_at_evaluation_point = value
                 break
 
-        if displacement_x_at_evaluation_point is None:
+        if displacement_at_evaluation_point is None:
             raise ValueError(
                 "Could not evaluate displacement at the configured evaluation point."
             )
     else:
-        MPI.COMM_WORLD.gather(local_displacement_x, root=0)
+        MPI.COMM_WORLD.gather(local_displacement, root=0)
 
     # Save metrics
     metrics = {
@@ -332,7 +316,7 @@ def run_fenics_simulation(
         "max_displacement_error[m]": max_displacement_error_nodes,
         "reaction_force_left_boundary_x[N]": reaction_left_x,
         "reaction_force_left_boundary_y[N]": reaction_left_y,
-        f"displacement_x_at_evaluation_point (x={displacement_evaluation_x}, y={displacement_evaluation_y})[m]": displacement_x_at_evaluation_point,
+        "displacement_top_right_corner[m]": displacement_at_evaluation_point,  # [ux, uy]
     }
 
     if MPI.COMM_WORLD.rank == 0:
