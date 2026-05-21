@@ -79,7 +79,144 @@ class ProvenanceAnalyzer:
             var = "_" + var
         return var
 
-    def build_dynamic_query(self, parameters, metrics, tools=None, named_graph=None):
+    def _sparql_string_literal(self, value: str) -> str:
+        """
+        Escape a Python string for safe use as a SPARQL string literal.
+        """
+        return value.replace("\\", "\\\\").replace('"', '\\"')
+
+    def build_dynamic_rocrate_query(
+        self,
+        parameters,
+        metrics,
+        tools=None,
+        named_graph=None,
+        order_by=None,
+        include_tool=False,
+    ):
+        """
+        Generate a dynamic SPARQL query for the schema.org CreateAction structure
+        used by the newer RO-Crate provenance output.
+
+        The query extracts run parameters from:
+            CreateAction -> schema:object -> PropertyValue -> schema:exampleOfWork
+
+        and metrics from:
+            CreateAction -> schema:result -> PropertyValue
+
+        Args:
+            parameters (list): Parameter names matched via schema:name.
+            metrics (list): Metric names matched via schema:name.
+            tools (list, optional): Tool name substrings to filter by. Matching is
+                                   case-insensitive and uses schema:instrument.
+            named_graph (str, optional): URI of a named graph to query within.
+            order_by (str, optional): Parameter or metric name to order results by.
+                                     Defaults to the first parameter, if available.
+            include_tool (bool, optional): Include ?tool_name in SELECT even when
+                                          no tool filter is provided.
+
+        Returns:
+            str: A complete SPARQL query string ready to execute.
+        """
+
+        all_names = parameters + metrics
+        var_map = {name: self.sanitize_variable_name(name) for name in all_names}
+
+        select_names = list(all_names)
+        select_vars = " ".join(f"?{var_map[name]}" for name in select_names)
+        should_query_tool = include_tool or bool(tools)
+        if should_query_tool:
+            select_vars = f"{select_vars} ?tool_name"
+
+        action_links = [
+            "?runAction a schema:CreateAction .",
+            "?runAction schema:object ?configuration .",
+            "?configuration a schema:PropertyValue .",
+        ]
+
+        parameter_blocks = []
+        for name in parameters:
+            safe_name = var_map[name]
+            escaped_name = self._sparql_string_literal(name)
+            parameter_blocks.append(
+                f"""
+                ?configuration schema:exampleOfWork ?param_{safe_name} .
+                ?param_{safe_name} a <https://bioschemas.org/FormalParameter> ;
+                    schema:name "{escaped_name}" ;
+                    schema:defaultValue ?{safe_name} .
+                """.strip()
+            )
+
+        metric_blocks = []
+        for name in metrics:
+            safe_name = var_map[name]
+            escaped_name = self._sparql_string_literal(name)
+            metric_blocks.append(
+                f"""
+                ?runAction schema:result ?metric_{safe_name} .
+                ?metric_{safe_name} a schema:PropertyValue ;
+                    schema:name "{escaped_name}" ;
+                    schema:defaultValue ?{safe_name} .
+                """.strip()
+            )
+
+        tool_block = ""
+        if should_query_tool:
+            tool_block = """
+                ?runAction schema:instrument ?tool .
+                ?tool a schema:SoftwareApplication ;
+                    schema:name ?tool_name .
+            """.strip()
+            if tools:
+                filter_cond = " || ".join(
+                    f'CONTAINS(LCASE(STR(?tool_name)), "{self._sparql_string_literal(t.lower())}")'
+                    for t in tools
+                )
+                tool_block += f"\nFILTER({filter_cond}) ."
+
+        inner_query = "\n".join(
+            block
+            for block in (
+                "\n".join(action_links),
+                "\n".join(parameter_blocks),
+                "\n".join(metric_blocks),
+                tool_block,
+            )
+            if block
+        )
+
+        where_block = (
+            f"GRAPH <{named_graph}> {{\n{inner_query}\n}}"
+            if named_graph
+            else inner_query
+        )
+
+        order_name = order_by or (parameters[0] if parameters else None)
+        order_clause = ""
+        if order_name:
+            order_var = var_map.get(order_name, self.sanitize_variable_name(order_name))
+            order_clause = f"\n        ORDER BY ?{order_var}"
+
+        query = f"""
+        PREFIX schema: <http://schema.org/>
+
+        SELECT {select_vars}
+        WHERE {{
+            {where_block}
+        }}{order_clause}
+        """.strip()
+
+        return query
+
+    def build_dynamic_query(
+        self,
+        parameters,
+        metrics,
+        tools=None,
+        named_graph=None,
+        query_structure="legacy",
+        order_by=None,
+    ):
         """
         Generate a dynamic SPARQL query to extract m4i:Method instances with specified
         parameters and metrics.
@@ -94,10 +231,26 @@ class ProvenanceAnalyzer:
                                    Case-insensitive matching. Defaults to None.
             named_graph (str, optional): URI of a named graph to query within.
                                         If None, queries the default graph. Defaults to None.
+            query_structure (str, optional): Query structure to generate. Use
+                                            "legacy" for the existing m4i query or
+                                            "rocrate" for the schema.org
+                                            CreateAction query.
+            order_by (str, optional): Parameter or metric name to order by when
+                                     query_structure is "rocrate".
 
         Returns:
             str: A complete SPARQL query string ready to execute.
         """
+
+        if query_structure in {"rocrate", "create_action", "schema"}:
+            return self.build_dynamic_rocrate_query(
+                parameters=parameters,
+                metrics=metrics,
+                tools=tools,
+                named_graph=named_graph,
+                order_by=order_by,
+                include_tool=bool(tools),
+            )
 
         all_names = parameters + metrics
         # Map original names to safe SPARQL variable names

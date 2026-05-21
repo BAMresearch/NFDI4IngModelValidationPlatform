@@ -567,6 +567,12 @@
       "evaluates": [
         {
           "@id": "local:metric_max_von_mises_stress_nodes"
+        },
+        {
+          "@id": "local:metric_max_von_mises_stress_gauss_points"
+        },
+        {
+          "@id": "local:metric_l2_error_displacement"
         }
       ],
       "has parameter set": [
@@ -632,6 +638,56 @@
         "@id": "http://qudt.org/vocab/quantitykind/Stress"
       }
     },
+
+    {
+      "@id": "local:field_max_von_mises_stress_gauss_points",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Double"
+      },
+      "represents": {
+        "@id": "local:variable_max_von_mises_stress_gauss_points"
+      },
+      "source": {
+        "@id": "local:source_max_von_mises_stress_gauss_points"
+      }
+    },
+    {
+      "@id": "local:metric_max_von_mises_stress_gauss_points",
+      "@type": "numerical variable",
+      "label": "max_von_mises_stress_gauss_points",
+      "has unit": {
+        "@id": "unit:BAR"
+      },
+      "has quantity kind": {
+        "@id": "http://qudt.org/vocab/quantitykind/Stress"
+      }
+    },
+
+    {
+      "@id": "local:field_l2_error_displacement",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Double"
+      },
+      "represents": {
+        "@id": "local:variable_l2_error_displacement"
+      },
+      "source": {
+        "@id": "local:source_l2_error_displacement"
+      }
+    },
+    {
+      "@id": "local:metric_l2_error_displacement",
+      "@type": "numerical variable",
+      "label": "l2_error_displacement",
+      "has unit": {
+        "@id": "unit:M"
+      },
+      "has quantity kind": {
+        "@id": "http://qudt.org/vocab/quantitykind/Displacement"
+      }
+    },
     {
       "@id": "local:source_max_von_mises_stress_nodes",
       "@type": "cr:DataSource",
@@ -646,6 +702,39 @@
       "@id": "local:extract_max_von_mises_stress_nodes",
       "@type": "cr:DataSource",
       "jsonPath": "/max_von_mises_stress_nodes/"
+    },
+
+
+    {
+      "@id": "local:source_max_von_mises_stress_gauss_points",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_max_von_mises_stress_gauss_points"
+      },
+      "file object": {
+        "@id": "local:summary_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_max_von_mises_stress_gauss_points",
+      "@type": "cr:DataSource",
+      "jsonPath": "/max_von_mises_stress_gauss_points/"
+    },
+
+    {
+      "@id": "local:source_l2_error_displacement",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_l2_error_displacement"
+      },
+      "file object": {
+        "@id": "local:summary_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_l2_error_displacement",
+      "@type": "cr:DataSource",
+      "jsonPath": "/l2_error_displacement/"
     },
     {
       "@id": "local:simulation_run",
