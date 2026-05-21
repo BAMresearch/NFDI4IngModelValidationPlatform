@@ -17,5 +17,6 @@ dependencies:
   - numpy
   - pip
   - pip:
+      - rocrate
       - roc-validator
       - rohub 
