@@ -24,12 +24,12 @@ def msh_to_mdpa(parameter_file: str, mesh_file: str, mdpa_file: str):
     with open(parameter_file) as f:
         parameters = json.load(f)
     radius = (
-        ureg.Quantity(parameters["radius"]["value"], parameters["radius"]["unit"])
+        ureg.Quantity(parameters["radius[m]"], "m")
         .to_base_units()
         .magnitude
     )
     L = (
-        ureg.Quantity(parameters["length"]["value"], parameters["length"]["unit"])
+        ureg.Quantity(parameters["length[m]"], "m")
         .to_base_units()
         .magnitude
     )

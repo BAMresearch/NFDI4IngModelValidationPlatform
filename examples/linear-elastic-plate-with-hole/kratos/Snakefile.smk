@@ -9,6 +9,18 @@ rule all:
         "solution_metrics.json",
         "solution_field_data.zip"
 
+rule create_mesh:    
+    input:
+        script = "create_mesh.py",
+        parameters = "parameters.json",
+    output:
+        mesh = "mesh.msh",
+    conda: "environment_mesh.yml"
+    shell:
+        """
+        python3 {input.script} --input_parameter_file {input.parameters} --output_mesh_file {output.mesh}
+        """
+
 rule mesh_to_mdpa:
     input:
         parameters = "parameters.json",

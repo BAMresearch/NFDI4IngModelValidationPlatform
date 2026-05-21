@@ -36,6 +36,16 @@ shared_env_dir.mkdir(parents=True, exist_ok=True)
 
 ####################################################################################################
 ####################################################################################################
+# Simulation tool metadata (to be included in the RO-Crate)
+####################################################################################################
+####################################################################################################
+
+tool_name = "fenics"
+tool_uri =  "https://github.com/FEniCS/dolfinx"
+tool_version = "0.9.0"
+
+####################################################################################################
+####################################################################################################
 # Conditional execution of parameter configurations 
 ####################################################################################################
 ####################################################################################################
@@ -43,7 +53,7 @@ shared_env_dir.mkdir(parents=True, exist_ok=True)
 for file in root_unzipped_benchmark_dir.glob("parameters_*.json"):
     with open(file, "r") as f:
         data = json.load(f)
-        if data.get("element-size").get("value") >= 0.025:
+        if data.get("element_size[m]") >= 0.025:
 
             # Create output directory for the configuration
             output_dir = root_unzipped_benchmark_dir / "results" / data.get("configuration")

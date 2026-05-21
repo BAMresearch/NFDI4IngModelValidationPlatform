@@ -24,48 +24,30 @@ def postprocess_results(input_parameter_file, input_result_vtk, output_metrics_f
 
     E = (
         ureg.Quantity(
-            parameters["young-modulus"]["value"], parameters["young-modulus"]["unit"]
+            parameters["youngs_modulus[Pa]"], "Pa"
         )
         .to_base_units()
         .magnitude
     )
     nu = (
         ureg.Quantity(
-            parameters["poisson-ratio"]["value"], parameters["poisson-ratio"]["unit"]
+            parameters["poissons_ratio"], ""
         )
         .to_base_units()
         .magnitude
     )
     radius = (
-        ureg.Quantity(parameters["radius"]["value"], parameters["radius"]["unit"])
+        ureg.Quantity(parameters["radius[m]"], "m")
         .to_base_units()
         .magnitude
     )
     L = (
-        ureg.Quantity(parameters["length"]["value"], parameters["length"]["unit"])
+        ureg.Quantity(parameters["length[m]"], "m")
         .to_base_units()
         .magnitude
     )
     load = (
-        ureg.Quantity(parameters["load"]["value"], parameters["load"]["unit"])
-        .to_base_units()
-        .magnitude
-    )
-
-    displacement_evaluation_point = parameters["displacement-evaluation-point"]
-    displacement_evaluation_x = (
-        ureg.Quantity(
-            displacement_evaluation_point["x"]["value"],
-            displacement_evaluation_point["x"]["unit"],
-        )
-        .to_base_units()
-        .magnitude
-    )
-    displacement_evaluation_y = (
-        ureg.Quantity(
-            displacement_evaluation_point["y"]["value"],
-            displacement_evaluation_point["y"]["unit"],
-        )
+        ureg.Quantity(parameters["load[Pa]"], "Pa")
         .to_base_units()
         .magnitude
     )
@@ -77,10 +59,8 @@ def postprocess_results(input_parameter_file, input_result_vtk, output_metrics_f
         L=L,
         load=load,
     )
-    # Compute maximum von Mises stress at nodes and Gauss points.
-    max_von_mises_stress_nodes = float(np.max(mesh.point_data["VON_MISES_STRESS"]))
-
-    max_von_mises_stress_gauss_points = max_von_mises_stress_nodes
+    # Compute maximum von Mises stress at Gauss points.
+    max_von_mises_stress_gauss_points = 0
     for key, values in mesh.cell_data.items():
         if "VON_MISES_STRESS" in key:
             max_von_mises_stress_gauss_points = float(np.max(values))
@@ -112,24 +92,33 @@ def postprocess_results(input_parameter_file, input_result_vtk, output_metrics_f
     reaction_force_left_boundary_x = float(np.sum(reaction[left_boundary_mask, 0]))
     reaction_force_left_boundary_y = float(np.sum(reaction[left_boundary_mask, 1]))
 
+    # Compute displacement at the top-right corner
     probe_points = pyvista.PolyData(
-        np.array([[displacement_evaluation_x, displacement_evaluation_y, 0.0]], dtype=float)
+        np.array([[1.0, 1.0, 0.0]], dtype=float)
     )
     sampled = probe_points.sample(mesh)
     displacement_sampled = sampled.point_data.get("DISPLACEMENT")
     if displacement_sampled is None:
-        closest_id = mesh.find_closest_point([displacement_evaluation_x, displacement_evaluation_y, 0.0])
-        displacement_x_at_evaluation_point = float(displacement[closest_id, 0])
+        closest_id = mesh.find_closest_point([1.0, 1.0, 0.0])
+        displacement_at_evaluation_point = [float(displacement[closest_id, 0]), float(displacement[closest_id, 1])]
     else:
-        displacement_x_at_evaluation_point = float(displacement_sampled[0, 0])
+        displacement_at_evaluation_point = [float(displacement_sampled[0, 0]), float(displacement_sampled[0, 1])]
+
+    # Compute nodal displacement error (Euclidean norm of error vector at each node)
+    nodal_displacement_error = np.linalg.norm(displacement - u_ref, axis=1)
+    max_displacement_error_nodes = float(np.max(nodal_displacement_error))
+    
+    # Compute the number of dofs
+    num_dofs = int(mesh.n_points * 2)
 
     metrics = {
-        "max_von_mises_stress_nodes": max_von_mises_stress_nodes,
-        "max_von_mises_stress_gauss_points": max_von_mises_stress_gauss_points,
-        "l2_error_displacement": l2_error_displacement,
-        "reaction_force_left_boundary_x": reaction_force_left_boundary_x,
-        "reaction_force_left_boundary_y": reaction_force_left_boundary_y,
-        f"displacement_x_at_evaluation_point (x={displacement_evaluation_x}, y={displacement_evaluation_y})": displacement_x_at_evaluation_point,
+        "number_of_dofs[-]": num_dofs,
+        "max_von_mises_stress[Pa]": max_von_mises_stress_gauss_points,
+        "l2_error_displacement[m]": l2_error_displacement,
+        "max_displacement_error[m]": max_displacement_error_nodes,
+        "reaction_force_left_boundary_x[N]": reaction_force_left_boundary_x,
+        "reaction_force_left_boundary_y[N]": reaction_force_left_boundary_y,
+        "displacement_top_right_corner[m]": displacement_at_evaluation_point,  # [ux, uy]
     }
     with open(output_metrics_file, "w") as f:
         json.dump(metrics, f, indent=4)

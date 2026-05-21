@@ -54,25 +54,12 @@ jobs:
             --report-metadata4ing-config metadata4ing.config \
             --report-metadata4ing-filename $SNAKEMAKE_RESULT_FILE
 
-      - name: run_linear-elastic-plate-with-hole-benchmarks_nextflow
-        shell: bash -l {0}
-        run: |
-          cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
-          nextflow run main.nf -params-file workflow_config.json -c ../common/nextflow.config -plugins nf-prov@1.4.0
-
       - name: Archive Linear Elastic plate with a hole benchmark data for snakemake
         uses: actions/upload-artifact@v4
         with:
             name: snakemake_results_linear-elastic-plate-with-hole
             path: |
               benchmarks/linear-elastic-plate-with-hole/${{ env.SNAKEMAKE_RESULT_FILE }}.zip
-
-      - name: Archive Linear Elastic plate with a hole benchmark data for nextflow
-        uses: actions/upload-artifact@v4
-        with:
-            name: nextflow_results_linear-elastic-plate-with-hole
-            path: |
-              benchmarks/linear-elastic-plate-with-hole/nextflow_results/
 
   process-artifacts:
     runs-on: ubuntu-latest

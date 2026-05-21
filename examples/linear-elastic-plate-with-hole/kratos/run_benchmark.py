@@ -36,6 +36,16 @@ shared_env_dir.mkdir(parents=True, exist_ok=True)
 
 ####################################################################################################
 ####################################################################################################
+# Simulation tool metadata (to be included in the RO-Crate)
+####################################################################################################
+####################################################################################################
+
+tool_name = "kratos"
+tool_uri =  "https://github.com/KratosMultiphysics/Kratos"
+tool_version = "10.3.1"
+
+####################################################################################################
+####################################################################################################
 # Conditional execution of parameter configurations 
 ####################################################################################################
 ####################################################################################################
@@ -43,7 +53,7 @@ shared_env_dir.mkdir(parents=True, exist_ok=True)
 for file in root_unzipped_benchmark_dir.glob("parameters_*.json"):
     with open(file, "r") as f:
         data = json.load(f)
-        if data.get("element-size").get("value") >= 0.025:
+        if data.get("element_size[m]") >= 0.025:
 
             # Create output directory for the configuration
             output_dir = root_unzipped_benchmark_dir / "results" / data.get("configuration")
@@ -60,11 +70,8 @@ for file in root_unzipped_benchmark_dir.glob("parameters_*.json"):
                         continue
                     else:
                         shutil.copy(item, output_dir / item.name)
-                            
-            # Run the Snakemake workflow from the benchmark to create the mesh for the configuration
-            subprocess.run(["snakemake", "--snakefile", "Snakefile", "--use-conda", "--force", "--cores", "all", "--conda-prefix", str(shared_env_dir), "--until", "create_mesh"], check=True, cwd=output_dir)
-            
-            # Run the Snakemake workflow to run the simulation and postprocess results for the configuration
-            subprocess.run(["snakemake", "--snakefile", "Snakefile_kratos.smk", "--use-conda", "--force", "--cores", "all", "--conda-prefix", str(shared_env_dir)], check=True, cwd=output_dir)
+                              
+            # Run the Snakemake workflow for the configuration
+            subprocess.run(["snakemake", "--snakefile", "Snakefile.smk", "--use-conda", "--force", "--cores", "all", "--conda-prefix", str(shared_env_dir)], check=True, cwd=output_dir)
             print("Workflow executed successfully.")            
         
