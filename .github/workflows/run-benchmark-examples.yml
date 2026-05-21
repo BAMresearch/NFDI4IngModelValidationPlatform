@@ -14,6 +14,7 @@ on:
 
 env:
   CACHE_NUMBER: 1  # increase to reset cache manually
+  EXAMPLE_BENCHMARK_FILE: examples/linear-elastic-plate-with-hole/benchmark.json
 
 jobs:
   run-examples:
@@ -75,4 +76,61 @@ jobs:
             path: |
               examples/linear-elastic-plate-with-hole/kratos/results/
 
+  process-artifacts:
+    runs-on: ubuntu-latest
+    needs: run-examples
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - tool_slug: fenics
+            software_name: Fenics
+            results_artifact: fenics_results_linear-elastic-plate-with-hole
+            rocrate_filename: Fenics-RoCrate.zip
+            plot_filename: fenics-element-size-vs-stress-plot.pdf
+            
+    steps:
+      - name: Checkout repo content
+        uses: actions/checkout@v2
+
+      - name: Download ${{ matrix.software_name }} results artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.results_artifact }}
+          path: ./simulation-results/${{ matrix.tool_slug }}
+
+      - name: Setup Mambaforge with postprocessing env
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+            miniforge-version: latest
+            activate-environment: postprocessing
+            use-mamba: true
+            environment-file: benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
+
+      - name: Create ${{ matrix.software_name }} aggregate RO-Crate
+        shell: bash -l {0}
+        run: |
+          python benchmarks/common/create_rocrate.py \
+            --benchmark-file "${EXAMPLE_BENCHMARK_FILE}" \
+            --simulation-result-path "./simulation-results/${{ matrix.tool_slug }}" \
+            --rocrate-filename "${{ matrix.rocrate_filename }}" \
+            --software-name "${{ matrix.software_name }}"
+
+      - name: Unzip ${{ matrix.software_name }} RO-Crate
+        run: |
+          mkdir -p "./processed/${{ matrix.tool_slug }}"
+          unzip -o "${{ matrix.rocrate_filename }}" -d "./processed/${{ matrix.tool_slug }}"
+
+      - name: Run ${{ matrix.software_name }} plotting script
+        shell: bash -l {0}
+        run: |
+          python examples/linear-elastic-plate-with-hole/plot_metrics.py \
+            --provenance_folderpath "./processed/${{ matrix.tool_slug }}" \
+            --output_file "${{ matrix.plot_filename }}"
+
+      - name: Upload ${{ matrix.software_name }} plot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.tool_slug }}-element-size-vs-stress-plot
+          path: ${{ matrix.plot_filename }}
 

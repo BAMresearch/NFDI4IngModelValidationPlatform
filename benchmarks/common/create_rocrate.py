@@ -4,13 +4,10 @@ import argparse
 import json
 import uuid
 import zipfile
-from importlib import resources
 from pathlib import Path
 from typing import Any, TypedDict
 
-from rdflib import Graph
 from rocrate.rocrate import ROCrate
-from provenance import ProvenanceAnalyzer
 import semantic_benchmark
 
 DEFAULT_BENCHMARK_FILE = (
@@ -18,8 +15,10 @@ DEFAULT_BENCHMARK_FILE = (
     "linear-elastic-plate-with-hole/benchmark.json"
 )
 DEFAULT_SIMULATION_RESULT_PATH = (
-    "/Users/mahdi/Downloads/fenics_provenance_linear-elastic-plate-with-hole"
+    "/Users/mahdi/Downloads/kratos_provenance_linear-elastic-plate-with-hole"
 )
+DEFAULT_ROCRATE_FILENAME = "RoCrate.zip"
+DEFAULT_SOFTWARE_NAME = "FENICS"
 M4I_HAS_KIND_OF_QUANTITY = "http://w3id.org/nfdi4ing/metadata4ing#hasKindOfQuantity"
 ROCRATE_CONFORMS_TO = [
     {"@id": "https://w3id.org/ro/crate/1.1"},
@@ -423,20 +422,11 @@ def _add_profile_creative_works(crate: ROCrate) -> None:
         crate.add_jsonld(creative_work)
 
 
-def unzip_rocrate(ro_zip_path: str = "RO.zip", extract_dir: str = "RO") -> Path:
-    zip_path = Path(ro_zip_path)
-    if not zip_path.exists():
-        raise FileNotFoundError(f"RO-Crate zip not found: {zip_path}")
-
-    output_dir = Path(extract_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(zip_path, "r") as archive:
-        archive.extractall(output_dir)
-    return output_dir
-
-
 def create_main_ro(
-    path: str, benchmark_object: semantic_benchmark.SemanticBenchmark
+    path: str,
+    benchmark_object: semantic_benchmark.SemanticBenchmark,
+    rocrate_filename: str = DEFAULT_ROCRATE_FILENAME,
+    software_name: str = DEFAULT_SOFTWARE_NAME,
 ) -> None:
     crate = ROCrate(version="1.1")
     input_path = Path(path)
@@ -475,7 +465,7 @@ def create_main_ro(
     _configure_crate_metadata(crate, snakemake_id)
 
     crate.add_jsonld(
-        {"@id": software_id, "@type": "SoftwareApplication", "name": "FENICS"}
+        {"@id": software_id, "@type": "SoftwareApplication", "name": software_name}
     )
     _add_profile_creative_works(crate)
 
@@ -484,53 +474,12 @@ def create_main_ro(
         lang="snakemake",
         properties={"hasPart": {"@id": software_id}},
     )
-    crate.write_zip("RoCrate.Zip")
+    crate.write_zip(rocrate_filename)
 
 
-def run_sparql_query(graph: Graph) -> None:
-    query = """
-    PREFIX schema: <http://schema.org/>
-
-    SELECT ?elementSize ?maxVonMisesStressNodes ?l2ErrorDisplacement
-    WHERE {
-      ?runAction a schema:CreateAction ;
-                 schema:object ?object ;
-                 schema:result ?metric1 ;
-                 schema:result ?metric2 .
-    
-      ?object a schema:PropertyValue ;
-              schema:exampleOfWork ?param .
-    
-      ?param a <https://bioschemas.org/FormalParameter> ;
-             schema:name "element-size" ;
-             schema:defaultValue ?elementSize .
-    
-      ?metric1 a schema:PropertyValue ;
-              schema:name "max_von_mises_stress_nodes" ;
-              schema:defaultValue ?maxVonMisesStressNodes .
-              
-      ?metric2 a schema:PropertyValue ;
-              schema:name "l2_error_displacement" ;
-              schema:defaultValue ?l2ErrorDisplacement .
-    }
-    ORDER BY ?elementSize
-    """
-    results = graph.query(query)
-    variables = [str(var) for var in results.vars]
-    if variables:
-        print(" | ".join(variables))
-        print("-" * max(3, len(" | ".join(variables))))
-    row_count = 0
-    for row in results:
-        values = [str(value) if value is not None else "" for value in row]
-        print(" | ".join(values))
-        row_count += 1
-    print(f"\nRows: {row_count}")
-
-
-def main() -> None:
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Create RO-Crate and run SPARQL queries on ro-crate-metadata.json"
+        description="Create a benchmark provenance RO-Crate from simulation results."
     )
     parser.add_argument(
         "--benchmark-file",
@@ -540,30 +489,31 @@ def main() -> None:
     parser.add_argument(
         "--simulation-result-path",
         default=DEFAULT_SIMULATION_RESULT_PATH,
-        help="Path containing run folders and SubCrate.zip files",
+        help="Path containing simulation result subfolders with RoCrate zip files",
     )
     parser.add_argument(
-        "--ro-zip", default="RoCrate.Zip", help="Path to RO-Crate zip file"
+        "--rocrate-filename",
+        default=DEFAULT_ROCRATE_FILENAME,
+        help="Filename for the generated RO-Crate zip file",
     )
     parser.add_argument(
-        "--extract-dir",
-        default="RO",
-        help="Directory where RoCrate.Zip should be extracted",
+        "--software-name",
+        default=DEFAULT_SOFTWARE_NAME,
+        help="Name of the software application recorded in the generated RO-Crate",
     )
-    args = parser.parse_args()
 
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
     benchmark_object = semantic_benchmark.BenchmarkLoader(args.benchmark_file).load()
-    create_main_ro(args.simulation_result_path, benchmark_object)
-
-    extracted_dir = unzip_rocrate(args.ro_zip, args.extract_dir)
-
-    proveance = ProvenanceAnalyzer(provenance_folderpath=extracted_dir)
-    query = proveance.build_dynamic_rocrate_query(
-        parameters=["element-size"],
-        metrics=["max_von_mises_stress_nodes", "max_von_mises_stress_gauss_points"],
+    create_main_ro(
+        args.simulation_result_path,
+        benchmark_object,
+        rocrate_filename=args.rocrate_filename,
+        software_name=args.software_name,
     )
-    proveance.plot_provenance_graph()
-    print(query)
 
 
 if __name__ == "__main__":
