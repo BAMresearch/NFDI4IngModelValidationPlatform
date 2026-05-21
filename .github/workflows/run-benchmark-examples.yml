@@ -1,84 +1,77 @@
 name: Examples-CI
+
 on:
   push:
 
   pull_request:
     branches: [ main ]
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-  # Runs the workflow once per day at 3:15am
   schedule:
     - cron: '3 16 * * *'
 
 env:
-  CACHE_NUMBER: 1  # increase to reset cache manually
+  CACHE_NUMBER: 1
   EXAMPLE_BENCHMARK_FILE: examples/linear-elastic-plate-with-hole/benchmark.json
 
 jobs:
   run-examples:
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - tool_slug: fenics
+            software_name: Fenics
+            results_pattern: Fenics-*.zip
+
+          - tool_slug: kratos
+            software_name: Kratos
+            results_pattern: Kratos-*.zip
+
     steps:
-      - name: checkout repo content
+      - name: Checkout repo content
         uses: actions/checkout@v2
 
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v3
         with:
-            miniforge-version: latest
-            activate-environment: model-validation 
-            use-mamba: true
+          miniforge-version: latest
+          activate-environment: model-validation
+          use-mamba: true
 
       - name: Set strict channel priority
         run: conda config --set channel_priority strict
-        
+
       - name: Update environment
         run: mamba env update -n model-validation -f environment_benchmarks.yml
 
-      - name: Run linear-elastic-plate-with-hole using fenics
+      - name: Run linear-elastic-plate-with-hole using ${{ matrix.software_name }}
         shell: bash -l {0}
         run: |
-          cd $GITHUB_WORKSPACE/examples/linear-elastic-plate-with-hole/fenics/
+          cd $GITHUB_WORKSPACE/examples/linear-elastic-plate-with-hole/${{ matrix.tool_slug }}/
           python run_benchmark.py
 
-      - name: Upload provenance zip artifacts of the fenics run of linear-elastic-plate-with-hole
+      - name: Upload provenance zip artifacts of the ${{ matrix.tool_slug }} run
         uses: actions/upload-artifact@v4
         with:
-            name: fenics_provenance_linear-elastic-plate-with-hole
-            path: |
-              examples/linear-elastic-plate-with-hole/fenics/results/**/Fenics-*.zip
+          name: ${{ matrix.tool_slug }}_provenance_linear-elastic-plate-with-hole
+          path: |
+            examples/linear-elastic-plate-with-hole/${{ matrix.tool_slug }}/results/**/${{ matrix.results_pattern }}
 
-      - name: Run linear-elastic-plate-with-hole using kratos
-        shell: bash -l {0}
-        run: |
-          cd $GITHUB_WORKSPACE/examples/linear-elastic-plate-with-hole/kratos/
-          python run_benchmark.py
-
-      - name: Upload provenance zip artifacts of the kratos run of linear-elastic-plate-with-hole
+      - name: Archive results of the ${{ matrix.tool_slug }} run
         uses: actions/upload-artifact@v4
         with:
-            name: kratos_provenance_linear-elastic-plate-with-hole
-            path: |
-              examples/linear-elastic-plate-with-hole/kratos/results/**/Kratos-*.zip
-
-      - name: Archive results of the fenics run of linear-elastic-plate-with-hole
-        uses: actions/upload-artifact@v4
-        with:
-            name: fenics_results_linear-elastic-plate-with-hole
-            path: |
-              examples/linear-elastic-plate-with-hole/fenics/results/
-
-      - name: Archive results of the kratos run of linear-elastic-plate-with-hole
-        uses: actions/upload-artifact@v4
-        with:
-            name: kratos_results_linear-elastic-plate-with-hole
-            path: |
-              examples/linear-elastic-plate-with-hole/kratos/results/
+          name: ${{ matrix.tool_slug }}_results_linear-elastic-plate-with-hole
+          path: |
+            examples/linear-elastic-plate-with-hole/${{ matrix.tool_slug }}/results/
 
   process-artifacts:
     runs-on: ubuntu-latest
     needs: run-examples
+
     strategy:
       fail-fast: false
       matrix:
@@ -88,6 +81,13 @@ jobs:
             results_artifact: fenics_results_linear-elastic-plate-with-hole
             rocrate_filename: Fenics-RoCrate.zip
             plot_filename: fenics-element-size-vs-stress-plot.pdf
+
+          - tool_slug: kratos
+            software_name: Kratos
+            results_artifact: kratos_results_linear-elastic-plate-with-hole
+            rocrate_filename: Kratos-RoCrate.zip
+            plot_filename: kratos-element-size-vs-stress-plot.pdf
+
     steps:
       - name: Checkout repo content
         uses: actions/checkout@v2
@@ -101,10 +101,10 @@ jobs:
       - name: Setup Mambaforge with postprocessing env
         uses: conda-incubator/setup-miniconda@v3
         with:
-            miniforge-version: latest
-            activate-environment: postprocessing
-            use-mamba: true
-            environment-file: benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
+          miniforge-version: latest
+          activate-environment: postprocessing
+          use-mamba: true
+          environment-file: benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
 
       - name: Create ${{ matrix.software_name }} aggregate RO-Crate
         shell: bash -l {0}
@@ -132,7 +132,7 @@ jobs:
         with:
           name: ${{ matrix.tool_slug }}-element-size-vs-stress-plot
           path: ${{ matrix.plot_filename }}
-      
+
       - name: Upload ${{ matrix.software_name }} aggregate RO-Crate artifact
         uses: actions/upload-artifact@v4
         with:
@@ -154,6 +154,7 @@ jobs:
               --password "${{ secrets.ROHUB_PASSWORD }}" \
             2>&1
           )"
+
           PYTHON_EXIT_CODE=$?
 
           if [ "$PYTHON_EXIT_CODE" -eq 0 ]; then
@@ -170,5 +171,4 @@ jobs:
         with:
           name: ${{ matrix.tool_slug }}-rohub-upload-error-log
           path: ${{ github.workspace }}/rohub_upload_${{ matrix.tool_slug }}_error.log
-          if-no-files-found: ignore    
-
+          if-no-files-found: ignore
