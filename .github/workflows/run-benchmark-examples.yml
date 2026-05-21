@@ -88,7 +88,6 @@ jobs:
             results_artifact: fenics_results_linear-elastic-plate-with-hole
             rocrate_filename: Fenics-RoCrate.zip
             plot_filename: fenics-element-size-vs-stress-plot.pdf
-            
     steps:
       - name: Checkout repo content
         uses: actions/checkout@v2
@@ -133,4 +132,43 @@ jobs:
         with:
           name: ${{ matrix.tool_slug }}-element-size-vs-stress-plot
           path: ${{ matrix.plot_filename }}
+      
+      - name: Upload ${{ matrix.software_name }} aggregate RO-Crate artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.tool_slug }}-aggregate-rocrate
+          path: ${{ matrix.rocrate_filename }}
+
+      - name: Upload ${{ matrix.software_name }} RO-Crate Zip file onto RoHub
+        id: rohub_upload
+        shell: bash -l {0}
+        continue-on-error: true
+        run: |
+          LOG_FILE="${GITHUB_WORKSPACE}/rohub_upload_${{ matrix.tool_slug }}_error.log"
+
+          OUTPUT="$(
+            python benchmarks/common/upload_provenance.py \
+              --provenance_folderpath "./${{ matrix.rocrate_filename }}" \
+              --benchmark_name "linear-elastic-plate-with-hole-${{ matrix.tool_slug }}" \
+              --username "${{ secrets.ROHUB_USERNAME }}" \
+              --password "${{ secrets.ROHUB_PASSWORD }}" \
+            2>&1
+          )"
+          PYTHON_EXIT_CODE=$?
+
+          if [ "$PYTHON_EXIT_CODE" -eq 0 ]; then
+            echo "RoHub upload succeeded"
+            rm -f "$LOG_FILE" || true
+          else
+            echo "=== RoHub upload failed, writing log to $LOG_FILE ==="
+            printf '%s\n' "$OUTPUT" | tee "$LOG_FILE"
+          fi
+
+      - name: Upload ${{ matrix.software_name }} RoHub error log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.tool_slug }}-rohub-upload-error-log
+          path: ${{ github.workspace }}/rohub_upload_${{ matrix.tool_slug }}_error.log
+          if-no-files-found: ignore    
 
