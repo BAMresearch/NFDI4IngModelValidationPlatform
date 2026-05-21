@@ -73,7 +73,7 @@ for file in root_unzipped_benchmark_dir.glob("parameters_*.json"):
             
             reporter_args = [
                 "--reporter", "metadata4ing",
-                "--report-metadata4ing-filename", f"Kratos-{data.get("configuration")}.zip",
+                "--report-metadata4ing-filename", f"Kratos-{data.get("configuration")}",
                 "--report-metadata4ing-name", "NFDI4Ing Provenance",
                 "--report-metadata4ing-description", "Benchmark for linear-elastic plate with a hole",
                 "--report-metadata4ing-license", "https://opensource.org/licenses/MIT",
